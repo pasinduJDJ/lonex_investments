@@ -1,0 +1,78 @@
+:root {
+  --primary: #003566;
+  --secondary: #001d3d;
+  --highlight: #ffc300;
+  --light: #d9d9d9;
+  --font: "Inter", "Roboto", sans-serif;
+}
+
+/* Container Background */
+.member-container {
+  padding-bottom: 40px;
+  font-family: var(--font);
+}
+
+/* Search Box */
+.search-box {
+  border-radius: 20px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+  overflow: hidden;
+  border: 1px solid #aaa;
+  background-color: var(--light);
+}
+
+/* Section Title */
+.section-title {
+  font-size: 1.3rem;
+  font-weight: 600;
+  color: var(--primary);
+}
+
+/* Divider */
+.section-divider {
+  border-top: 3px solid #000000;
+  width: 90%;
+  margin: auto;
+  border-radius: 2px;
+}
+
+/* Add Button */
+.add-member-btn {
+  background-color: #003566;
+  color: #fff;
+  font-weight: 600;
+  padding: 8px 16px;
+  border-radius: 10px;
+  transition: background-color 0.3s ease;
+  border: none;
+}
+
+.add-member-btn:hover {
+  background-color:#ffc300 ;
+  color: #000000;
+}
+
+/* Member Card */
+.member-card {
+  background-color: var(--light);
+  border-radius: 24px;
+  box-shadow: 0 6px 16px rgba(0, 0, 0, 0.2);
+  transition: transform 0.2s ease;
+  cursor: pointer;
+}
+
+.member-card:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 8px 20px rgba(0, 0, 0, 0.25);
+}
+
+.member-card .card-title {
+  color: var(--primary);
+  font-size: 1.2rem;
+  font-weight: 700;
+}
+
+.member-card .card-text {
+  color: #333;
+  font-size: 1rem;
+}

@@ -1,0 +1,119 @@
+:root {
+  --primary: #003566;
+  --secondary: #001D3D;
+  --highlight: #FFC300;
+  --bg-dark: #000814;
+  --bg-base: #CED4DA;
+  --light-gray: #E5E5E5;
+  --font: 'Inter', 'Roboto', sans-serif;
+}
+
+/* Hero Section */
+.home-hero {
+  background-color: #003566;
+  color: #fff;
+  padding: 40px 20px;
+  text-align: center;
+  border-radius: 24px 24px 24px 24px;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
+}
+
+.hero-content h1 {
+  font-size: 2.5rem;
+  font-weight: 800;
+  margin-bottom: 10px;
+  font-family: var(--font);
+}
+
+.subtitle {
+  font-size: 1.2rem;
+  margin-bottom: 30px;
+  font-weight: 500;
+}
+
+.action-buttons {
+  display: flex;
+  justify-content: center;
+  flex-wrap: wrap;
+  gap: 20px;
+}
+
+.modern-btn {
+  background-color: #f7f7f7;
+  color: #003566;
+  border: none;
+  border-radius: 10px;
+  padding: 10px 20px;
+  font-weight: 600;
+  font-size: 1rem;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  transition: background-color 0.3s ease;
+}
+
+.modern-btn:hover {
+  background-color: #FFC300;
+  color: #000000;
+}
+
+/* Content Section */
+.home-content {
+  padding: 30px 20px;
+  background-color: #ffffff;
+}
+
+.data-card {
+  background: #fff;
+  padding: 24px;
+  margin-bottom: 24px;
+  border-radius: 18px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.4);
+}
+
+.data-card h2 {
+  margin-bottom: 10px;
+  color: var(--primary);
+  font-family: var(--font);
+}
+
+.divider {
+  height: 2px;
+  background-color: var(--highlight);
+  width: 100px;
+  margin-bottom: 16px;
+}
+
+.table-responsive {
+  overflow-x: auto;
+}
+
+/* Tables */
+.modern-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-family: var(--font);
+}
+
+.modern-table th, .modern-table td {
+  padding: 12px 16px;
+  border-bottom: 1px solid #ddd;
+  text-align: left;
+}
+
+.modern-table th {
+  background-color: var(--light-gray);
+  color: #000814;
+  font-weight: 600;
+}
+
+.modern-table tr:hover {
+  background-color: #f2f2f2;
+}
+
+.empty-row {
+  text-align: center;
+  font-style: italic;
+  color: gray;
+}

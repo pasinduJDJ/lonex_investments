@@ -1,0 +1,47 @@
+<div class="loan-container container">
+  <!-- Search Box -->
+  <div class="row justify-content-center my-4">
+    <div class="col-md-8">
+      <div class="search-box input-group">
+        <input type="text" class="form-control py-2" placeholder="Enter Loan Reg Number" aria-label="Loan Reg Number" [formControl]="searchControl">
+      </div>
+    </div>
+  </div>
+
+  <!-- Header Row -->
+  <div class="row mb-3 align-items-center px-2">
+    <div class="col-6">
+      <h5 class="section-title">Active Loans</h5>
+    </div>
+    <div class="col-6 text-end">
+      <button class="btn add-loan-btn" (click)="navigateToAddLoan()">+ New Loan</button>
+    </div>
+  </div>
+
+  <hr class="section-divider mb-5">
+
+  <!-- Loan Cards -->
+  <div class="container px-4">
+    <ng-container *ngIf="loans$ | async as loans">
+      <ng-container *ngIf="loans.length > 0; else noLoans">
+        <div *ngFor="let loan of loans" class="loan-card card my-4" (click)="viewLoan(loan.loan_number )">
+          <div class="card-body">
+            <h5 class="card-title">Loan Reg Number: {{ loan.loan_number }}</h5>
+            <p class="card-text">
+              <strong>Amount:</strong> {{ loan.principal_amount }} |
+              <strong>Type:</strong> {{ loan.loan_type | titlecase }} |
+              <strong>Start:</strong> {{ loan.start_date }} |
+              <strong>End:</strong> {{ loan.end_date }}
+            </p>
+            <p class="card-text">
+              <strong>Client:</strong> {{ loan.client.first_name }} {{ loan.client.last_name }} ({{ loan.client.nic_number }})
+            </p>
+          </div>
+        </div>
+      </ng-container>
+      <ng-template #noLoans>
+        <div class="text-center text-muted my-5">No loans found.</div>
+      </ng-template>
+    </ng-container>
+  </div>
+</div>

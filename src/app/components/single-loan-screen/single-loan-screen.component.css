@@ -1,0 +1,58 @@
+:root {
+    --primary: #003566;
+    --secondary: #001D3D;
+    --highlight: #FFC300;
+    --dark: #000814;
+    --gray-light: #D9D9D9;
+    --base: #CED4DA;
+    --font: 'Inter', 'Roboto', sans-serif;
+  }
+  
+  .single-loan-container {
+    font-family: var(--font);
+  }
+  
+  .loan-card {
+    background-color: white;
+    border-radius: 40px;
+    box-shadow: 10px 14px 24px rgba(0, 0, 0, 0.3); 
+    padding: 24px;
+    transition: box-shadow 0.3s ease;
+  }
+  
+  .loan-card:hover {
+    box-shadow: 0 14px 32px rgba(0, 0, 0, 0.5);
+  }
+  
+  .loan-info p {
+    font-size: 1rem;
+    margin-bottom: 0.6rem;
+    color: #000000;
+  }
+  
+  .btn-danger {
+    background-color: #780000;
+    border: none;
+    color: white;
+    height: 44px;
+  }
+  
+  .btn-highlight {
+    background-color: #FFC300;
+    border: none;
+    color: var(--dark);
+    font-weight: 600;
+    height: 44px;
+    transition: background-color 0.3s ease;
+  }
+  
+  .btn-highlight:hover {
+    background-color: #ffd60a;
+  }
+  
+  .confirmation-box {
+    background-color: var(--gray-light);
+    border: 1px solid #ccc;
+    color: var(--dark);
+  }
+  

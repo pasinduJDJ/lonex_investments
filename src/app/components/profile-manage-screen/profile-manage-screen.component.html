@@ -1,0 +1,30 @@
+<div class="container">
+  <div class="row">
+    <div class="col-4">
+    </div>
+    <div class="col-4">
+      <h2 class="login-title mb-5">Reset Password</h2>
+      <form (ngSubmit)="changePassword()" #changeForm="ngForm" autocomplete="off">
+        <div class="form-group">
+          <label for="currentPassword">Current Password</label>
+          <input id="currentPassword" type="password" [(ngModel)]="currentPassword" name="currentPassword" required
+            placeholder="Enter current password" />
+        </div>
+        <div class="form-group">
+          <label for="newPassword">New Password</label>
+          <input id="newPassword" type="password" [(ngModel)]="newPassword" name="newPassword" required
+            placeholder="Enter new password" />
+        </div>
+        <button class="login-btn" type="submit" [disabled]="loading || !changeForm.form.valid">
+          {{ loading ? "Changing..." : "Change Password" }}
+        </button>
+        <div *ngIf="error" class="login-error">{{ error }}</div>
+        <div *ngIf="success" class="login-success">{{ success }}</div>
+      </form>
+
+    </div>
+    <div class="col-4"></div>
+
+  </div>
+
+</div>

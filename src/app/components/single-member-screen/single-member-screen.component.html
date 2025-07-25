@@ -1,0 +1,117 @@
+<div class="single-member-container container my-5">
+  <div class="row justify-content-center">
+    <div class="col-md-10 col-lg-8">
+      <ng-container *ngIf="client$ | async as client; else loadingOrNotFound">
+        <div class="member-card p-4 ">
+          <h4 class="text-primary mb-3 fw-bold">{{ client.first_name }} {{ client.last_name }}</h4>
+          <hr class="mb-4">
+
+          <div class="member-info">
+            <p><strong>Client Register Number:</strong> {{ client.register_number }}</p>
+            <p><strong>Client Full Name:</strong> {{ client.first_name }} {{ client.last_name }}</p>
+
+            <p><strong>Client Address:</strong>
+              <span *ngIf="!isEditing">
+                {{ client.home_number || '' }} {{ client.street_address || '' }} {{ client.town_one || '' }} {{ client.town_two || '' }}
+                <span *ngIf="client.group"> | {{ client.group }}</span>
+              </span>
+              <span *ngIf="isEditing" class="d-block mt-2">
+                <input [(ngModel)]="editableClient.home_number" placeholder="Home No" class="edit-field" />
+                <input [(ngModel)]="editableClient.street_address" placeholder="Street" class="edit-field" />
+                <input [(ngModel)]="editableClient.town_one" placeholder="Town 1" class="edit-field" />
+                <input [(ngModel)]="editableClient.town_two" placeholder="Town 2" class="edit-field" />
+                <input [(ngModel)]="editableClient.group" placeholder="Group" class="edit-field" />
+              </span>
+            </p>
+
+            <p><strong>Mobile Number:</strong>
+              <span *ngIf="!isEditing">{{ client.mobile_number }}</span>
+              <input *ngIf="isEditing" [(ngModel)]="editableClient.mobile_number" class="edit-field" placeholder="Mobile Number" />
+            </p>
+
+            <p><strong>NIC Number:</strong> {{ client.nic_number }}</p>
+
+            <!-- Guarantor 1 -->
+            <hr class="my-4">
+            <h6 class="fw-bold text-dark">First Guarantor Details</h6>
+            <p><strong>Name:</strong>
+              <span *ngIf="!isEditing">{{ client.first_guarantor_name }}</span>
+              <input *ngIf="isEditing" [(ngModel)]="editableClient.first_guarantor_name" class="edit-field" placeholder="Name" />
+            </p>
+            <p><strong>NIC:</strong>
+              <span *ngIf="!isEditing">{{ client.first_guarantor_nic }}</span>
+              <input *ngIf="isEditing" [(ngModel)]="editableClient.first_guarantor_nic" class="edit-field" placeholder="NIC" />
+            </p>
+            <p><strong>Phone:</strong>
+              <span *ngIf="!isEditing">{{ client.first_guarantor_tp }}</span>
+              <input *ngIf="isEditing" [(ngModel)]="editableClient.first_guarantor_tp" class="edit-field" placeholder="Phone" />
+            </p>
+            <p><strong>Address:</strong>
+              <span *ngIf="!isEditing">{{ client.first_guarantor_address }}</span>
+              <input *ngIf="isEditing" [(ngModel)]="editableClient.first_guarantor_address" class="edit-field" placeholder="Address" />
+            </p>
+
+            <!-- Guarantor 2 -->
+            <hr class="my-4">
+            <h6 class="fw-bold text-dark">Second Guarantor Details</h6>
+            <p><strong>Name:</strong>
+              <span *ngIf="!isEditing">{{ client.second_guarantor_name }}</span>
+              <input *ngIf="isEditing" [(ngModel)]="editableClient.second_guarantor_name" class="edit-field" placeholder="Name" />
+            </p>
+            <p><strong>NIC:</strong>
+              <span *ngIf="!isEditing">{{ client.second_guarantor_nic }}</span>
+              <input *ngIf="isEditing" [(ngModel)]="editableClient.second_guarantor_nic" class="edit-field" placeholder="NIC" />
+            </p>
+            <p><strong>Phone:</strong>
+              <span *ngIf="!isEditing">{{ client.second_guarantor_tp }}</span>
+              <input *ngIf="isEditing" [(ngModel)]="editableClient.second_guarantor_tp" class="edit-field" placeholder="Phone" />
+            </p>
+            <p><strong>Address:</strong>
+              <span *ngIf="!isEditing">{{ client.second_guarantor_address }}</span>
+              <input *ngIf="isEditing" [(ngModel)]="editableClient.second_guarantor_address" class="edit-field" placeholder="Address" />
+            </p>
+          </div>
+
+          <!-- Action Buttons -->
+          <div class="d-flex flex-wrap gap-3 justify-content-center mt-5">
+            <button *ngIf="!isEditing" type="button" class="btn btn-success px-4" (click)="enableEdit()">Upgrade</button>
+            <button *ngIf="isEditing" type="button" class="btn btn-success px-4" (click)="saveEdit()">Save</button>
+            <button type="button" class="btn btn-highlight px-4">Get Print</button>
+          </div>
+        </div>
+      </ng-container>
+
+      <!-- Member Loans Section -->
+      <div class="member-loans-section mt-5">
+        <h5 class="fw-bold text-primary mb-3">Loans for this Member</h5>
+        <ng-container *ngIf="loans$ | async as loans">
+          <div *ngIf="loans.length > 0; else noLoans">
+            <div *ngFor="let loan of loans" class="loan-card card my-3 p-3" style="border-radius: 16px; box-shadow: 0 2px 8px rgba(0,0,0,0.07); cursor: pointer;" [routerLink]="['/single-loan', loan.loan_number]">
+              <div class="card-body">
+                <h6 class="card-title mb-2">Loan Reg Number: {{ loan.loan_reg_number }}</h6>
+                <div class="row">
+                  <div class="col-6 col-md-4 mb-1"><strong>Amount:</strong> {{ loan.principal_amount }}</div>
+                  <div class="col-6 col-md-4 mb-1"><strong>Type:</strong> {{ loan.loan_type | titlecase }}</div>
+                  <div class="col-6 col-md-4 mb-1"><strong>Status:</strong> {{ loan.status | titlecase }}</div>
+                  <div class="col-6 col-md-4 mb-1"><strong>Paid Amount:</strong> {{ loan.total_paid }}</div>
+                  <div class="col-6 col-md-4 mb-1"><strong>Remaining:</strong> {{ loan.remaining_amount }}</div>
+                  <div class="col-6 col-md-4 mb-1"><strong>End Date:</strong> {{ loan.end_date }}</div>
+                </div>
+              </div>
+            </div>
+          </div>
+          <ng-template #noLoans>
+            <div class="text-muted">No loans found for this member.</div>
+          </ng-template>
+        </ng-container>
+      </div>
+
+      <ng-template #loadingOrNotFound>
+        <div class="text-center text-muted my-5">
+          Loading...<br>
+          <span *ngIf="(client$ | async) === undefined">Member not found.</span>
+        </div>
+      </ng-template>
+    </div>
+  </div>
+</div>

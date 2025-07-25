@@ -1,0 +1,63 @@
+:root {
+    --primary: #003566;
+    --secondary: #001D3D;
+    --highlight: #FFC300;
+    --dark: #000814;
+    --gray-light: #D9D9D9;
+    --base: #CED4DA;
+    --font: 'Inter', 'Roboto', sans-serif;
+  }
+  
+  .single-member-container {
+    background-color: var(--base);
+    font-family: var(--font);
+  }
+  
+  .member-card {
+    background-color: white;
+    border-radius: 40px;
+    box-shadow: 10px 14px 24px rgba(0, 0, 0, 0.3); 
+    padding: 24px;
+  }
+
+  .member-card:hover {
+    box-shadow: 0 14px 32px rgba(0, 0, 0, 0.5);
+  }
+  
+  .member-info p {
+    font-size: 1rem;
+    margin-bottom: 0.6rem;
+    color: var(--dark);
+  }
+  
+  .edit-field {
+    display: inline-block;
+    margin: 4px 4px 8px 0;
+    padding: 6px 10px;
+    border: 1px solid #ccc;
+    border-radius: 8px;
+    font-size: 0.95rem;
+    width: auto;
+  }
+  
+  /* Buttons */
+  .btn-success {
+    background-color: #386641;
+    color: white;
+    border: none;
+    height: 44px;
+  }
+  
+  .btn-highlight {
+    background-color: #ffd60a;
+    color: var(--dark);
+    border: none;
+    font-weight: 600;
+    height: 44px;
+    transition: background-color 0.3s ease;
+  }
+  
+  .btn-highlight:hover {
+    background-color: #ffd60a;
+  }
+  

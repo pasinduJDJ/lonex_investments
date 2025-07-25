@@ -1,0 +1,111 @@
+<div class="container">
+    <div class="row">
+        <div class="col-2"></div>
+        <div class="col-8 ">
+            <h5><strong>Add New Payment</strong></h5>
+            <hr class="mb-3">
+            <div class="row d-flex justify-content-center">
+                <div class="col-6 ">
+                    <div class="input-group"
+                        style="border-radius: 20px; box-shadow: 5px 5px 5px rgba(0, 0, 0, 0.25); overflow: hidden; border: 0.5px solid #000; background-color: #D9D9D9;">
+                        <input type="text" class="form-control py-2" placeholder="Enter Loan Number to verify loan"
+                            aria-label="Loan Number" [(ngModel)]="loanNumber" (keyup.enter)="searchLoan()">
+                        <button class="btn text-white px-4" style="background-color: #1B4965;" (click)="searchLoan()" [disabled]="isSearching">
+                            <span *ngIf="isSearching" class="spinner-border spinner-border-sm me-2" role="status"></span>
+                            {{ isSearching ? 'Searching...' : 'Search' }}
+                        </button>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Alert Messages -->
+            <div *ngIf="errorMessage" class="alert alert-danger alert-dismissible fade show mt-3" role="alert">
+                <i class="bi bi-exclamation-triangle me-2"></i>
+                {{ errorMessage }}
+                <button type="button" class="btn-close" (click)="errorMessage = ''"></button>
+            </div>
+            
+            <div *ngIf="successMessage" class="alert alert-success alert-dismissible fade show mt-3" role="alert">
+                <i class="bi bi-check-circle me-2"></i>
+                {{ successMessage }}
+                <button type="button" class="btn-close" (click)="successMessage = ''"></button>
+            </div>
+            
+            <!-- No Loan Found Message -->
+            <div *ngIf="!foundLoan && loanNumber && !isSearching" class="alert alert-warning mt-3">
+                <i class="bi bi-exclamation-triangle me-2"></i>
+                No loan found with the loan number: <strong>{{ loanNumber }}</strong>
+            </div>
+            
+            <!-- Loan Details Card -->
+            <div *ngIf="foundLoan" class="card px-5 py-3 mt-4" style="border-radius: 20px; box-shadow: 5px 5px 5px rgba(0, 0, 0, 0.25);">
+                <div class="row my-2">
+                    <label for="Member Full Name">Client Name : {{ foundLoan.client.first_name }} {{ foundLoan.client.last_name }}</label>
+                </div>
+                <div class="row my-2">
+                    <label for="Member Full Name">Client NIC : {{ foundLoan.client.nic_number }}</label>
+                </div>
+                <div class="row my-2">
+                    <label for="Member Full Name">Loan Register Number : {{ foundLoan.loan_reg_number ? formatLoanRegNumber(foundLoan.loan_reg_number) : 'N/A' }}</label>
+                </div>
+                <div class="row my-2">
+                    <label for="Member Full Name">Total Due : {{ foundLoan.total_amount_due | number:'1.2-2' }}</label>
+                </div>
+                <div class="row my-2">
+                    <label for="Member Full Name">Total Paid : {{ foundLoan.total_paid | number:'1.2-2' }}</label>
+                </div>
+                <div class="row my-2">
+                    <label for="Member Full Name">Remaining Amount : {{ foundLoan.remaining_amount | number:'1.2-2' }}</label>
+                </div>
+                
+                <!-- Progress Bar -->
+                <div class="row my-3">
+                    <div class="col-12">
+                        <div class="progress" style="height: 25px; border-radius: 15px;">
+                            <div 
+                                class="progress-bar bg-{{ getProgressColor() }}" 
+                                [style.width.%]="getProgressPercentage()"
+                                style="border-radius: 15px;">
+                                {{ getProgressPercentage() | number:'1.0-1' }}%
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <!-- Installment Stats Section -->
+                <div *ngIf="installmentStats" class="mt-3">
+                  <hr>
+                  <div><strong>Installment Amount:</strong> {{ installmentStats.installmentAmount | number:'1.2-2' }}</div>
+                  <div><strong>Paid Installments:</strong> {{ installmentStats.paid }}</div>
+                  <div><strong>Remaining Installments:</strong> {{ installmentStats.remaining }}</div>
+                </div>
+            </div>
+            
+            <!-- Payment Form -->
+            <div *ngIf="foundLoan" class="col-5">
+                <div class="form mt-4">
+                    <label for="paidAmount" class="form-label">Paid Amount</label>
+                    <div class="input-group">
+                        <input type="number" id="paidAmount" class="form-control" name="paidAmount" [(ngModel)]="paidAmount" step="0.01" min="0.01" [max]="foundLoan.remaining_amount" required>
+                    </div>
+                    <div class="form-text">Maximum: {{ foundLoan.remaining_amount | number:'1.2-2' }}</div>
+                    
+                    <label for="paymentDate" class="form-label">Payment Date</label>
+                    <div class="input-group">
+                        <input type="date" id="paymentDate" class="form-control" name="paymentDate" [(ngModel)]="paymentDate" required>
+                    </div>
+                    
+                    <label for="remark" class="form-label">Remark</label>
+                    <div class="input-group">
+                        <input type="text" id="remark" class="form-control" name="remark" [(ngModel)]="remark" placeholder="Enter payment remark">
+                    </div>
+                    
+                    <button class="btn text-white px-4 my-4" style="background-color: #1B4965;" (click)="submitPayment()" [disabled]="isLoading || paidAmount <= 0">
+                        <span *ngIf="isLoading" class="spinner-border spinner-border-sm me-2" role="status"></span>
+                        {{ isLoading ? 'Processing...' : 'Save' }}
+                    </button>
+                </div>
+            </div>
+        </div>
+        <div class="col-2"></div>
+    </div>
+</div>

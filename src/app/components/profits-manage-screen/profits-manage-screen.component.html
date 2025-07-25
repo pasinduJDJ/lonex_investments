@@ -1,0 +1,121 @@
+<div class="profit-container container my-4">
+  <!-- Date Range Picker -->
+  <div class="row mb-3">
+    <div class="col-md-12 d-flex align-items-center justify-content-start" style="gap: 1.5rem;">
+      <label class="form-label mb-0 fw-bold" style="font-size: 1.1rem; color: #003566;">Filter by Date:</label>
+      <div class="input-group" style="max-width: 220px;">
+        <span class="input-group-text bg-light border-0"><i class="bi bi-calendar-date"></i></span>
+        <input type="date" class="form-control border-0 shadow-sm" [(ngModel)]="startDate" (change)="onDateRangeChange()">
+      </div>
+      <span class="mx-2 fw-bold">to</span>
+      <div class="input-group" style="max-width: 220px;">
+        <span class="input-group-text bg-light border-0"><i class="bi bi-calendar-date"></i></span>
+        <input type="date" class="form-control border-0 shadow-sm" [(ngModel)]="endDate" (change)="onDateRangeChange()">
+      </div>
+    </div>
+  </div>
+  <hr />
+  <!-- Capital & Profit Cards -->
+  <div class="row mb-4">
+    <div class="col-md-6 mb-3">
+      <div class="stat-card card h-100">
+        <div class="card-body">
+          <h5 class="card-title text-white">Current Capital</h5>
+          <p class="card-text display-6 text-white">Rs. {{ capital | number: '1.2-2' }}</p>
+        </div>
+      </div>
+    </div>
+    
+  </div>
+
+  <!-- Latest Payments + Add Expense -->
+  <div class="row mb-4">
+    <div class="col-md-7 mb-3">
+      <div class="card data-card h-100">
+        <div class="card-header section-header">Latest Payments</div>
+        <div class="card-body p-0">
+          <div class="table-responsive">
+            <table class="table table-hover modern-table mb-0">
+              <thead>
+                <tr>
+                  <th>Date</th>
+                  <th>Amount</th>
+                  <th>Remark</th>
+                  <th>Loan Number</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr *ngFor="let p of payments">
+                  <td>{{ p.paid_date }}</td>
+                  <td>Rs. {{ p.paid_amount | number: '1.2-2' }}</td>
+                  <td>{{ p.remark }}</td>
+                  <td>{{ p.loan_number }}</td>
+                </tr>
+                <tr *ngIf="payments.length === 0">
+                  <td colspan="4" class="text-center text-muted">No payments found.</td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="col-md-5 mb-3">
+      <div class="card data-card h-100">
+        <div class="card-header section-header expense">Add Expense</div>
+        <div class="card-body">
+          <form [formGroup]="addExpenseForm" (ngSubmit)="onAddExpense()">
+            <div class="mb-3">
+              <label class="form-label">Amount</label>
+              <input type="number" class="form-control" formControlName="amount" min="1" required>
+            </div>
+            <div class="mb-3">
+              <label class="form-label">Remark</label>
+              <input type="text" class="form-control" formControlName="remark">
+            </div>
+            <div class="mb-3">
+              <label class="form-label">Date</label>
+              <input type="date" class="form-control" formControlName="expense_date" required>
+            </div>
+            <button type="submit" class="btn btn-primary w-100" [disabled]="addExpenseForm.invalid">Add Expense</button>
+          </form>
+          <div *ngIf="addExpenseSuccess" class="alert alert-success mt-3">Expense added and capital updated!</div>
+          <div *ngIf="addExpenseError" class="alert alert-danger mt-3">{{ addExpenseError }}</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Expenses Table -->
+  <div class="row mb-4">
+    <div class="col-12">
+      <div class="card data-card">
+        <div class="card-header section-header" style="background-color: #FFC300; color: #000814;">Expenses</div>
+        <div class="card-body p-0">
+          <div class="table-responsive">
+            <table class="table table-hover modern-table mb-0">
+              <thead>
+                <tr>
+                  <th>Date</th>
+                  <th>Amount</th>
+                  <th>Remark</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr *ngFor="let e of expenses">
+                  <td>{{ e.expense_date }}</td>
+                  <td>Rs. {{ e.amount | number: '1.2-2' }}</td>
+                  <td>{{ e.remark }}</td>
+                </tr>
+                <tr *ngIf="expenses.length === 0">
+                  <td colspan="3" class="text-center text-muted">No expenses found.</td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>

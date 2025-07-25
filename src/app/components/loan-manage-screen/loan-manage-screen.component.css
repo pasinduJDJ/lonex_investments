@@ -1,0 +1,79 @@
+:root {
+    --primary: #003566;
+    --secondary: #001D3D;
+    --highlight: #FFC300;
+    --light: #D9D9D9;
+    --font: 'Inter', 'Roboto', sans-serif;
+  }
+  
+  /* Base container */
+  .loan-container {
+    padding-bottom: 40px;
+    font-family: var(--font);
+  }
+  
+  /* Search Box Styling */
+  .search-box {
+    border-radius: 20px;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+    overflow: hidden;
+    border: 1px solid #aaa;
+    background-color: var(--light);
+  }
+  
+  /* Section Title */
+  .section-title {
+    font-size: 1.3rem;
+    font-weight: 600;
+    color: var(--primary);
+  }
+  
+  /* Divider */
+  .section-divider {
+    border-top: 3px solid #000000;
+    width: 90%;
+    margin: auto;
+    border-radius: 2px;
+  }
+  
+  /* Add Button */
+  .add-loan-btn {
+    background-color: #003566;
+    color: #fff;
+    font-weight: 600;
+    padding: 8px 16px;
+    border-radius: 10px;
+    transition: background-color 0.3s ease;
+    border: none;
+  }
+  
+  .add-loan-btn:hover {
+    background-color: #FFC300;
+    color: #000000;
+  }
+  
+  /* Loan Card Styling */
+  .loan-card {
+    background-color: var(--light);
+    border-radius: 24px;
+    box-shadow: 0 6px 16px rgba(0, 0, 0, 0.2);
+    transition: transform 0.2s ease;
+    cursor: pointer;
+  }
+  
+  .loan-card:hover {
+    transform: translateY(-4px);
+    box-shadow: 0 8px 20px rgba(0, 0, 0, 0.25);
+  }
+  
+  .loan-card .card-title {
+    color: var(--primary);
+    font-size: 1.2rem;
+    font-weight: 700;
+  }
+  
+  .loan-card .card-text {
+    color: #333;
+    font-size: 1rem;
+  }
+  

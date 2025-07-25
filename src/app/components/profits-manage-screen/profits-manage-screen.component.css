@@ -1,0 +1,84 @@
+:root {
+    --primary: #003566;
+    --secondary: #001D3D;
+    --highlight: #FFC300;
+    --dark: #000814;
+    --gray-light: #D9D9D9;
+    --base: #CED4DA;
+    --font: 'Inter', 'Roboto', sans-serif;
+  }
+  
+  .profit-container {
+    font-family: var(--font);
+  }
+  
+  /* Stat Cards */
+  .stat-card {
+    border-radius: 16px;
+    box-shadow: 0 6px 14px rgba(0, 0, 0, 0.12);
+    background-color: #003566;
+    color: white;
+  }
+  
+  .stat-card.profit {
+    background-color: var(--highlight);
+    color: var(--dark);
+  }
+  
+  /* Card Headers */
+  .section-header {
+    font-weight: 600;
+    font-size: 1.1rem;
+    background-color: #003566;
+    color: white;
+    padding: 12px 20px;
+    border-radius: 16px 16px 0 0;
+  }
+  
+  .section-header.expense {
+    background-color: #003566;
+  }
+  
+  /* Card Container */
+  .data-card {
+    border-radius: 16px;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+    background-color: white;
+  }
+  
+  /* Table Styling */
+  .modern-table {
+    border-radius: 12px;
+    overflow: hidden;
+    font-family: var(--font);
+  }
+  
+  .modern-table th,
+  .modern-table td {
+    padding: 12px 16px;
+    vertical-align: middle;
+  }
+  
+  .modern-table thead {
+    background-color: var(--gray-light);
+    color: var(--dark);
+  }
+  
+  .modern-table tr:hover {
+    background-color: #f5f5f5;
+  }
+  
+  /* Buttons */
+  .btn-primary {
+    background-color: #003566;
+    border: none;
+    color: #ffffff;
+    font-weight: 600;
+    transition: background-color 0.3s ease;
+  }
+  
+  .btn-primary:hover {
+    background-color: #003566;
+    color: var(--dark);
+  }
+  

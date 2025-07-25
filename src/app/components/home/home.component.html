@@ -1,0 +1,148 @@
+<div class="home-hero">
+  <div class="hero-content">
+    <h1>Welcome to Lonex Investments</h1>
+    <p class="subtitle">Manage members, loans, and payments with ease</p>
+    <div class="action-buttons">
+      <button class="modern-btn" (click)="navigateToAddMember()">
+        <span class="material-icons">person_add</span>
+        Add New Member
+      </button>
+      <button class="modern-btn" (click)="navigateToAddLoan()">
+        <span class="material-icons">library_add</span>
+        Add New Loan
+      </button>
+      <button class="modern-btn" (click)="navigateToAddPayment()">
+        <span class="material-icons">payments</span>
+        Payment
+      </button>
+    </div>
+  </div>
+</div>
+<div class="home-content">
+  <div class="data-card">
+    <h2>Active Members</h2>
+    <div class="divider"></div>
+    <div class="table-responsive" style="max-height: 340px; overflow-y: auto;">
+      <table class="modern-table">
+        <thead>
+          <tr>
+            <th>Client Name</th>
+            <th>Address</th>
+            <th>NIC number</th>
+            <th>TP Number</th>
+            <th>Group</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr *ngFor="let m of activeMembers | slice:0:8" style="cursor:pointer" [routerLink]="['/single-member', m.register_number]">
+
+            <td>{{ m.first_name }} {{ m.last_name }}</td>
+            <td>{{ m.home_number || '' }} {{ m.street_address || '' }} {{ m.town_one || '' }} {{ m.town_two || '' }}</td>
+            <td>{{ m.nic_number }}</td>
+            <td>{{ m.mobile_number }}</td>
+            <td>{{ m.group }}</td>
+          </tr>
+          <tr *ngIf="activeMembers.length === 0">
+            <td colspan="6" class="empty-row">No active members found.</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+  <!-- <div class="data-card">
+    <h2>Delay Payment</h2>
+    <div class="divider"></div>
+    <div class="table-responsive">
+      <table class="modern-table">
+        <thead>
+          <tr>
+            <th>Name</th>
+            <th>Address</th>
+            <th>Mobile</th>
+            <th>LoanID</th>
+            <th>Type</th>
+            <th>Delay Count</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr *ngFor="let d of delayedPayments">
+            <td>{{ d.clientName }}</td>
+            <td>{{ d.clientAddress }}</td>
+            <td>{{ d.clientMobile }}</td>
+            <td>{{ d.loanNumber }}</td>
+            <td>{{ d.loanType | titlecase }}</td>
+            <td>{{ d.delayCount }}</td>
+          </tr>
+          <tr *ngIf="delayedPayments.length === 0">
+            <td colspan="6" class="empty-row">No delayed payments found.</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </div> -->
+  <div class="data-card">
+    <h2>Active Loans</h2>
+    <div class="divider"></div>
+    <div class="table-responsive" style="max-height: 420px; overflow-y: auto;">
+      <table class="modern-table">
+        <thead>
+          <tr>
+            <th>Loan Reg Number</th>
+            <th>Client Name</th>
+            <th>Type</th>
+            <th>Amount</th>
+            <th>Status</th>
+            <th>Start Date</th>
+            <th>End Date</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr *ngFor="let loan of activeLoans | slice:0:10" style="cursor:pointer" [routerLink]="['/single-loan', loan.loan_number]">
+            <td>{{ loan.loan_number }}</td>
+            <td>{{ loan.client.first_name }} {{ loan.client.last_name }}</td>
+            <td>{{ loan.loan_type | titlecase }}</td>
+            <td>{{ loan.principal_amount }}</td>
+            <td>{{ loan.status | titlecase }}</td>
+            <td>{{ loan.start_date }}</td>
+            <td>{{ loan.end_date }}</td>
+          </tr>
+          <tr *ngIf="activeLoans.length === 0">
+            <td colspan="7" class="empty-row">No active loans found.</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+  <div class="data-card">
+    <h2>Latest Payment</h2>
+    <div class="divider"></div>
+    <div class="table-responsive">
+      <table class="modern-table">
+        <thead>
+          <tr>
+            <th>Loan ID</th>
+            <th>Amount</th>
+            <th>Date</th>
+            <th>Type</th>
+            <th>Paid Amount</th>
+            <th>Pending Amount</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr *ngFor="let p of latestPayments">
+            <td>{{ p.loanId }}</td>
+            <td>{{ p.amount }}</td>
+            <td>{{ p.date }}</td>
+            <td>{{ p.type | titlecase }}</td>
+            <td>{{ p.paid }}</td>
+            <td>{{ p.pending }}</td>
+          </tr>
+          <tr *ngIf="latestPayments.length === 0">
+            <td colspan="6" class="empty-row">No payments found.</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+</div>
+<link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">

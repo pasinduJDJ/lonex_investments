@@ -1,0 +1,166 @@
+<div class="container">
+    <div class="row">
+        <div class="col-2"></div>
+        <div class="col-8 ">
+            <h5><strong>Add New Loan</strong></h5>
+            <hr class="mb-5">
+            
+            <!-- Alert Messages -->
+            <div *ngIf="errorMessage" class="alert alert-danger alert-dismissible fade show" role="alert">
+                <i class="bi bi-exclamation-triangle me-2"></i>
+                {{ errorMessage }}
+                <button type="button" class="btn-close" (click)="errorMessage = ''"></button>
+            </div>
+            
+            <div *ngIf="successMessage" class="alert alert-success alert-dismissible fade show" role="alert">
+                <i class="bi bi-check-circle me-2"></i>
+                {{ successMessage }}
+                <button type="button" class="btn-close" (click)="successMessage = ''"></button>
+            </div>
+
+            <!-- Search Section -->
+            <div class="row d-flex justify-content-center">
+                <div class="col-6 ">
+                    <div class="input-group"
+                        style="border-radius: 20px; box-shadow: 5px 5px 5px rgba(0, 0, 0, 0.25); overflow: hidden; border: 0.5px solid #000; background-color: #D9D9D9;">
+                        <input type="text" class="form-control py-2" placeholder="Enter Client NIC number to verify client"
+                            aria-label="Loan Number" [(ngModel)]="searchNicNumber" (keyup.enter)="searchClient()">
+                        <button class="btn text-white px-4" style="background-color: #1B4965;" (click)="searchClient()" [disabled]="isSearching">
+                            <span *ngIf="isSearching" class="spinner-border spinner-border-sm me-2" role="status"></span>
+                            {{ isSearching ? 'Searching...' : 'Search' }}
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Search Error Message -->
+            <div *ngIf="searchError" class="alert alert-warning mt-3" role="alert">
+                <i class="bi bi-exclamation-triangle me-2"></i>
+                {{ searchError }}
+            </div>
+
+            <!-- Client Found Success Message -->
+            <div *ngIf="foundClient" class="alert alert-success mt-3" role="alert">
+                <i class="bi bi-check-circle me-2"></i>
+                Client found! You can now proceed with loan details.
+            </div>
+            
+            <form (ngSubmit)="onSubmit()" #loanForm="ngForm">
+                <div class="row mt-5">
+                    <div class="col-md-6">
+                        <div class="px-4">
+
+                            <label for="clientName" class="form-label">Client Name</label>
+                            <div class="input-group">
+                                <input type="text" id="clientName" class="form-control" name="clientName" 
+                                       [value]="clientName" readonly>
+                            </div>
+
+                            <label for="clientRegNumber" class="form-label">Client Register Number</label>
+                            <div class="input-group">
+                                <input type="text" id="clientRegNumber" class="form-control" name="clientRegNumber" 
+                                       [value]="clientRegisterNumber" readonly>
+                            </div>
+
+                            <label for="location" class="form-label">Location (City)</label>
+                            <div class="input-group">
+                                <input type="text" id="location" class="form-control" name="location" 
+                                       [value]="clientLocation" readonly>
+                            </div>
+
+                            <label for="clientGroup" class="form-label">Group</label>
+                            <div class="input-group">
+                                <input type="text" id="clientGroup" class="form-control" name="clientGroup" 
+                                       [value]="clientGroup" readonly>
+                            </div>
+                            <br>
+                            <br>
+                            <label for="houseNumber" class="form-label fw-bold">Enter Loan Amount</label>
+                            <div class="input-group">
+                                <input type="number" id="houseNumber" class="form-control" name="houseNumber" 
+                                       [(ngModel)]="principalAmount" (input)="calculateTotal()" step="0.01" min="0" required>
+                            </div>
+                            <div class="mt-5 text-center d-flex justify-content-around">
+                                <button type="button" class="btn btn-secondary px-5" (click)="onClear()" [disabled]="isLoading">Clear</button>
+                                <button type="submit" class="btn px-5 text-white" style="background-color: #003566;" 
+                                        [disabled]="isLoading || !loanForm.form.valid || !foundClient">
+                                    <span *ngIf="isLoading" class="spinner-border spinner-border-sm me-2" role="status"></span>
+                                    {{ isLoading ? 'Creating...' : 'Submit Loan ' }}
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-5">
+                        <div class="form mt-4">
+                            <label for="mobileNumber" class="form-label">Select Loan Type</label>
+                            <div class="input-group">
+                                <select 
+                                    id="mobileNumber" 
+                                    class="form-control" 
+                                    name="mobileNumber" 
+                                    [(ngModel)]="loanType" 
+                                    (change)="onLoanTypeChange()"
+                                    required>
+                                    <option value="daily">Daily</option>
+                                    <option value="weekly">Weekly</option>
+                                    <option value="monthly">Monthly</option>
+                                </select>
+                            </div>
+                            <label for="houseNumber" class="form-label">Enter Loan Amount</label>
+                            <div class="input-group">
+                                <input type="number" id="houseNumber" class="form-control" name="houseNumber" 
+                                       [(ngModel)]="principalAmount" (input)="calculateTotal()" step="0.01" min="0" required>
+                            </div>
+                            <label for="streetName" class="form-label">Enter Document charges</label>
+                            <div class="input-group">
+                                <input type="number" id="streetName" class="form-control" name="streetName" 
+                                       [(ngModel)]="documentCharge" (input)="calculateTotal()" step="0.01" min="0">
+                            </div>
+                            <label for="townone" class="form-label">Enter Loan Rate (Annual %)</label>
+                            <div class="input-group">
+                                <input type="number" 
+                                       id="townone" 
+                                       class="form-control" 
+                                       name="townone" 
+                                       [(ngModel)]="interestRate" 
+                                       (input)="onInterestRateChange($event)" 
+                                       step="0.01" 
+                                       min="0" 
+                                       max="100"
+                                       placeholder="e.g., 4.32"
+                                       required>
+                                <span class="input-group-text">%</span>
+                            </div>
+                            <label for="townTwo" class="form-label">Total Payment</label>
+                            <div class="input-group">
+                                <input type="text" id="townTwo" class="form-control" name="townTwo" 
+                                       [value]="calculatedTotal | number:'1.2-2'" readonly>
+                            </div>
+                            <label for="loanNumber" class="form-label">Loan Number</label>
+                            <div class="input-group">
+                                <input type="text" id="loanNumber" class="form-control" name="loanNumber" 
+                                       [(ngModel)]="loanNumber" placeholder="Auto-generated" required>
+                            </div>
+                            <label for="startDate" class="form-label">Select Start Date</label>
+                            <div class="input-group">
+                                <input type="date" id="startDate" class="form-control" name="startDate" 
+                                       [(ngModel)]="startDate" (change)="onStartDateChange()" required>
+                            </div>
+                            <label for="endDate" class="form-label">Select End Date</label>
+                            <div class="input-group">
+                                <input type="date" id="endDate" class="form-control" name="endDate" 
+                                       [(ngModel)]="endDate" (change)="onEndDateChange()" required>
+                            </div>
+                            <label for="installments" class="form-label">Number of Installments</label>
+                            <div class="input-group">
+                                <input type="number" id="installments" class="form-control" name="installments" 
+                                       [value]="numberOfInstallments" readonly>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </form>
+        </div>
+        <div class="col-2"></div>
+    </div>
+</div>

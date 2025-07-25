@@ -1,0 +1,143 @@
+<!-- Angular Component Template (HTML) with Bootstrap classes -->
+<div class="container">
+  <div class="row">
+    <div class="col-2"></div>
+    <div class="col-8">
+      <h5><strong>Add New Member</strong></h5>
+      <hr class="mb-5">
+
+      <!-- Alert Messages -->
+      <div *ngIf="errorMessage" class="alert alert-danger alert-dismissible fade show" role="alert">
+        <i class="bi bi-exclamation-triangle me-2"></i>
+        {{ errorMessage }}
+        <button type="button" class="btn-close" (click)="errorMessage = ''"></button>
+      </div>
+      
+      <div *ngIf="successMessage" class="alert alert-success alert-dismissible fade show" role="alert">
+        <i class="bi bi-check-circle me-2"></i>
+        {{ successMessage }}
+        <button type="button" class="btn-close" (click)="successMessage = ''"></button>
+      </div>
+
+      <form (ngSubmit)="onSubmit()" #memberForm="ngForm">
+        <div class="row mt-5">
+          <div class="col-md-6">
+            <div class="px-4">
+
+              <label for="firstName" class="form-label">Enter First name *</label>
+              <div class="input-group">
+                <input type="text" id="firstName" class="form-control" name="firstName" [(ngModel)]="firstName" required>
+              </div>
+
+              <label for="lastName" class="form-label">Enter Last name *</label>
+              <div class="input-group">
+                <input type="text" id="lastName" class="form-control" name="lastName" [(ngModel)]="lastName" required>
+              </div>
+
+              <label for="nicNumber" class="form-label">Enter Nic number *</label>
+              <div class="input-group">
+                <input type="text" id="nicNumber" class="form-control" name="nicNumber" [(ngModel)]="nicNumber" 
+                       placeholder="e.g., 123456789V or 123456789012" required>
+              </div>
+
+              <label for="mobileNumber" class="form-label">Enter Mobile number</label>
+              <div class="input-group">
+                <input type="text" id="mobileNumber" class="form-control" name="mobileNumber" [(ngModel)]="mobileNumber" 
+                       placeholder="e.g., 0712345678">
+              </div>
+
+              <label for="homeNumber" class="form-label">Enter Home number</label>
+              <div class="input-group">
+                <input type="text" id="homeNumber" class="form-control" name="homeNumber" [(ngModel)]="homeNumber" 
+                       placeholder="e.g., 0112345678">
+              </div>
+
+              <label for="streetAddress" class="form-label">Enter Address (Street Address)</label>
+              <div class="input-group">
+                <input type="text" id="streetAddress" class="form-control" name="streetAddress" [(ngModel)]="streetAddress">
+              </div>
+
+              <label for="townOne" class="form-label">Enter Address (Town 01)</label>
+              <div class="input-group">
+                <input type="text" id="townOne" class="form-control" name="townOne" [(ngModel)]="townOne">
+              </div>
+
+              <label for="townTwo" class="form-label">Enter Address (Town 02)</label>
+              <div class="input-group">
+                <select id="townTwo" class="form-select" name="townTwo" [(ngModel)]="townTwo">
+                  <option value="" disabled selected>Select Town 02</option>
+                  <option *ngFor="let city of cityNames" [value]="city">{{ city }}</option>
+                </select>
+              </div>
+
+              <label for="group" class="form-label">Group</label>
+              <div class="input-group">
+                <select id="group" class="form-select" name="group" [(ngModel)]="group">
+                  <option value="" disabled selected>Select Group</option>
+                  <option *ngFor="let g of groupNames" [value]="g">{{ g }}</option>
+                </select>
+              </div>
+
+              <div class="mt-5 text-center d-flex justify-content-around">
+                <button type="button" class="btn btn-secondary px-5" (click)="onClear()" [disabled]="isLoading">Clear</button>
+                
+                <button type="submit" class="btn text-white px-5" style="background-color: #003566;" 
+                        [disabled]="isLoading || !memberForm.form.valid">
+                  <span *ngIf="isLoading" class="spinner-border spinner-border-sm me-2" role="status"></span>
+                  {{ isLoading ? 'Adding Member...' : 'Submit Client ' }}
+                </button>
+              </div>
+
+            </div>
+          </div>
+
+          <div class="col-md-6">
+            <label for="" class="form-label fw-bold">First Guarantor Details</label>
+            <br>
+            <label for="firstGuarantorName" class="form-label">Name</label>
+            <div class="input-group">
+              <input type="text" id="firstGuarantorName" class="form-control" name="firstGuarantorName" [(ngModel)]="firstGuarantorName">
+            </div>
+            <label for="firstGuarantorNic" class="form-label">NIC number</label>
+            <div class="input-group">
+              <input type="text" id="firstGuarantorNic" class="form-control" name="firstGuarantorNic" [(ngModel)]="firstGuarantorNic" 
+                     placeholder="e.g., 123456789V">
+            </div>
+            <label for="firstGuarantorTp" class="form-label">Phone Number</label>
+            <div class="input-group">
+              <input type="text" id="firstGuarantorTp" class="form-control" name="firstGuarantorTp" [(ngModel)]="firstGuarantorTp" 
+                     placeholder="e.g., 0712345678">
+            </div>
+            <label for="firstGuarantorAddress" class="form-label">Address</label>
+            <div class="input-group">
+              <input type="text" id="firstGuarantorAddress" class="form-control" name="firstGuarantorAddress" [(ngModel)]="firstGuarantorAddress">
+            </div>
+
+            <label for="" class="form-label fw-bold mt-5">Second Guarantor Details</label>
+            <br>
+            <label for="secondGuarantorName" class="form-label">Name</label>
+            <div class="input-group">
+              <input type="text" id="secondGuarantorName" class="form-control" name="secondGuarantorName" [(ngModel)]="secondGuarantorName">
+            </div>
+            <label for="secondGuarantorNic" class="form-label">NIC number</label>
+            <div class="input-group">
+              <input type="text" id="secondGuarantorNic" class="form-control" name="secondGuarantorNic" [(ngModel)]="secondGuarantorNic" 
+                     placeholder="e.g., 123456789V">
+            </div>
+            <label for="secondGuarantorTp" class="form-label">Phone Number</label>
+            <div class="input-group">
+              <input type="text" id="secondGuarantorTp" class="form-control" name="secondGuarantorTp" [(ngModel)]="secondGuarantorTp" 
+                     placeholder="e.g., 0712345678">
+            </div>
+            <label for="secondGuarantorAddress" class="form-label">Address</label>
+            <div class="input-group">
+              <input type="text" id="secondGuarantorAddress" class="form-control" name="secondGuarantorAddress" [(ngModel)]="secondGuarantorAddress">
+            </div>
+
+          </div>
+        </div>
+      </form>
+    </div>
+    <div class="col-2"></div>
+  </div>
+</div>

@@ -1,0 +1,119 @@
+<div class="single-loan-container container my-5">
+  <div class="row justify-content-center">
+    <div class="col-md-10 col-lg-8">
+      <ng-container *ngIf="loan$ | async as loan; else loadingOrNotFound">
+        <div class="loan-card p-4 bg-white">
+          <h4 class="text-black mb-3 fw-bold">Loan Details ( {{ loan.loan_number }} )</h4>
+          <hr class="mb-4" />
+
+          <div *ngIf="installmentStats" class="loan-info mb-4">
+            <p>
+              <strong>Client Name:</strong> {{ loan.client.first_name }}
+              {{ loan.client.last_name }}
+            </p>
+            <p>
+              <strong>Client Address:</strong>
+              {{ loan.client.home_number || "" }}
+              {{ loan.client.street_address || "" }}
+              {{ loan.client.town_one || "" }} {{ loan.client.town_two || ""
+              }}<span *ngIf="loan.client.group">
+                | {{ loan.client.group }}</span
+              >
+            </p>
+
+            <p>
+              <strong>Loan Register Number:</strong> {{ loan.loan_reg_number }}
+            </p>
+            <p><strong>Loan Type:</strong> {{ loan.loan_type | titlecase }}</p>
+            <p><strong>Status:</strong> {{ loan.status | titlecase }}</p>
+
+            <hr />
+
+            <p><strong>Loan Amount:</strong> {{ loan.principal_amount }}</p>
+            <p><strong>Document Charges:</strong> {{ loan.document_charge }}</p>
+            <p><strong>Interest Rate:</strong> {{ loan.interest_rate }}%</p>
+            <p><strong>Total Due:</strong> {{ loan.total_amount_due }}</p>
+            <p>
+              <strong>Per Installment Amount:</strong>
+              {{ installmentStats.installmentAmount }}
+            </p>
+            <p><strong>Total Paid:</strong> {{ loan.total_paid }}</p>
+            <p>
+              <strong>Remaining Amount:</strong> {{ loan.remaining_amount }}
+            </p>
+
+            <hr />
+
+            <h6 class="fw-bold text-dark">Installment Stats</h6>
+            <p>
+              <strong>Expected Installments:</strong>
+              {{ installmentStats.expected }}
+            </p>
+            <p>
+              <strong>Paid Installments:</strong> {{ installmentStats.paid }}
+            </p>
+            <p>
+              <strong>Remaining Installments:</strong>
+              {{ installmentStats.remaining }}
+            </p>
+
+            <p>
+              <strong>Total Paid (for Installments):</strong>
+              {{ installmentStats.totalPaid }}
+            </p>
+
+            <hr />
+
+            <p><strong>Start Date:</strong> {{ loan.start_date }}</p>
+            <p><strong>End Date:</strong> {{ loan.end_date }}</p>
+            <p><strong>Created Date:</strong> {{ loan.created_at }}</p>
+          </div>
+
+          <!-- Action Buttons -->
+          <div class="d-flex flex-wrap gap-3 justify-content-center mt-4">
+            <button
+              type="button"
+              class="btn btn-success px-4"
+              (click)="showCompleteConfirm = true"
+            >
+              Complete Loan
+            </button>
+            <button type="button" class="btn btn-primary px-4" (click)="getDocx(loan, installmentStats)">
+              Download DOCX
+            </button>
+            
+          </div>
+
+          <!-- Confirmation -->
+          <div
+            *ngIf="showCompleteConfirm"
+            class="confirmation-box mt-4 p-4 rounded text-center"
+          >
+            <p class="mb-3">Are you sure you want to complete this loan?</p>
+            <button class="btn btn-danger me-2" (click)="completeLoan(loan)">
+              Yes, Complete
+            </button>
+            <button
+              class="btn btn-secondary"
+              (click)="showCompleteConfirm = false"
+            >
+              Cancel
+            </button>
+          </div>
+
+          <!-- Success Message -->
+          <div *ngIf="showSuccessMsg" class="alert alert-success mt-4">
+            Loan marked as completed!
+          </div>
+        </div>
+      </ng-container>
+
+      <ng-template #loadingOrNotFound>
+        <div class="text-center text-muted my-5">
+          Loading...<br />
+          <span *ngIf="(loan$ | async) === undefined">Loan not found.</span>
+        </div>
+      </ng-template>
+    </div>
+  </div>
+</div>

@@ -1,0 +1,21 @@
+<div class="login-bg">
+  <div class="login-container">
+    <div class="login-card">
+      <h2 class="login-title mb-5">Lonex Investment Login</h2>
+      <form (ngSubmit)="login()" #loginForm="ngForm" autocomplete="off">
+        <div class="form-group">
+          <label for="email">Email</label>
+          <input id="email" type="email" [(ngModel)]="email" name="email" required placeholder="Enter your email" />
+        </div>
+        <div class="form-group">
+          <label for="password">Password</label>
+          <input id="password" type="password" [(ngModel)]="password" name="password" required placeholder="Enter your password" />
+        </div>
+        <button class="login-btn" type="submit" [disabled]="loading || !loginForm.form.valid">
+          {{ loading ? 'Logging in...' : 'Login' }}
+        </button>
+        <div *ngIf="error" class="login-error">{{ error }}</div>
+      </form>
+    </div>
+  </div>
+</div>
