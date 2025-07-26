@@ -1,12 +1,11 @@
-/* Full screen gradient background */
+/* Full screen white background */
 .login-bg {
   min-height: 100vh;
   width: 100vw;
   display: flex;
   align-items: center;
   justify-content: center;
-  background-color: #003566;
-  /* background: linear-gradient(135deg, #003566 0%, #1e90ff 100%); */
+  background-color: #fff;
 }
 
 .login-container {
@@ -21,12 +20,18 @@
   background: #fff;
   padding: 2.5rem 2rem 2rem 2rem;
   border-radius: 18px;
-  box-shadow: 0 8px 32px rgba(0,0,0,0.18);
+  box-shadow: 8px 32px 32px rgba(0,0,0,0.18);
   min-width: 340px;
   max-width: 90vw;
   display: flex;
   flex-direction: column;
   align-items: center;
+  border: 2px solid #e0e0e0;
+}
+
+.login-logo {
+  width: 80px;
+  margin-bottom: 1rem;
 }
 
 .login-title {
@@ -67,7 +72,7 @@
 .login-btn {
   width: 100%;
   padding: 0.8rem 0;
-  background: linear-gradient(90deg, #003566 0%, #1e90ff 100%);
+  background: #003566;
   color: #fff;
   font-size: 1.1rem;
   font-weight: 700;
@@ -85,7 +90,7 @@
 }
 
 .login-btn:hover:not(:disabled) {
-  background: linear-gradient(90deg, #1e90ff 0%, #003566 100%);
+  background: #003566;
   box-shadow: 0 4px 16px rgba(30,144,255,0.15);
 }
 

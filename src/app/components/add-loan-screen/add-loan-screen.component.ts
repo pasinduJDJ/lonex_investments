@@ -56,7 +56,7 @@ export class AddLoanScreenComponent implements OnInit {
     private supabaseService: SupabaseService,
     private router: Router,
     private profitService: ProfitManageService
-  ) {}
+  ) { }
 
   ngOnInit(): void {
     this.setDefaultDates();
@@ -65,7 +65,7 @@ export class AddLoanScreenComponent implements OnInit {
   setDefaultDates(): void {
     const today = new Date();
     this.startDate = today.toISOString().split('T')[0];
-    
+
     // Set end date to 30 days from today
     const endDate = new Date(today);
     endDate.setDate(today.getDate() + 30);
@@ -89,7 +89,7 @@ export class AddLoanScreenComponent implements OnInit {
   private async findClientByNic(nicNumber: string): Promise<void> {
     try {
       const supabase = this.supabaseService.getClient();
-      
+
       const { data, error } = await supabase
         .from('clients')
         .select('*')
@@ -122,7 +122,7 @@ export class AddLoanScreenComponent implements OnInit {
     this.selectedClientId = client.client_id;
     this.clientName = `${client.first_name} ${client.last_name}`;
     this.clientRegisterNumber = client.register_number ? client.register_number.toString().padStart(6, '0') : 'N/A';
-    this.clientLocation = client.town_two|| 'N/A';
+    this.clientLocation = client.town_two || 'N/A';
     this.clientGroup = client.group || 'N/A';
   }
 
@@ -132,24 +132,24 @@ export class AddLoanScreenComponent implements OnInit {
       const group = this.foundClient.group || '';
       const townCode = CITY_CODE_MAP[townTwo] || '000';
       const groupCode = GROUP_CODE_MAP[group] || '000';
-  
-      const supabase = this.supabaseService.getClient(); 
-  
+
+      const supabase = this.supabaseService.getClient();
+
       // Count existing loans for this town+group
       const { data, error } = await supabase
         .from('loans')
         .select('loan_number', { count: 'exact' })
         .ilike('loan_number', `12-${townCode}-${groupCode}-%`);
-  
+
       const latestCount = data?.length || 0;
       const paddedCount = (latestCount + 1).toString().padStart(3, '0');
-  
+
       this.loanNumber = `12-${townCode}-${groupCode}-${paddedCount}`;
       this.newLoanNumber = this.loanNumber;
     }
   }
-  
-  
+
+
 
   // Calculate installments based on loan type and date range
   calculateInstallments(): void {
@@ -160,7 +160,7 @@ export class AddLoanScreenComponent implements OnInit {
 
     const start = new Date(this.startDate);
     const end = new Date(this.endDate);
-    
+
     if (start >= end) {
       this.numberOfInstallments = 0;
       return;
@@ -193,24 +193,24 @@ export class AddLoanScreenComponent implements OnInit {
     // Get the day of week (0 = Sunday, 1 = Monday, ..., 6 = Saturday)
     const startDay = start.getDay();
     const endDay = end.getDay();
-    
+
     // Convert to Monday = 1, Sunday = 7 format
     const startMondayBased = startDay === 0 ? 7 : startDay;
     const endMondayBased = endDay === 0 ? 7 : endDay;
-    
+
     // Calculate total days
     const timeDiff = end.getTime() - start.getTime();
     const totalDays = Math.ceil(timeDiff / (1000 * 3600 * 24));
-    
+
     // Calculate weeks
     let weeks = Math.floor(totalDays / 7);
-    
+
     // If there are remaining days, count as an additional week
     const remainingDays = totalDays % 7;
     if (remainingDays > 0) {
       weeks += 1;
     }
-    
+
     return Math.max(1, weeks);
   }
 
@@ -219,19 +219,19 @@ export class AddLoanScreenComponent implements OnInit {
     const startYear = start.getFullYear();
     const startMonth = start.getMonth();
     const startDay = start.getDate();
-    
+
     const endYear = end.getFullYear();
     const endMonth = end.getMonth();
     const endDay = end.getDate();
-    
+
     // Calculate months difference
     let months = (endYear - startYear) * 12 + (endMonth - startMonth);
-    
+
     // If end day is before start day, don't count the last month as complete
     if (endDay < startDay) {
       months -= 1;
     }
-    
+
     // Ensure at least 1 month
     return Math.max(1, months);
   }
@@ -251,7 +251,7 @@ export class AddLoanScreenComponent implements OnInit {
 
   calculateTotal(): void {
     if (this.principalAmount > 0 && this.interestRate >= 0) {
-      this.calculatedTotal = this.principalAmount + 
+      this.calculatedTotal = this.principalAmount +
         (this.principalAmount * this.interestRate / 100);
     } else {
       this.calculatedTotal = 0;
@@ -308,7 +308,7 @@ export class AddLoanScreenComponent implements OnInit {
   private async addLoan(loanData: any): Promise<void> {
     try {
       const supabase = this.supabaseService.getClient();
-      
+
       // Get the next loan register number
       const { data: maxData, error: maxError } = await supabase
         .from('loans')
@@ -322,7 +322,6 @@ export class AddLoanScreenComponent implements OnInit {
         return;
       }
 
-      // Calculate next loan register number
       let nextLoanRegNumber = 1; // Start from 1 for first loan
       if (maxData && maxData.length > 0 && maxData[0].loan_reg_number) {
         nextLoanRegNumber = maxData[0].loan_reg_number + 1;
@@ -366,14 +365,6 @@ export class AddLoanScreenComponent implements OnInit {
       // Decrease bank capital by principal amount
       this.profitService.decreaseBankCapital(loanData.principal_amount).subscribe({
         next: () => {
-          // Add document charge as an expense
-          if (loanData.document_charge && loanData.document_charge > 0) {
-            this.profitService.addExpenseAndUpdateCapital({
-              amount: loanData.document_charge,
-              remark: 'loan Document Charge',
-              expense_date: new Date().toISOString().substring(0, 10)
-            }).subscribe();
-          }
           this.successMessage = `Loan ${loanData.loan_number} created successfully! Loan ID: ${formattedLoanRegNumber}, Installments: ${this.numberOfInstallments}`;
           this.resetForm();
           setTimeout(() => {
