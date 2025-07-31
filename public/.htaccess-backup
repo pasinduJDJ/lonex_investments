@@ -1,0 +1,15 @@
+RewriteEngine On
+
+# Method 1: Simple redirect
+RewriteCond %{REQUEST_FILENAME} !-f
+RewriteCond %{REQUEST_FILENAME} !-d
+RewriteRule . /index.html [L]
+
+# Method 2: More specific (uncomment if Method 1 doesn't work)
+# RewriteCond %{REQUEST_URI} !^/\.well-known/
+# RewriteCond %{REQUEST_FILENAME} !-f
+# RewriteCond %{REQUEST_FILENAME} !-d
+# RewriteRule . /index.html [L]
+
+# Method 3: Force all requests to index.html (uncomment if others don't work)
+# RewriteRule ^(.*)$ /index.html [L] 

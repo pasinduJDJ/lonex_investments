@@ -164,7 +164,7 @@ export class LoanManageService {
     interestRate: number,
     documentCharge: number
   ): number {
-    return principalAmount + (principalAmount * interestRate / 100) + documentCharge;
+    return principalAmount + (principalAmount * interestRate / 100);
   }
 
   // Get loan by loan number
@@ -385,12 +385,43 @@ export class LoanManageService {
     const end = new Date(loan.end_date);
     let expected = 0;
     if (loan.loan_type === 'daily') {
-      expected = Math.floor((end.getTime() - start.getTime()) / (1000 * 60 * 60 * 24)) + 1;
-    } else if (loan.loan_type === 'weekly') {
-      expected = Math.floor((end.getTime() - start.getTime()) / (1000 * 60 * 60 * 24 * 7)) + 1;
-    } else if (loan.loan_type === 'monthly') {
-      expected = (end.getFullYear() - start.getFullYear()) * 12 + (end.getMonth() - start.getMonth()) + 1;
+      const timeDiff = end.getTime() - start.getTime();
+      const daysDiff = Math.ceil(timeDiff / (1000 * 3600 * 24));
+      expected = Math.max(1, daysDiff);
     }
+    
+    
+    else if (loan.loan_type === 'weekly') {
+      // Calculate total days
+      const timeDiff = end.getTime() - start.getTime();
+      const totalDays = Math.ceil(timeDiff / (1000 * 3600 * 24));
+      
+      // Calculate weeks
+      let weeks = Math.floor(totalDays / 7);
+      
+      // If there are remaining days, count as an additional week
+      const remainingDays = totalDays % 7;
+      if (remainingDays > 0) {
+        weeks += 1;
+      }
+      
+      expected = Math.max(1, weeks);
+    } 
+    
+    else if (loan.loan_type === 'monthly') {
+      // Calculate months difference
+      let months = (end.getFullYear() - start.getFullYear()) * 12 + (end.getMonth() - start.getMonth());
+      
+      // If end day is before start day, don't count the last month as complete
+      if (end.getDate() < start.getDate()) {
+        months -= 1;
+      }
+      
+      // Ensure at least 1 month
+      expected = Math.max(1, months);
+    }
+
+    
     // Calculate per-installment amount
     const installmentAmount = Math.round(loan.total_amount_due / expected);
     // Fetch all payments for this loan

@@ -57,6 +57,13 @@
                 <div class="row my-2">
                     <label for="Member Full Name">Remaining Amount : {{ foundLoan.remaining_amount | number:'1.2-2' }}</label>
                 </div>
+                <div class="row my-2">
+                    <label for="Member Full Name">Loan Status : 
+                        <span [class]="foundLoan.status === 'closed' ? 'badge bg-success' : 'badge bg-warning'">
+                            {{ foundLoan.status | titlecase }}
+                        </span>
+                    </label>
+                </div>
                 
                 <!-- Progress Bar -->
                 <div class="row my-3">
@@ -83,25 +90,31 @@
             <!-- Payment Form -->
             <div *ngIf="foundLoan" class="col-5">
                 <div class="form mt-4">
+                    <!-- Loan Closed Warning -->
+                    <div *ngIf="foundLoan.status === 'closed'" class="alert alert-success mb-3">
+                        <i class="bi bi-check-circle me-2"></i>
+                        <strong>Loan Closed:</strong> This loan has been fully paid and is now closed.
+                    </div>
+                    
                     <label for="paidAmount" class="form-label">Paid Amount</label>
                     <div class="input-group">
-                        <input type="number" id="paidAmount" class="form-control" name="paidAmount" [(ngModel)]="paidAmount" step="0.01" min="0.01" [max]="foundLoan.remaining_amount" required>
+                        <input type="number" id="paidAmount" class="form-control" name="paidAmount" [(ngModel)]="paidAmount" step="0.01" min="0.01" [max]="foundLoan.remaining_amount" required [disabled]="foundLoan.status === 'closed'">
                     </div>
                     <div class="form-text">Maximum: {{ foundLoan.remaining_amount | number:'1.2-2' }}</div>
                     
                     <label for="paymentDate" class="form-label">Payment Date</label>
                     <div class="input-group">
-                        <input type="date" id="paymentDate" class="form-control" name="paymentDate" [(ngModel)]="paymentDate" required>
+                        <input type="date" id="paymentDate" class="form-control" name="paymentDate" [(ngModel)]="paymentDate" required [disabled]="foundLoan.status === 'closed'">
                     </div>
                     
                     <label for="remark" class="form-label">Remark</label>
                     <div class="input-group">
-                        <input type="text" id="remark" class="form-control" name="remark" [(ngModel)]="remark" placeholder="Enter payment remark">
+                        <input type="text" id="remark" class="form-control" name="remark" [(ngModel)]="remark" placeholder="Enter payment remark" [disabled]="foundLoan.status === 'closed'">
                     </div>
                     
-                    <button class="btn text-white px-4 my-4" style="background-color: #1B4965;" (click)="submitPayment()" [disabled]="isLoading || paidAmount <= 0">
+                    <button class="btn text-white px-4 my-4" style="background-color: #1B4965;" (click)="submitPayment()" [disabled]="isLoading || paidAmount <= 0 || foundLoan.status === 'closed'">
                         <span *ngIf="isLoading" class="spinner-border spinner-border-sm me-2" role="status"></span>
-                        {{ isLoading ? 'Processing...' : 'Save' }}
+                        {{ isLoading ? 'Processing...' : (foundLoan.status === 'closed' ? 'Loan Closed' : 'Save') }}
                     </button>
                 </div>
             </div>

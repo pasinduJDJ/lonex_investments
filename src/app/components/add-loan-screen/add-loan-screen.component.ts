@@ -50,6 +50,9 @@ export class AddLoanScreenComponent implements OnInit {
   isLoading: boolean = false;
   errorMessage: string = '';
   successMessage: string = '';
+  
+  // Bank Capital
+  currentBankCapital: number = 0;
 
   constructor(
     private loanService: LoanManageService,
@@ -60,6 +63,7 @@ export class AddLoanScreenComponent implements OnInit {
 
   ngOnInit(): void {
     this.setDefaultDates();
+    this.loadBankCapital();
   }
 
   setDefaultDates(): void {
@@ -70,6 +74,18 @@ export class AddLoanScreenComponent implements OnInit {
     const endDate = new Date(today);
     endDate.setDate(today.getDate() + 30);
     this.endDate = endDate.toISOString().split('T')[0];
+  }
+
+  loadBankCapital(): void {
+    this.profitService.getBankCapital().subscribe({
+      next: (capital: any) => {
+        this.currentBankCapital = capital.current_balance;
+      },
+      error: (error) => {
+        console.error('Error loading bank capital:', error);
+        this.currentBankCapital = 0;
+      }
+    });
   }
 
   // Search client by NIC number
@@ -256,6 +272,11 @@ export class AddLoanScreenComponent implements OnInit {
     } else {
       this.calculatedTotal = 0;
     }
+    
+    // Clear any previous error messages when amount changes
+    if (this.errorMessage && this.errorMessage.includes('Insufficient bank capital')) {
+      this.errorMessage = '';
+    }
   }
 
   // Handle interest rate input to ensure decimal support
@@ -273,36 +294,46 @@ export class AddLoanScreenComponent implements OnInit {
   }
 
   onSubmit(): void {
-    if (!this.validateForm()) {
-      return;
-    }
+    // Reload bank capital before validation to get the latest amount
+    this.profitService.getBankCapital().subscribe({
+      next: (capital: any) => {
+        this.currentBankCapital = capital.current_balance;
+        
+        if (!this.validateForm()) {
+          return;
+        }
 
-    this.isLoading = true;
-    this.errorMessage = '';
-    this.successMessage = '';
+        this.isLoading = true;
+        this.errorMessage = '';
+        this.successMessage = '';
 
-    // Generate the custom loan number before submission
-    this.generateLoanNumber();
-    const newLoanNumber = this.loanNumber;
+        // Generate the custom loan number before submission
+        this.generateLoanNumber();
+        const newLoanNumber = this.loanNumber;
 
-    const loanData = {
-      client_id: this.selectedClientId,
-      loan_number: newLoanNumber, // generated value
-      loan_type: this.loanType,
-      principal_amount: this.principalAmount,
-      interest_rate: this.interestRate,
-      document_charge: this.documentCharge,
-      total_amount_due: this.calculatedTotal, // calculated earlier
-      total_paid: 0,
-      remaining_amount: this.calculatedTotal,
-      status: 'active',
-      start_date: this.startDate,
-      end_date: this.endDate,
-      created_at: new Date().toISOString(),
-      installments: this.numberOfInstallments
-    };
+        const loanData = {
+          client_id: this.selectedClientId,
+          loan_number: newLoanNumber, // generated value
+          loan_type: this.loanType,
+          principal_amount: this.principalAmount,
+          interest_rate: this.interestRate,
+          document_charge: this.documentCharge,
+          total_amount_due: this.calculatedTotal, // calculated earlier
+          total_paid: 0,
+          remaining_amount: this.calculatedTotal,
+          status: 'active',
+          start_date: this.startDate,
+          end_date: this.endDate,
+          created_at: new Date().toISOString(),
+          installments: this.numberOfInstallments
+        };
 
-    this.addLoan(loanData);
+        this.addLoan(loanData);
+      },
+      error: (error) => {
+        this.errorMessage = 'Error checking bank capital: ' + error.message;
+      }
+    });
   }
 
   private async addLoan(loanData: any): Promise<void> {
@@ -431,6 +462,13 @@ export class AddLoanScreenComponent implements OnInit {
       this.errorMessage = 'Invalid date range for selected loan type';
       return false;
     }
+    
+    // Check if bank capital is sufficient
+    if (this.currentBankCapital < this.principalAmount) {
+      this.errorMessage = `Insufficient bank capital! Current capital: Rs. ${this.currentBankCapital.toLocaleString()}, Required: Rs. ${this.principalAmount.toLocaleString()}`;
+      return false;
+    }
+    
     return true;
   }
 

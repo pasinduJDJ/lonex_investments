@@ -1,6 +1,6 @@
 import { Component, OnInit } from '@angular/core';
 import { ActivatedRoute } from '@angular/router';
-import { LoanManageService, LoanWithClient } from '../../service/loan-manage.service';
+import { LoanManageService, LoanWithClient, Payment } from '../../service/loan-manage.service';
 import { CommonModule } from '@angular/common';
 import { Observable, of } from 'rxjs';
 import { map } from 'rxjs/operators';
@@ -17,6 +17,7 @@ import { SupabaseService } from '../../service/supabase.service';
 })
 export class SingleLoanScreenComponent implements OnInit {
   loan$: Observable<LoanWithClient | undefined> = of(undefined);
+  payments$: Observable<Payment[]> = of([]);
   showCompleteConfirm = false;
   showSuccessMsg = false;
   installmentStats: {
@@ -42,8 +43,11 @@ export class SingleLoanScreenComponent implements OnInit {
     this.loan$.subscribe(async (loan) => {
       if (loan) {
         this.installmentStats = await this.loanService.getInstallmentStats(loan);
+        // Fetch payments for this loan
+        this.payments$ = this.loanService.getPaymentsForLoan(loan.id);
       } else {
         this.installmentStats = null;
+        this.payments$ = of([]);
       }
     });
   }
@@ -61,6 +65,9 @@ export class SingleLoanScreenComponent implements OnInit {
     const pdfFonts = await import('pdfmake/build/vfs_fonts');
     (pdfMakeModule as any).vfs = (pdfFonts as any).pdfMake.vfs;
 
+    // Fetch payments for this loan
+    const payments = await this.loanService.getPaymentsForLoan(loan.id).toPromise() || [];
+
     const docDefinition = {
       content: [
         { text: `Loan Details (${loan.loan_reg_number})`, style: 'header' },
@@ -73,7 +80,7 @@ export class SingleLoanScreenComponent implements OnInit {
         { text: `Loan Type: ${loan.loan_type}` },
         { text: `Status: ${loan.status}` },
         { text: `Loan Amount: ${loan.principal_amount}` },
-        { text: `Document Charges: ${loan.document_charge}` },
+        { text: `Document Charges: ${loan.document_charge || 0}` },
         { text: `Interest Rate: ${loan.interest_rate}%` },
         { text: `Total Due: ${loan.total_amount_due}` },
         { text: `Per Installment Amount: ${installmentStats.installmentAmount}` },
@@ -98,7 +105,30 @@ export class SingleLoanScreenComponent implements OnInit {
         { text: '\n' },
         { text: `Start Date: ${loan.start_date}` },
         { text: `End Date: ${loan.end_date}` },
-        { text: `Created Date: ${loan.created_at}` }
+        { text: `Created Date: ${loan.created_at}` },
+        { text: '\n' },
+        { text: 'Payment History', style: 'subheader' },
+        ...(payments.length > 0 ? [
+          {
+            table: {
+              widths: ['*', '*', '*'],
+              body: [
+                ['Payment Date', 'Amount Paid', 'Remark'],
+                ...payments.map(payment => [
+                  new Date(payment.paid_date).toLocaleDateString(),
+                  payment.paid_amount.toString(),
+                  payment.remark || '-',
+                  new Date(payment.created_at).toLocaleDateString()
+                ])
+              ]
+            }
+          },
+          { text: '\n' },
+          { text: `Total Payments: ${payments.length} payment(s)`, style: 'subheader' },
+          { text: `Total Amount Paid: ${payments.reduce((sum, p) => sum + p.paid_amount, 0)}`, style: 'subheader' }
+        ] : [
+          { text: 'No payment records found for this loan.', style: 'subheader' }
+        ])
       ],
       styles: {
         header: {
@@ -119,6 +149,9 @@ export class SingleLoanScreenComponent implements OnInit {
 
   async getDocx(loan: LoanWithClient, installmentStats: any) {
     const { Document, Packer, Paragraph, TextRun, Table, TableRow, TableCell, WidthType, AlignmentType, BorderStyle, ShadingType, ImageRun } = await import('docx');
+
+    // Fetch payments for this loan
+    const payments = await this.loanService.getPaymentsForLoan(loan.id).toPromise() || [];
 
     // Helper for bold label
     const label = (text: string) => new TextRun({ text, bold: true, font: 'Arial', size: 22 });
@@ -219,7 +252,7 @@ export class SingleLoanScreenComponent implements OnInit {
       new TableRow({
         children: [
           new TableCell({ children: [new Paragraph('Document Charges')], borders: { top: { style: BorderStyle.NONE, size: 0, color: 'FFFFFF' }, bottom: { style: BorderStyle.NONE, size: 0, color: 'FFFFFF' }, left: { style: BorderStyle.NONE, size: 0, color: 'FFFFFF' }, right: { style: BorderStyle.NONE, size: 0, color: 'FFFFFF' } } }),
-          new TableCell({ children: [new Paragraph((loan.document_charge !== undefined ? loan.document_charge : '').toString())], borders: { top: { style: BorderStyle.NONE, size: 0, color: 'FFFFFF' }, bottom: { style: BorderStyle.NONE, size: 0, color: 'FFFFFF' }, left: { style: BorderStyle.NONE, size: 0, color: 'FFFFFF' }, right: { style: BorderStyle.NONE, size: 0, color: 'FFFFFF' } }, columnSpan: 3 }),
+          new TableCell({ children: [new Paragraph((loan.document_charge || 0).toString())], borders: { top: { style: BorderStyle.NONE, size: 0, color: 'FFFFFF' }, bottom: { style: BorderStyle.NONE, size: 0, color: 'FFFFFF' }, left: { style: BorderStyle.NONE, size: 0, color: 'FFFFFF' }, right: { style: BorderStyle.NONE, size: 0, color: 'FFFFFF' } }, columnSpan: 3 }),
         ],
       }),
       new TableRow({
@@ -276,7 +309,108 @@ export class SingleLoanScreenComponent implements OnInit {
           new TableCell({ children: [new Paragraph('')], borders: { top: { style: BorderStyle.NONE, size: 0, color: 'FFFFFF' }, bottom: { style: BorderStyle.NONE, size: 0, color: 'FFFFFF' }, left: { style: BorderStyle.NONE, size: 0, color: 'FFFFFF' }, right: { style: BorderStyle.NONE, size: 0, color: 'FFFFFF' } }, columnSpan: 2 }),
         ],
       }),
+      // Section: Payment History
+      new TableRow({
+        children: [
+          new TableCell({
+            children: [new Paragraph({ children: [new TextRun({ text: 'Payment History', bold: true, size: 24, font: 'Arial' })] })],
+            columnSpan: 4,
+            shading: { type: ShadingType.CLEAR, color: 'auto', fill: 'EDEDED' },
+            borders: { top: { style: BorderStyle.SINGLE, size: 1, color: '000000' }, bottom: { style: BorderStyle.SINGLE, size: 1, color: '000000' }, left: { style: BorderStyle.SINGLE, size: 1, color: '000000' }, right: { style: BorderStyle.SINGLE, size: 1, color: '000000' } },
+          }),
+        ],
+      }),
     ];
+
+    // Add payment rows if payments exist
+    if (payments.length > 0) {
+      // Add header row for payments table
+      detailsRows.push(
+        new TableRow({
+          children: [
+            new TableCell({ 
+              children: [new Paragraph('Payment Date')], 
+              borders: { top: { style: BorderStyle.SINGLE, size: 1, color: '000000' }, bottom: { style: BorderStyle.SINGLE, size: 1, color: '000000' }, left: { style: BorderStyle.SINGLE, size: 1, color: '000000' }, right: { style: BorderStyle.SINGLE, size: 1, color: '000000' } },
+              shading: { type: ShadingType.CLEAR, color: 'auto', fill: 'F0F0F0' }
+            }),
+            new TableCell({ 
+              children: [new Paragraph('Amount Paid')], 
+              borders: { top: { style: BorderStyle.SINGLE, size: 1, color: '000000' }, bottom: { style: BorderStyle.SINGLE, size: 1, color: '000000' }, left: { style: BorderStyle.SINGLE, size: 1, color: '000000' }, right: { style: BorderStyle.SINGLE, size: 1, color: '000000' } },
+              shading: { type: ShadingType.CLEAR, color: 'auto', fill: 'F0F0F0' }
+            }),
+            new TableCell({ 
+              children: [new Paragraph('Remark')], 
+              borders: { top: { style: BorderStyle.SINGLE, size: 1, color: '000000' }, bottom: { style: BorderStyle.SINGLE, size: 1, color: '000000' }, left: { style: BorderStyle.SINGLE, size: 1, color: '000000' }, right: { style: BorderStyle.SINGLE, size: 1, color: '000000' } },
+              shading: { type: ShadingType.CLEAR, color: 'auto', fill: 'F0F0F0' }
+            }),
+          ],
+        })
+      );
+
+      // Add payment data rows
+      payments.forEach(payment => {
+        detailsRows.push(
+          new TableRow({
+            children: [
+              new TableCell({ 
+                children: [new Paragraph(new Date(payment.paid_date).toLocaleDateString())], 
+                borders: { top: { style: BorderStyle.SINGLE, size: 1, color: '000000' }, bottom: { style: BorderStyle.SINGLE, size: 1, color: '000000' }, left: { style: BorderStyle.SINGLE, size: 1, color: '000000' }, right: { style: BorderStyle.SINGLE, size: 1, color: '000000' } }
+              }),
+              new TableCell({ 
+                children: [new Paragraph(payment.paid_amount.toString())], 
+                borders: { top: { style: BorderStyle.SINGLE, size: 1, color: '000000' }, bottom: { style: BorderStyle.SINGLE, size: 1, color: '000000' }, left: { style: BorderStyle.SINGLE, size: 1, color: '000000' }, right: { style: BorderStyle.SINGLE, size: 1, color: '000000' } }
+              }),
+              new TableCell({ 
+                children: [new Paragraph(payment.remark || '-')], 
+                borders: { top: { style: BorderStyle.SINGLE, size: 1, color: '000000' }, bottom: { style: BorderStyle.SINGLE, size: 1, color: '000000' }, left: { style: BorderStyle.SINGLE, size: 1, color: '000000' }, right: { style: BorderStyle.SINGLE, size: 1, color: '000000' } }
+              }),
+            ],
+          })
+        );
+      });
+
+      // Add summary row
+      const totalPaid = payments.reduce((sum, payment) => sum + payment.paid_amount, 0);
+      detailsRows.push(
+        new TableRow({
+          children: [
+            new TableCell({ 
+              children: [new Paragraph({ children: [new TextRun({ text: 'Total Payments', bold: true })] })], 
+              borders: { top: { style: BorderStyle.SINGLE, size: 1, color: '000000' }, bottom: { style: BorderStyle.SINGLE, size: 1, color: '000000' }, left: { style: BorderStyle.SINGLE, size: 1, color: '000000' }, right: { style: BorderStyle.SINGLE, size: 1, color: '000000' } },
+              shading: { type: ShadingType.CLEAR, color: 'auto', fill: 'E8F5E8' }
+            }),
+            new TableCell({ 
+              children: [new Paragraph({ children: [new TextRun({ text: totalPaid.toString(), bold: true })] })], 
+              borders: { top: { style: BorderStyle.SINGLE, size: 1, color: '000000' }, bottom: { style: BorderStyle.SINGLE, size: 1, color: '000000' }, left: { style: BorderStyle.SINGLE, size: 1, color: '000000' }, right: { style: BorderStyle.SINGLE, size: 1, color: '000000' } },
+              shading: { type: ShadingType.CLEAR, color: 'auto', fill: 'E8F5E8' }
+            }),
+            new TableCell({ 
+              children: [new Paragraph({ children: [new TextRun({ text: `${payments.length} payment(s)`, bold: true })] })], 
+              borders: { top: { style: BorderStyle.SINGLE, size: 1, color: '000000' }, bottom: { style: BorderStyle.SINGLE, size: 1, color: '000000' }, left: { style: BorderStyle.SINGLE, size: 1, color: '000000' }, right: { style: BorderStyle.SINGLE, size: 1, color: '000000' } },
+              shading: { type: ShadingType.CLEAR, color: 'auto', fill: 'E8F5E8' }
+            }),
+            new TableCell({ 
+              children: [new Paragraph('')], 
+              borders: { top: { style: BorderStyle.SINGLE, size: 1, color: '000000' }, bottom: { style: BorderStyle.SINGLE, size: 1, color: '000000' }, left: { style: BorderStyle.SINGLE, size: 1, color: '000000' }, right: { style: BorderStyle.SINGLE, size: 1, color: '000000' } },
+              shading: { type: ShadingType.CLEAR, color: 'auto', fill: 'E8F5E8' }
+            }),
+          ],
+        })
+      );
+    } else {
+      // Add "No payments" message
+      detailsRows.push(
+        new TableRow({
+          children: [
+            new TableCell({
+              children: [new Paragraph('No payment records found for this loan.')],
+              columnSpan: 4,
+              borders: { top: { style: BorderStyle.SINGLE, size: 1, color: '000000' }, bottom: { style: BorderStyle.SINGLE, size: 1, color: '000000' }, left: { style: BorderStyle.SINGLE, size: 1, color: '000000' }, right: { style: BorderStyle.SINGLE, size: 1, color: '000000' } },
+            }),
+          ],
+        })
+      );
+    }
 
     // Compose document
     const doc = new Document({

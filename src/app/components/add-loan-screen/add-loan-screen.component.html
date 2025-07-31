@@ -3,20 +3,40 @@
         <div class="col-2"></div>
         <div class="col-8 ">
             <h5><strong>Add New Loan</strong></h5>
-            <hr class="mb-5">
+            <hr class="mb-3">
             
-            <!-- Alert Messages -->
-            <div *ngIf="errorMessage" class="alert alert-danger alert-dismissible fade show" role="alert">
-                <i class="bi bi-exclamation-triangle me-2"></i>
-                {{ errorMessage }}
-                <button type="button" class="btn-close" (click)="errorMessage = ''"></button>
-            </div>
             
-            <div *ngIf="successMessage" class="alert alert-success alert-dismissible fade show" role="alert">
-                <i class="bi bi-check-circle me-2"></i>
-                {{ successMessage }}
-                <button type="button" class="btn-close" (click)="successMessage = ''"></button>
-            </div>
+
+            <!-- Bank Capital Display -->
+            <!-- <div class="row mb-4">
+                <div class="col-md-12">
+                    <div class="card" [ngClass]="{
+                        'border-danger': currentBankCapital < 0,
+                        'border-warning': currentBankCapital >= 0 && currentBankCapital < 10000,
+                        'border-success': currentBankCapital >= 10000
+                    }">
+                        <div class="card-body">
+                            <h6 class="card-title">
+                                <i class="bi bi-bank me-2"></i>
+                                Current Bank Capital
+                            </h6>
+                            <p class="card-text h4" [ngClass]="{
+                                'text-danger': currentBankCapital < 0,
+                                'text-warning': currentBankCapital >= 0 && currentBankCapital < 10000,
+                                'text-success': currentBankCapital >= 10000
+                            }">
+                                Rs. {{ currentBankCapital | number:'1.2-2' }}
+                            </p>
+                            <small class="text-muted">
+                                <i class="bi bi-info-circle me-1"></i>
+                                <span *ngIf="currentBankCapital < 0">⚠️ Negative balance - Add money to capital first</span>
+                                <span *ngIf="currentBankCapital >= 0 && currentBankCapital < 10000">⚠️ Low capital - Consider adding more funds</span>
+                                <span *ngIf="currentBankCapital >= 10000">✅ Sufficient capital available</span>
+                            </small>
+                        </div>
+                    </div>
+                </div>
+            </div> -->
 
             <!-- Search Section -->
             <div class="row d-flex justify-content-center">
@@ -44,9 +64,21 @@
                 <i class="bi bi-check-circle me-2"></i>
                 Client found! You can now proceed with loan details.
             </div>
+            <!-- Alert Messages -->
+            <div *ngIf="errorMessage" class="alert alert-danger alert-dismissible fade show" role="alert">
+                <i class="bi bi-exclamation-triangle me-2"></i>
+                {{ errorMessage }}
+                <button type="button" class="btn-close" (click)="errorMessage = ''"></button>
+            </div>
+            
+            <div *ngIf="successMessage" class="alert alert-success alert-dismissible fade show" role="alert">
+                <i class="bi bi-check-circle me-2"></i>
+                {{ successMessage }}
+                <button type="button" class="btn-close" (click)="successMessage = ''"></button>
+            </div>
             
             <form (ngSubmit)="onSubmit()" #loanForm="ngForm">
-                <div class="row mt-5">
+                <div class="row mt-4">
                     <div class="col-md-6">
                         <div class="px-4">
 

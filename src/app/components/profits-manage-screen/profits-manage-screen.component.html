@@ -15,7 +15,7 @@
     </div>
   </div>
   <hr />
-  <!-- Capital & Profit Cards -->
+  <!-- Capital & Document Charges Cards -->
   <div class="row mb-4">
     <div class="col-md-6 mb-3">
       <div class="stat-card card h-100">
@@ -25,97 +25,239 @@
         </div>
       </div>
     </div>
-    
-  </div>
-
-  <!-- Latest Payments + Add Expense -->
-  <div class="row mb-4">
-    <div class="col-md-7 mb-3">
-      <div class="card data-card h-100">
-        <div class="card-header section-header">Latest Payments</div>
-        <div class="card-body p-0">
-          <div class="table-responsive">
-            <table class="table table-hover modern-table mb-0">
-              <thead>
-                <tr>
-                  <th>Date</th>
-                  <th>Amount</th>
-                  <th>Remark</th>
-                  <th>Loan Number</th>
-                </tr>
-              </thead>
-              <tbody>
-                <tr *ngFor="let p of payments">
-                  <td>{{ p.paid_date }}</td>
-                  <td>Rs. {{ p.paid_amount | number: '1.2-2' }}</td>
-                  <td>{{ p.remark }}</td>
-                  <td>{{ p.loan_number }}</td>
-                </tr>
-                <tr *ngIf="payments.length === 0">
-                  <td colspan="4" class="text-center text-muted">No payments found.</td>
-                </tr>
-              </tbody>
-            </table>
-          </div>
+    <div class="col-md-6 mb-3">
+      <div class="stat-card card h-100" style="background: linear-gradient(135deg, #FFC300 0%, #FF8C00 100%);">
+        <div class="card-body">
+          <h5 class="card-title text-white">Total Document Charges</h5>
+          <p class="card-text display-6 text-white">Rs. {{ totalDocumentCharges | number: '1.2-2' }}</p>
         </div>
       </div>
     </div>
+  </div>
 
-    <div class="col-md-5 mb-3">
+  <!-- Add Expense + Add Capital Forms -->
+  <div class="row mb-4">
+    <div class="col-md-6 mb-3">
       <div class="card data-card h-100">
-        <div class="card-header section-header expense">Add Expense</div>
+        <div class="card-header section-header" style="background-color: #dc3545; color: white;">Add Expense (Salary)</div>
         <div class="card-body">
-          <form [formGroup]="addExpenseForm" (ngSubmit)="onAddExpense()">
-            <div class="mb-3">
-              <label class="form-label">Amount</label>
-              <input type="number" class="form-control" formControlName="amount" min="1" required>
-            </div>
-            <div class="mb-3">
-              <label class="form-label">Remark</label>
-              <input type="text" class="form-control" formControlName="remark">
-            </div>
-            <div class="mb-3">
-              <label class="form-label">Date</label>
-              <input type="date" class="form-control" formControlName="expense_date" required>
-            </div>
-            <button type="submit" class="btn btn-primary w-100" [disabled]="addExpenseForm.invalid">Add Expense</button>
-          </form>
-          <div *ngIf="addExpenseSuccess" class="alert alert-success mt-3">Expense added and capital updated!</div>
+                     <form [formGroup]="addExpenseForm" (ngSubmit)="onAddExpense()" (ngModelChange)="onExpenseFormChange()">
+             <div class="mb-3">
+               <label class="form-label">Amount <span class="text-danger">*</span></label>
+               <input type="number" class="form-control" formControlName="amount" min="1" required>
+               <div *ngIf="addExpenseForm.get('amount')?.invalid && addExpenseForm.get('amount')?.touched" class="text-danger small mt-1">
+                 <span *ngIf="addExpenseForm.get('amount')?.errors?.['required']">Amount is required</span>
+                 <span *ngIf="addExpenseForm.get('amount')?.errors?.['min']">Amount must be at least 1</span>
+               </div>
+             </div>
+             <div class="mb-3">
+               <label class="form-label">Remark <span class="text-danger">*</span></label>
+               <input type="text" class="form-control" formControlName="remark" placeholder="e.g., Salary payment" required>
+               <div *ngIf="addExpenseForm.get('remark')?.invalid && addExpenseForm.get('remark')?.touched" class="text-danger small mt-1">
+                 <span *ngIf="addExpenseForm.get('remark')?.errors?.['required']">Remark is required</span>
+                 <span *ngIf="addExpenseForm.get('remark')?.errors?.['minlength']">Remark must be at least 3 characters</span>
+               </div>
+             </div>
+             <button type="submit" class="btn btn-danger w-100" [disabled]="addExpenseForm.invalid">Add Expense</button>
+           </form>
+          <div *ngIf="addExpenseSuccess" class="alert alert-success mt-3">Expense added successfully!</div>
           <div *ngIf="addExpenseError" class="alert alert-danger mt-3">{{ addExpenseError }}</div>
         </div>
       </div>
     </div>
-  </div>
 
-  <!-- Expenses Table -->
-  <div class="row mb-4">
-    <div class="col-12">
-      <div class="card data-card">
-        <div class="card-header section-header" style="background-color: #FFC300; color: #000814;">Expenses</div>
-        <div class="card-body p-0">
-          <div class="table-responsive">
-            <table class="table table-hover modern-table mb-0">
-              <thead>
-                <tr>
-                  <th>Date</th>
-                  <th>Amount</th>
-                  <th>Remark</th>
-                </tr>
-              </thead>
-              <tbody>
-                <tr *ngFor="let e of expenses">
-                  <td>{{ e.expense_date }}</td>
-                  <td>Rs. {{ e.amount | number: '1.2-2' }}</td>
-                  <td>{{ e.remark }}</td>
-                </tr>
-                <tr *ngIf="expenses.length === 0">
-                  <td colspan="3" class="text-center text-muted">No expenses found.</td>
-                </tr>
-              </tbody>
-            </table>
-          </div>
+    <div class="col-md-6 mb-3">
+      <div class="card data-card h-100">
+        <div class="card-header section-header" style="background-color: #28a745; color: white;">Add Money to Capital</div>
+        <div class="card-body">
+                     <form [formGroup]="addCapitalForm" (ngSubmit)="onAddCapital()" (ngModelChange)="onCapitalFormChange()">
+             <div class="mb-3">
+               <label class="form-label">Amount <span class="text-danger">*</span></label>
+               <input type="number" class="form-control" formControlName="amount" min="1" required>
+               <div *ngIf="addCapitalForm.get('amount')?.invalid && addCapitalForm.get('amount')?.touched" class="text-danger small mt-1">
+                 <span *ngIf="addCapitalForm.get('amount')?.errors?.['required']">Amount is required</span>
+                 <span *ngIf="addCapitalForm.get('amount')?.errors?.['min']">Amount must be at least 1</span>
+               </div>
+             </div>
+             <div class="mb-3">
+               <label class="form-label">Remark <span class="text-danger">*</span></label>
+               <input type="text" class="form-control" formControlName="remark" placeholder="e.g., Investment, Loan repayment" required>
+               <div *ngIf="addCapitalForm.get('remark')?.invalid && addCapitalForm.get('remark')?.touched" class="text-danger small mt-1">
+                 <span *ngIf="addCapitalForm.get('remark')?.errors?.['required']">Remark is required</span>
+                 <span *ngIf="addCapitalForm.get('remark')?.errors?.['minlength']">Remark must be at least 3 characters</span>
+               </div>
+             </div>
+             <button type="submit" class="btn btn-success w-100" [disabled]="addCapitalForm.invalid">Add to Capital</button>
+           </form>
+          <div *ngIf="addCapitalSuccess" class="alert alert-success mt-3">Money added to capital successfully!</div>
+          <div *ngIf="addCapitalError" class="alert alert-danger mt-3">{{ addCapitalError }}</div>
         </div>
       </div>
     </div>
   </div>
-</div>
+
+   <!-- Loans Table -->
+   <div class="row mb-4">
+     <div class="col-12">
+       <div class="card data-card">
+         <div class="card-header section-header" style="background-color: #1B4965; color: white;">Loans Details</div>
+         <div class="card-body p-0">
+                       <div class="table-responsive" style="max-height: 400px; overflow-y: auto;">
+              <table class="table table-hover modern-table mb-0">
+                <thead style="position: sticky; top: 0; background-color: #f8f9fa; z-index: 1;">
+                  <tr>
+                    <th>Loan Number</th>
+                    <th>Client Name</th>
+                    <th>Document Charge</th>
+                    <th>Status</th>
+                    <th>Start Date</th>
+                    <th>Principal Amount</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <tr *ngFor="let loan of loans.slice(0, 10)">
+                    <td>{{ loan.loan_number }}</td>
+                    <td>{{ loan.client_name }}</td>
+                    <td>Rs. {{ loan.document_charge | number: '1.2-2' }}</td>
+                    <td>
+                      <span class="badge" [ngClass]="{
+                        'bg-success': loan.status === 'active',
+                        'bg-secondary': loan.status === 'closed'
+                      }">
+                        {{ loan.status | titlecase }}
+                      </span>
+                    </td>
+                    <td>{{ loan.start_date | date: 'dd/MM/yyyy' }}</td>
+                    <td>Rs. {{ loan.principal_amount | number: '1.2-2' }}</td>
+                  </tr>
+                  <tr *ngIf="loans.length === 0">
+                    <td colspan="6" class="text-center text-muted">No loans found.</td>
+                  </tr>
+                  <tr *ngIf="loans.length > 10">
+                    <td colspan="6" class="text-center text-muted">
+                      Showing first 10 of {{ loans.length }} loans. Scroll to see more.
+                    </td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+         </div>
+       </div>
+     </div>
+   </div>
+
+       <!-- Latest Payments Table -->
+    <div class="row mb-4">
+      <div class="col-12">
+        <div class="card data-card">
+          <div class="card-header section-header">Latest Payments</div>
+          <div class="card-body p-0">
+            <div class="table-responsive" style="max-height: 400px; overflow-y: auto;">
+              <table class="table table-hover modern-table mb-0">
+                <thead style="position: sticky; top: 0; background-color: #f8f9fa; z-index: 1;">
+                  <tr>
+                    <th>Date</th>
+                    <th>Amount</th>
+                    <th>Remark</th>
+                    <th>Loan Number</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <tr *ngFor="let p of payments.slice(0, 10)">
+                    <td>{{ p.paid_date }}</td>
+                    <td>Rs. {{ p.paid_amount | number: '1.2-2' }}</td>
+                    <td>{{ p.remark }}</td>
+                    <td>{{ p.loan_number }}</td>
+                  </tr>
+                  <tr *ngIf="payments.length === 0">
+                    <td colspan="4" class="text-center text-muted">No payments found.</td>
+                  </tr>
+                  <tr *ngIf="payments.length > 10">
+                    <td colspan="4" class="text-center text-muted">
+                      Showing first 10 of {{ payments.length }} payments. Scroll to see more.
+                    </td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Expense History Table -->
+    <div class="row mb-4">
+      <div class="col-12">
+        <div class="card data-card">
+          <div class="card-header section-header" style="background-color: #1B4965; color: white;">Expense History</div>
+          <div class="card-body p-0">
+            <div class="table-responsive" style="max-height: 400px; overflow-y: auto;">
+              <table class="table table-hover modern-table mb-0">
+                <thead style="position: sticky; top: 0; background-color: #f8f9fa; z-index: 1;">
+                  <tr>
+                    <th>Date</th>
+                    <th>Amount</th>
+                    <th>Remark</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <tr *ngFor="let expense of expenses.slice(0, 10)">
+                    <td>{{ expense.expense_date | date: 'dd/MM/yyyy' }}</td>
+                    <td class="text-danger fw-bold">Rs. {{ expense.amount | number: '1.2-2' }}</td>
+                    <td>{{ expense.remark || '-' }}</td>
+                  </tr>
+                  <tr *ngIf="expenses.length === 0">
+                    <td colspan="3" class="text-center text-muted">No expenses found.</td>
+                  </tr>
+                  <tr *ngIf="expenses.length > 10">
+                    <td colspan="3" class="text-center text-muted">
+                      Showing first 10 of {{ expenses.length }} expenses. Scroll to see more.
+                    </td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Invest History Table -->
+    <div class="row mb-4">
+      <div class="col-12">
+        <div class="card data-card">
+          <div class="card-header section-header" style="background-color: #1B4965; color: white;">Capital Addition History</div>
+          <div class="card-body p-0">
+            <div class="table-responsive" style="max-height: 400px; overflow-y: auto;">
+              <table class="table table-hover modern-table mb-0">
+                <thead style="position: sticky; top: 0; background-color: #f8f9fa; z-index: 1;">
+                  <tr>
+                    <th>Date</th>
+                    <th>Amount</th>
+                    <th>Remark</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <tr *ngFor="let invest of investHistory.slice(0, 10)">
+                    <td>{{ invest.date | date: 'dd/MM/yyyy' }}</td>
+                    <td class="text-success fw-bold">Rs. {{ invest.amount | number: '1.2-2' }}</td>
+                    <td>{{ invest.remark || '-' }}</td>
+                  </tr>
+                  <tr *ngIf="investHistory.length === 0">
+                    <td colspan="3" class="text-center text-muted">No capital additions found.</td>
+                  </tr>
+                  <tr *ngIf="investHistory.length > 10">
+                    <td colspan="3" class="text-center text-muted">
+                      Showing first 10 of {{ investHistory.length }} capital additions. Scroll to see more.
+                    </td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+ 
+  </div>

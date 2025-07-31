@@ -152,12 +152,16 @@ export class AddPaymentsComponent {
       const newTotalPaid = this.foundLoan!.total_paid + paymentData.paid_amount;
       const newRemainingAmount = this.foundLoan!.total_amount_due - newTotalPaid;
 
+      // Check if remaining amount is 0 or less to close the loan
+      const shouldCloseLoan = newRemainingAmount <= 0;
+      const newStatus = shouldCloseLoan ? 'closed' : 'active';
+
       const { error: updateError } = await supabase
         .from('loans')
         .update({
           total_paid: newTotalPaid,
           remaining_amount: newRemainingAmount,
-          status: newRemainingAmount <= 0 ? 'completed' : 'active'
+          status: newStatus
         })
         .eq('id', this.foundLoan!.id);
 
@@ -170,7 +174,11 @@ export class AddPaymentsComponent {
       // Increase bank capital by payment amount
       this.profitService.increaseBankCapital(paymentData.paid_amount).subscribe({
         next: () => {
-          this.successMessage = `Payment of ${this.paidAmount} added successfully!`;
+          let successMsg = `Payment of ${this.paidAmount} added successfully!`;
+          if (shouldCloseLoan) {
+            successMsg += ' Loan has been closed as the remaining amount is now 0.';
+          }
+          this.successMessage = successMsg;
           this.resetPaymentForm();
           // Refresh loan data to show updated amounts
           this.searchLoan();
@@ -179,7 +187,11 @@ export class AddPaymentsComponent {
           }, 3000);
         },
         error: (err) => {
-          this.successMessage = `Payment of ${this.paidAmount} added, but failed to update bank capital.`;
+          let successMsg = `Payment of ${this.paidAmount} added, but failed to update bank capital.`;
+          if (shouldCloseLoan) {
+            successMsg += ' Loan has been closed as the remaining amount is now 0.';
+          }
+          this.successMessage = successMsg;
           this.resetPaymentForm();
           this.searchLoan();
           setTimeout(() => {
