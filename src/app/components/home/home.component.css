@@ -1,119 +1,295 @@
-:root {
-  --primary: #003566;
-  --secondary: #001D3D;
-  --highlight: #FFC300;
-  --bg-dark: #000814;
-  --bg-base: #CED4DA;
-  --light-gray: #E5E5E5;
-  --font: 'Inter', 'Roboto', sans-serif;
-}
+/**
+ * Lonex Investments - Odoo-Inspired Application Launcher
+ */
 
-/* Hero Section */
-.home-hero {
-  background-color: #003566;
-  color: #fff;
-  padding: 40px 20px;
-  text-align: center;
-  border-radius: 24px 24px 24px 24px;
-  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
-}
-
-.hero-content h1 {
-  font-size: 2.5rem;
-  font-weight: 800;
-  margin-bottom: 10px;
-  font-family: var(--font);
-}
-
-.subtitle {
-  font-size: 1.2rem;
-  margin-bottom: 30px;
-  font-weight: 500;
-}
-
-.action-buttons {
-  display: flex;
-  justify-content: center;
-  flex-wrap: wrap;
-  gap: 20px;
-}
-
-.modern-btn {
-  background-color: #f7f7f7;
-  color: #003566;
-  border: none;
-  border-radius: 10px;
-  padding: 10px 20px;
-  font-weight: 600;
-  font-size: 1rem;
-  cursor: pointer;
+.lx-launcher-container {
+  min-height: calc(100vh - 120px);
   display: flex;
   align-items: center;
-  gap: 8px;
-  transition: background-color 0.3s ease;
+  justify-content: center;
+  position: relative;
+  overflow: hidden;
+  padding: 2.5rem 1rem;
+  background-color: var(--lx-bg-main);
+  transition: background-color var(--lx-transition-base);
 }
 
-.modern-btn:hover {
-  background-color: #FFC300;
-  color: #000000;
+/* Ambient Subtle Glows */
+.lx-ambient-glow {
+  position: absolute;
+  width: 450px;
+  height: 450px;
+  border-radius: 50%;
+  pointer-events: none;
+  filter: blur(90px);
+  opacity: 0.12;
+  z-index: 0;
+  transition: opacity var(--lx-transition-base);
 }
 
-/* Content Section */
-.home-content {
-  padding: 30px 20px;
-  background-color: #ffffff;
+.lx-glow-1 {
+  top: 10%;
+  left: 15%;
+  background: radial-gradient(circle, var(--lx-primary-accent) 0%, transparent 70%);
 }
 
-.data-card {
-  background: #fff;
-  padding: 24px;
-  margin-bottom: 24px;
-  border-radius: 18px;
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.4);
+.lx-glow-2 {
+  bottom: 10%;
+  right: 15%;
+  background: radial-gradient(circle, var(--lx-secondary-accent) 0%, transparent 70%);
 }
 
-.data-card h2 {
-  margin-bottom: 10px;
-  color: var(--primary);
-  font-family: var(--font);
+.lx-launcher-content {
+  position: relative;
+  z-index: 1;
+  max-width: 1140px;
 }
 
-.divider {
-  height: 2px;
-  background-color: var(--highlight);
-  width: 100px;
-  margin-bottom: 16px;
+/* Launcher Header */
+.lx-launcher-header {
+  animation: fadeInDown 0.4s cubic-bezier(0.16, 1, 0.3, 1);
 }
 
-.table-responsive {
-  overflow-x: auto;
+.lx-launcher-badge {
+  background-color: var(--lx-primary-accent-subtle);
+  border: 1px solid var(--lx-border-subtle);
+  color: var(--lx-primary-accent);
+  font-family: var(--lx-font-subtitles);
+  font-weight: var(--lx-fw-semibold);
+  font-size: var(--lx-fs-xs);
+  padding: 0.35rem 0.85rem;
+  border-radius: var(--lx-radius-pill);
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
 }
 
-/* Tables */
-.modern-table {
-  width: 100%;
-  border-collapse: collapse;
-  font-family: var(--font);
+.lx-pulse-dot {
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  background-color: var(--lx-primary-accent);
+  box-shadow: 0 0 8px var(--lx-primary-accent);
+  animation: pulseGlow 2s infinite;
 }
 
-.modern-table th, .modern-table td {
-  padding: 12px 16px;
-  border-bottom: 1px solid #ddd;
-  text-align: left;
+.lx-launcher-title {
+  font-family: var(--lx-font-titles);
+  font-weight: var(--lx-fw-bold);
+  font-size: clamp(1.75rem, 1.4rem + 1.2vw, 2.35rem);
+  color: var(--lx-text-primary);
+  margin-bottom: 0.5rem;
+  letter-spacing: var(--lx-tracking-tight);
 }
 
-.modern-table th {
-  background-color: var(--light-gray);
-  color: #000814;
-  font-weight: 600;
+.lx-launcher-subtitle {
+  font-family: var(--lx-font-paragraphs);
+  font-size: var(--lx-fs-base);
+  color: var(--lx-text-secondary);
+  max-width: 580px;
+  margin: 0 auto;
 }
 
-.modern-table tr:hover {
-  background-color: #f2f2f2;
+/* 4 Modules Grid */
+.lx-modules-grid {
+  animation: fadeInUp 0.5s cubic-bezier(0.16, 1, 0.3, 1);
 }
 
-.empty-row {
+/* Individual Module Card (Odoo Tile style) */
+.lx-module-card {
+  background-color: var(--lx-bg-card);
+  border: 1px solid var(--lx-border-subtle);
+  border-radius: var(--lx-radius-xl);
+  padding: 2rem 1.5rem;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
   text-align: center;
-  font-style: italic;
-  color: gray;
+  text-decoration: none;
+  cursor: pointer;
+  box-shadow: var(--lx-shadow-sm);
+  transition: all 0.3s cubic-bezier(0.2, 0.8, 0.2, 1);
+  position: relative;
+  outline: none;
+}
+
+.lx-module-card:hover {
+  transform: translateY(-6px) scale(1.02);
+  border-color: var(--lx-primary-accent);
+  box-shadow: 0 16px 28px -6px rgba(16, 24, 40, 0.12), 0 0 0 1px var(--lx-primary-accent);
+}
+
+.lx-module-card:focus-visible {
+  border-color: var(--lx-primary-accent);
+  box-shadow: 0 0 0 4px var(--lx-primary-accent-focus), 0 12px 24px rgba(16, 24, 40, 0.1);
+  transform: translateY(-4px);
+}
+
+.lx-module-card:active {
+  transform: translateY(-2px) scale(1);
+}
+
+/* Icon Box & Tile */
+.lx-module-icon-box {
+  margin-bottom: 0.5rem;
+}
+
+.lx-module-icon-tile {
+  width: 76px;
+  height: 76px;
+  border-radius: 20px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 2.15rem;
+  transition: transform 0.3s ease, box-shadow 0.3s ease;
+  box-shadow: 0 8px 16px -4px rgba(0, 0, 0, 0.08);
+}
+
+.lx-module-card:hover .lx-module-icon-tile {
+  transform: scale(1.08) rotate(1deg);
+}
+
+/* Module Themed Accent Palettes */
+/* 1. Customers (Emerald / Mint Teal) */
+.accent-customers .lx-module-icon-tile {
+  background: linear-gradient(135deg, #10B981, #059669);
+  color: #FFFFFF;
+}
+.accent-customers:hover {
+  border-color: #10B981 !important;
+  box-shadow: 0 16px 28px -6px rgba(16, 185, 129, 0.2), 0 0 0 1px #10B981 !important;
+}
+
+/* 2. Finance (Gold / Amber Premium) */
+.accent-finance .lx-module-icon-tile {
+  background: linear-gradient(135deg, #F59E0B, #D97706);
+  color: #FFFFFF;
+}
+.accent-finance:hover {
+  border-color: #F59E0B !important;
+  box-shadow: 0 16px 28px -6px rgba(245, 158, 11, 0.2), 0 0 0 1px #F59E0B !important;
+}
+
+/* 3. Loans (Primary Brand Gold / Ochre) */
+.accent-loans .lx-module-icon-tile {
+  background: linear-gradient(135deg, #D4A437, #B88722);
+  color: #17191D;
+}
+.accent-loans:hover {
+  border-color: #D4A437 !important;
+  box-shadow: 0 16px 28px -6px rgba(212, 164, 55, 0.25), 0 0 0 1px #D4A437 !important;
+}
+
+/* 4. Settings (Slate / Steel Dark) */
+.accent-settings .lx-module-icon-tile {
+  background: linear-gradient(135deg, #64748B, #475569);
+  color: #FFFFFF;
+}
+.accent-settings:hover {
+  border-color: #64748B !important;
+  box-shadow: 0 16px 28px -6px rgba(100, 116, 139, 0.2), 0 0 0 1px #64748B !important;
+}
+
+/* Module Info Typography */
+.lx-module-name {
+  font-family: var(--lx-font-titles);
+  font-weight: var(--lx-fw-bold);
+  font-size: 1.25rem;
+  color: var(--lx-text-primary);
+  margin-bottom: 0.4rem;
+  transition: color var(--lx-transition-fast);
+}
+
+.lx-module-desc {
+  font-family: var(--lx-font-paragraphs);
+  font-size: 0.825rem;
+  color: var(--lx-text-secondary);
+  line-height: 1.4;
+  margin-bottom: 0;
+  min-height: 38px;
+}
+
+/* Launch Action Link */
+.lx-module-action-link {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+  font-family: var(--lx-font-links);
+  font-size: 0.8rem;
+  font-weight: var(--lx-fw-semibold);
+  color: var(--lx-primary-accent);
+  transition: all var(--lx-transition-fast);
+  opacity: 0.85;
+}
+
+.lx-module-card:hover .lx-module-action-link {
+  opacity: 1;
+  transform: translateX(3px);
+}
+
+.lx-module-action-link i {
+  font-size: 0.85rem;
+  transition: transform var(--lx-transition-fast);
+}
+
+.lx-module-card:hover .lx-module-action-link i {
+  transform: translateX(3px);
+}
+
+/* Keyframes */
+@keyframes fadeInDown {
+  from {
+    opacity: 0;
+    transform: translateY(-12px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes fadeInUp {
+  from {
+    opacity: 0;
+    transform: translateY(16px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes pulseGlow {
+  0%, 100% {
+    transform: scale(1);
+    opacity: 1;
+  }
+  50% {
+    transform: scale(1.3);
+    opacity: 0.6;
+  }
+}
+
+/* Responsive adjustments */
+@media (max-width: 991.98px) {
+  .lx-launcher-container {
+    padding: 2rem 1rem;
+  }
+  .lx-module-desc {
+    min-height: auto;
+  }
+}
+
+@media (max-width: 575.98px) {
+  .lx-launcher-container {
+    padding: 1.5rem 0.5rem;
+  }
+  .lx-module-card {
+    padding: 1.5rem 1.25rem;
+  }
+  .lx-module-icon-tile {
+    width: 64px;
+    height: 64px;
+    font-size: 1.85rem;
+  }
 }

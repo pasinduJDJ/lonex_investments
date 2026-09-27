@@ -1,121 +1,155 @@
-<nav style="
-    background: #e5e5e5;
-    box-shadow: 0 4px 16px rgba(0, 0, 0, 0.1);
-    padding: 20px 0;
-    text-align: center;
-    border-bottom: 2px solid #003566;
-  ">
-  <div style="
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      gap: 18px;
-    ">
-    <img src="assets/logo.png" alt="Lonex Logo"
-      style="height: 50px; width: auto; border-radius: 10px; background: #fff; box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);">
-    <h1 style="
-        font-size: 2.2rem;
-        font-weight: 800;
-        color: #003566;
-        letter-spacing: 1px;
-        font-family: 'Inter', 'Roboto', Arial, sans-serif;
-        margin: 0;
-      ">
-      Lonex Investments
-    </h1>
-    <img src="assets/logo.png" alt="Lonex Logo"
-      style="height: 50px; width: auto; border-radius: 10px; background: #fff; box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);">
-  </div>
-</nav>
+<header class="lx-global-header" role="banner">
+  <div class="lx-header-inner container-fluid">
+    
+    <!-- Left Section: App Switcher, Branding, Module Context & Notifications -->
+    <div class="lx-header-left">
+      <!-- Odoo-Style App Switcher / Home Launcher Button -->
+      <a 
+        routerLink="/home" 
+        class="lx-app-switcher-btn" 
+        [class.active]="isHome"
+        title="App Launcher" 
+        aria-label="Return to Main Application Launcher"
+      >
+        <i class="bi bi-grid-3x3-gap-fill"></i>
+        <span class="visually-hidden">App Launcher</span>
+      </a>
 
-<nav class="navbar navbar-expand-lg" style="
-    background: #003566;
-    border-radius: 0 0 0 0;
-    box-shadow: 0 4px 16px rgba(0, 0, 0, 0.1);
-    margin-bottom: 12px;
-    padding-bottom: 6px;
-  ">
-  <div class="container-fluid">
-    <button class="navbar-toggler bg-light" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNavAltMarkup"
-      aria-controls="navbarNavAltMarkup" aria-expanded="false" aria-label="Toggle navigation">
-      <span class="navbar-toggler-icon"></span>
-    </button>
+      <!-- Divider -->
+      <div class="lx-header-divider"></div>
 
-    <div class="collapse navbar-collapse justify-content-center" id="navbarNavAltMarkup">
-      <div class="navbar-nav d-flex justify-content-center" style="gap: 28px; padding: 10px 0">
-        <a class="nav-link" href="home" style="
-            color: #fff;
-            font-size: 1.05rem;
-            font-weight: 600;
-            padding: 8px 18px;
-            border-radius: 0px;
-            position: relative;
-            transition: all 0.3s ease;
-          " onmouseover="this.style.color='#FFC300';" onmouseout="this.style.color='#fff';">Home</a>
+      <!-- Lonex Investments Branding -->
+      <a routerLink="/home" class="lx-brand-link" title="Lonex Investments Home">
+        <div class="lx-logo-container">
+          <img src="assets/logoN.png" alt="Lonex Logo" class="lx-brand-logo" />
+        </div>
+        <div class="lx-brand-text">
+          <span class="lx-brand-name">LONEX</span>
+          <span class="lx-brand-tag">INVESTMENTS</span>
+        </div>
+      </a>
 
-        <a class="nav-link" href="loan" style="
-            color: #fff;
-            font-size: 1.05rem;
-            font-weight: 600;
-            padding: 8px 18px;
-            border-radius: 0px;
-            position: relative;
-            transition: all 0.3s ease;
-          " onmouseover="this.style.color='#FFC300';" onmouseout="this.style.color='#fff';">Loans</a>
+      <!-- Active Module Context Indicator (Visible when inside a module) -->
+      <div *ngIf="activeModuleTitle" class="lx-active-module-pill d-none d-md-inline-flex">
+        <i class="bi bi-chevron-right text-muted mx-1" style="font-size: 0.75rem;"></i>
+        <span class="lx-module-current-tag">{{ activeModuleTitle }}</span>
+      </div>
 
-        <a class="nav-link" href="member" style="
-            color: #fff;
-            font-size: 1.05rem;
-            font-weight: 600;
-            padding: 8px 18px;
-            border-radius: 0px;
-            position: relative;
-            transition: all 0.3s ease;
-          " onmouseover="this.style.color='#FFC300';" onmouseout="this.style.color='#fff';">Members</a>
-
-        <a class="nav-link" href="profit" style="
-            color: #fff;
-            font-size: 1.05rem;
-            font-weight: 600;
-            padding: 8px 18px;
-            border-radius: 0px;
-            position: relative;
-            transition: all 0.3s ease;
-          " onmouseover="this.style.color='#FFC300';" onmouseout="this.style.color='#fff';">Profits</a>
-
-        <a class="nav-link" href="profile" style="
-            color: #fff;
-            font-size: 1.05rem;
-            font-weight: 600;
-            padding: 8px 18px;
-            border-radius: 0px;
-            position: relative;
-            transition: all 0.3s ease;
-          " onmouseover="this.style.color='#FFC300';" onmouseout="this.style.color='#fff';">Profile</a>
-        <button (click)="logout()" style="
-            color: #fff;
-            background: #d90429;
-            border: none;
-            font-size: 1.05rem;
-            font-weight: 600;
-            padding: 8px 18px;
-            border-radius: 4px;
-            margin-left: 18px;
-            cursor: pointer;
-            transition: background 0.3s ease;
-          " onmouseover="this.style.background='#a8001c';"
-          onmouseout="this.style.background='#d90429';">Logout</button>
-        <button
-          type="button"
-          (click)="toggleTheme()"
-          class="btn-theme-toggle"
-          [title]="themeService.isDarkMode() ? 'Switch to Light Mode' : 'Switch to Dark Mode'"
-          style="margin-left: 12px; color: #fff; border: 1px solid rgba(255,255,255,0.4); background: rgba(255,255,255,0.1); padding: 7px 14px; border-radius: 20px; font-weight: 600; font-size: 0.95rem; cursor: pointer; display: inline-flex; align-items: center; gap: 8px; transition: all 0.25s ease;"
+      <!-- Notifications Icon -->
+      <div class="lx-notifications-wrapper position-relative ms-2">
+        <button 
+          type="button" 
+          class="lx-header-icon-btn position-relative" 
+          (click)="toggleNotifications($event)"
+          [class.active]="isNotificationsOpen"
+          title="Notifications"
+          aria-label="View notifications"
+          [attr.aria-expanded]="isNotificationsOpen"
         >
-          <i [class]="themeService.isDarkMode() ? 'bi bi-sun-fill text-warning' : 'bi bi-moon-stars-fill'"></i>
-          <span>{{ themeService.isDarkMode() ? 'Light' : 'Dark' }}</span>
+          <i class="bi bi-bell-fill"></i>
+          <span *ngIf="unreadNotificationsCount > 0" class="lx-notification-badge">
+            {{ unreadNotificationsCount }}
+          </span>
         </button>
+
+        <!-- Notifications Dropdown Popover -->
+        <div *ngIf="isNotificationsOpen" class="lx-popover lx-notifications-popover shadow-lg" (click)="$event.stopPropagation()">
+          <div class="lx-popover-header d-flex justify-content-between align-items-center">
+            <span class="fw-bold" style="font-family: var(--lx-font-subtitles); font-size: 0.875rem;">Notifications</span>
+            <span class="badge badge-secondary" style="font-size: 0.7rem;">Stage 1</span>
+          </div>
+          <div class="lx-popover-body text-center py-4 px-3">
+            <div class="lx-notification-empty-icon mb-2">
+              <i class="bi bi-bell-slash text-muted" style="font-size: 1.75rem;"></i>
+            </div>
+            <p class="mb-1 fw-semibold" style="font-size: 0.875rem; color: var(--lx-text-primary);">All caught up!</p>
+            <p class="text-muted mb-0" style="font-size: 0.775rem;">No unread system alerts or pending notifications.</p>
+          </div>
+        </div>
       </div>
     </div>
+
+    <!-- Right Section: Theme Toggle & User Profile Dropdown -->
+    <div class="lx-header-right">
+      
+      <!-- Theme Switcher -->
+      <button
+        type="button"
+        (click)="toggleTheme()"
+        class="lx-theme-toggle-btn"
+        [title]="themeService.isDarkMode() ? 'Switch to Light Mode' : 'Switch to Dark Mode'"
+        aria-label="Toggle light or dark theme"
+      >
+        <i [class]="themeService.isDarkMode() ? 'bi bi-sun-fill text-warning' : 'bi bi-moon-stars-fill'"></i>
+        <span class="d-none d-sm-inline lx-theme-label">{{ themeService.isDarkMode() ? 'Light' : 'Dark' }}</span>
+      </button>
+
+      <!-- User Profile Dropdown -->
+      <div class="lx-user-menu-wrapper position-relative">
+        <button 
+          type="button" 
+          class="lx-user-btn" 
+          (click)="toggleUserDropdown($event)"
+          [class.active]="isUserDropdownOpen"
+          aria-label="User profile and account settings"
+          [attr.aria-expanded]="isUserDropdownOpen"
+        >
+          <div class="lx-user-avatar">
+            <span>{{ userInitials }}</span>
+          </div>
+          <div class="lx-user-details d-none d-lg-block text-start">
+            <span class="lx-user-name">{{ userEmail.split('@')[0] }}</span>
+            <span class="lx-user-role">Manager</span>
+          </div>
+          <i class="bi bi-chevron-down lx-user-chevron ms-1"></i>
+        </button>
+
+        <!-- User Dropdown Menu -->
+        <div *ngIf="isUserDropdownOpen" class="lx-popover lx-user-popover shadow-lg" (click)="$event.stopPropagation()">
+          <div class="lx-user-popover-header">
+            <div class="d-flex align-items-center gap-2 mb-1">
+              <div class="lx-user-avatar-sm">{{ userInitials }}</div>
+              <div class="overflow-hidden">
+                <div class="fw-bold text-truncate" style="font-family: var(--lx-font-subtitles); font-size: 0.85rem;">{{ userEmail }}</div>
+                <div class="text-muted" style="font-size: 0.75rem;">Lonex Enterprise</div>
+              </div>
+            </div>
+          </div>
+          
+          <div class="lx-user-popover-body py-1">
+            <a routerLink="/home" (click)="closeDropdowns()" class="lx-dropdown-item">
+              <i class="bi bi-grid-3x3-gap"></i>
+              <span>All Modules (Home)</span>
+            </a>
+            <a routerLink="/profile" (click)="closeDropdowns()" class="lx-dropdown-item">
+              <i class="bi bi-person-gear"></i>
+              <span>Profile & Password</span>
+            </a>
+            <a routerLink="/member" (click)="closeDropdowns()" class="lx-dropdown-item">
+              <i class="bi bi-people"></i>
+              <span>Customers</span>
+            </a>
+            <a routerLink="/loan" (click)="closeDropdowns()" class="lx-dropdown-item">
+              <i class="bi bi-cash-coin"></i>
+              <span>Loans</span>
+            </a>
+            <a routerLink="/profit" (click)="closeDropdowns()" class="lx-dropdown-item">
+              <i class="bi bi-wallet2"></i>
+              <span>Finance</span>
+            </a>
+            
+            <div class="dropdown-divider my-1"></div>
+
+            <button type="button" (click)="logout()" class="lx-dropdown-item lx-dropdown-logout text-danger">
+              <i class="bi bi-box-arrow-right"></i>
+              <span>Logout</span>
+            </button>
+          </div>
+        </div>
+
+      </div>
+
+    </div>
+
   </div>
-</nav>
+</header>

@@ -1,0 +1,31 @@
+/**
+ * Lonex Investments - Global Footer
+ */
+
+.lx-global-footer {
+  background-color: var(--lx-bg-card);
+  border-top: 1px solid var(--lx-border-subtle);
+  color: var(--lx-text-secondary);
+  font-family: var(--lx-font-paragraphs);
+  font-size: 0.8rem;
+  transition: background-color var(--lx-transition-base), border-color var(--lx-transition-base);
+}
+
+.lx-footer-logo {
+  height: 20px;
+  width: auto;
+  object-fit: contain;
+}
+
+.lx-footer-brand-title {
+  font-family: var(--lx-font-titles);
+  font-weight: var(--lx-fw-bold);
+  font-size: 0.825rem;
+  letter-spacing: 0.05em;
+  color: var(--lx-text-primary);
+}
+
+.lx-footer-copy {
+  color: var(--lx-text-secondary);
+  font-size: 0.775rem;
+}

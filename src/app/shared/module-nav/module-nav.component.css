@@ -1,0 +1,153 @@
+/**
+ * Lonex Investments - Global Module Sub-Navigation & Breadcrumbs Bar
+ */
+
+.lx-module-nav-bar {
+  background-color: var(--lx-bg-subtle);
+  border-bottom: 1px solid var(--lx-border-subtle);
+  padding: 0.5rem 0;
+  transition: background-color var(--lx-transition-base), border-color var(--lx-transition-base);
+  position: sticky;
+  top: 60px;
+  z-index: 1020;
+}
+
+.lx-module-nav-inner {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0 1.25rem;
+  gap: 1rem;
+  flex-wrap: wrap;
+}
+
+/* Left: Module Identity & Breadcrumbs */
+.lx-module-nav-left {
+  display: flex;
+  align-items: center;
+}
+
+.lx-module-nav-icon {
+  width: 32px;
+  height: 32px;
+  border-radius: var(--lx-radius-md);
+  background-color: var(--lx-primary-accent-subtle);
+  color: var(--lx-primary-accent);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.05rem;
+  border: 1px solid var(--lx-border-subtle);
+  flex-shrink: 0;
+}
+
+.lx-breadcrumb-wrapper {
+  display: flex;
+  flex-direction: column;
+  line-height: 1.2;
+}
+
+.lx-module-header-title {
+  font-family: var(--lx-font-titles);
+  font-weight: var(--lx-fw-bold);
+  font-size: 0.95rem;
+  color: var(--lx-text-primary);
+  line-height: 1.2;
+}
+
+.lx-breadcrumb {
+  font-family: var(--lx-font-links);
+  font-size: 0.775rem;
+  margin: 0;
+  padding: 0;
+  background: transparent;
+  display: flex;
+  align-items: center;
+  gap: 0.25rem;
+}
+
+.lx-breadcrumb .breadcrumb-item + .breadcrumb-item::before {
+  content: "›";
+  color: var(--lx-text-muted);
+  padding: 0 0.35rem;
+  font-size: 0.85rem;
+}
+
+.lx-crumb-link {
+  color: var(--lx-text-secondary);
+  text-decoration: none;
+  font-weight: var(--lx-fw-medium);
+  transition: color var(--lx-transition-fast);
+}
+
+.lx-crumb-link:hover {
+  color: var(--lx-primary-accent);
+}
+
+.lx-crumb-active {
+  color: var(--lx-primary-accent);
+  font-weight: var(--lx-fw-semibold);
+}
+
+/* Right: Navigation Tabs */
+.lx-module-nav-right {
+  display: flex;
+  align-items: center;
+}
+
+.lx-nav-tabs-group {
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+  overflow-x: auto;
+  padding-bottom: 2px;
+}
+
+.lx-module-tab-btn {
+  display: inline-flex;
+  align-items: center;
+  padding: 0.35rem 0.85rem;
+  border-radius: var(--lx-radius-md);
+  font-family: var(--lx-font-links);
+  font-size: 0.825rem;
+  font-weight: var(--lx-fw-semibold);
+  color: var(--lx-text-secondary);
+  background-color: var(--lx-bg-card);
+  border: 1px solid var(--lx-border-subtle);
+  text-decoration: none;
+  transition: all var(--lx-transition-fast);
+  white-space: nowrap;
+}
+
+.lx-module-tab-btn:hover {
+  color: var(--lx-primary-accent);
+  border-color: var(--lx-primary-accent);
+  background-color: var(--lx-bg-hover);
+}
+
+.lx-module-tab-btn.active {
+  background-color: var(--lx-primary-accent) !important;
+  color: var(--lx-text-on-gold) !important;
+  border-color: var(--lx-primary-accent) !important;
+  box-shadow: 0 1px 3px rgba(212, 164, 55, 0.25);
+}
+
+.lx-tab-primary {
+  border-color: var(--lx-primary-accent);
+  color: var(--lx-primary-accent);
+  background-color: var(--lx-primary-accent-subtle);
+}
+
+/* Responsive adjustments */
+@media (max-width: 576px) {
+  .lx-module-nav-inner {
+    padding: 0 0.75rem;
+  }
+  .lx-module-nav-bar {
+    top: 56px;
+  }
+  .lx-module-tab-btn {
+    padding: 0.3rem 0.65rem;
+    font-size: 0.775rem;
+  }
+}

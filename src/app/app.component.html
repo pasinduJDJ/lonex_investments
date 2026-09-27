@@ -1,5 +1,6 @@
 <app-header *ngIf="!isLoginRoute"></app-header>
-<main [ngStyle]="isLoginRoute ? {'padding':'0', 'min-height':'100vh'} : {}">
+<app-module-nav *ngIf="!isLoginRoute && !isHomeRoute"></app-module-nav>
+<main [ngStyle]="isLoginRoute ? {'padding':'0', 'min-height':'100vh'} : {}" [class.lx-main-module]="!isLoginRoute && !isHomeRoute" [class.lx-main-home]="isHomeRoute">
   <router-outlet></router-outlet>
 </main>
 <app-footer *ngIf="!isLoginRoute"></app-footer>

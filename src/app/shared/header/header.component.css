@@ -1,0 +1,395 @@
+/**
+ * Lonex Investments - Global Application Header (Odoo-Inspired)
+ */
+
+.lx-global-header {
+  position: sticky;
+  top: 0;
+  z-index: 1030;
+  background-color: var(--lx-bg-card);
+  border-bottom: 1px solid var(--lx-border-subtle);
+  box-shadow: var(--lx-shadow-sm);
+  transition: background-color var(--lx-transition-base), border-color var(--lx-transition-base), box-shadow var(--lx-transition-base);
+  height: 60px;
+  display: flex;
+  align-items: center;
+}
+
+.lx-header-inner {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0 1.25rem;
+  width: 100%;
+}
+
+/* Left Section */
+.lx-header-left {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+}
+
+/* App Switcher Button (Odoo 9-dots style) */
+.lx-app-switcher-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 38px;
+  height: 38px;
+  border-radius: var(--lx-radius-md);
+  color: var(--lx-text-secondary);
+  background: transparent;
+  border: 1px solid transparent;
+  font-size: 1.15rem;
+  transition: all var(--lx-transition-fast);
+  text-decoration: none;
+  cursor: pointer;
+}
+
+.lx-app-switcher-btn:hover {
+  background-color: var(--lx-primary-accent-subtle);
+  color: var(--lx-primary-accent);
+  border-color: var(--lx-primary-accent);
+  transform: scale(1.05);
+}
+
+.lx-app-switcher-btn.active {
+  background-color: var(--lx-primary-accent-subtle);
+  color: var(--lx-primary-accent);
+  border-color: var(--lx-primary-accent);
+}
+
+/* Header Divider */
+.lx-header-divider {
+  width: 1px;
+  height: 22px;
+  background-color: var(--lx-border-subtle);
+}
+
+/* Branding */
+.lx-brand-link {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.6rem;
+  text-decoration: none;
+  transition: opacity var(--lx-transition-fast);
+}
+
+.lx-brand-link:hover {
+  opacity: 0.9;
+}
+
+.lx-logo-container {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 34px;
+  height: 34px;
+  border-radius: var(--lx-radius-md);
+  background: var(--lx-bg-subtle);
+  border: 1px solid var(--lx-border-subtle);
+  padding: 3px;
+}
+
+.lx-brand-logo {
+  max-width: 100%;
+  max-height: 100%;
+  object-fit: contain;
+}
+
+.lx-brand-text {
+  display: flex;
+  flex-direction: column;
+  line-height: 1.1;
+}
+
+.lx-brand-name {
+  font-family: var(--lx-font-titles);
+  font-weight: var(--lx-fw-bold);
+  font-size: 1.05rem;
+  letter-spacing: 0.05em;
+  color: var(--lx-text-primary);
+}
+
+.lx-brand-tag {
+  font-family: var(--lx-font-subtitles);
+  font-weight: var(--lx-fw-semibold);
+  font-size: 0.625rem;
+  letter-spacing: 0.12em;
+  color: var(--lx-primary-accent);
+}
+
+/* Active Module Context Tag */
+.lx-active-module-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.25rem;
+  font-family: var(--lx-font-subtitles);
+  font-size: 0.85rem;
+  font-weight: var(--lx-fw-semibold);
+  color: var(--lx-text-primary);
+}
+
+.lx-module-current-tag {
+  background-color: var(--lx-primary-accent-subtle);
+  color: var(--lx-primary-accent);
+  padding: 0.2rem 0.6rem;
+  border-radius: var(--lx-radius-sm);
+  font-size: 0.8rem;
+  border: 1px solid var(--lx-border-subtle);
+}
+
+/* Icon Buttons (Notifications, etc) */
+.lx-header-icon-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 36px;
+  height: 36px;
+  border-radius: var(--lx-radius-md);
+  color: var(--lx-text-secondary);
+  background: transparent;
+  border: 1px solid transparent;
+  font-size: 1.05rem;
+  transition: all var(--lx-transition-fast);
+  cursor: pointer;
+}
+
+.lx-header-icon-btn:hover,
+.lx-header-icon-btn.active {
+  background-color: var(--lx-bg-hover);
+  color: var(--lx-text-primary);
+  border-color: var(--lx-border-subtle);
+}
+
+.lx-notification-badge {
+  position: absolute;
+  top: 4px;
+  right: 4px;
+  background-color: var(--lx-color-muted-red);
+  color: #fff;
+  font-size: 0.65rem;
+  font-weight: 700;
+  min-width: 16px;
+  height: 16px;
+  border-radius: var(--lx-radius-pill);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0 3px;
+  border: 2px solid var(--lx-bg-card);
+}
+
+/* Right Section */
+.lx-header-right {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+}
+
+/* Theme Toggle Button */
+.lx-theme-toggle-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.45rem;
+  padding: 0.35rem 0.75rem;
+  border-radius: var(--lx-radius-pill);
+  background-color: var(--lx-bg-subtle);
+  border: 1px solid var(--lx-border-subtle);
+  color: var(--lx-text-primary);
+  font-family: var(--lx-font-links);
+  font-size: 0.8rem;
+  font-weight: var(--lx-fw-semibold);
+  cursor: pointer;
+  transition: all var(--lx-transition-fast);
+}
+
+.lx-theme-toggle-btn:hover {
+  background-color: var(--lx-bg-hover);
+  border-color: var(--lx-primary-accent);
+  color: var(--lx-primary-accent);
+}
+
+/* User Menu Button */
+.lx-user-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.25rem 0.5rem;
+  border-radius: var(--lx-radius-lg);
+  background: transparent;
+  border: 1px solid transparent;
+  color: var(--lx-text-primary);
+  cursor: pointer;
+  transition: all var(--lx-transition-fast);
+}
+
+.lx-user-btn:hover,
+.lx-user-btn.active {
+  background-color: var(--lx-bg-hover);
+  border-color: var(--lx-border-subtle);
+}
+
+.lx-user-avatar {
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  background: linear-gradient(135deg, var(--lx-primary-accent), var(--lx-secondary-accent));
+  color: var(--lx-color-charcoal-black);
+  font-family: var(--lx-font-subtitles);
+  font-weight: var(--lx-fw-bold);
+  font-size: 0.8rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+.lx-user-avatar-sm {
+  width: 28px;
+  height: 28px;
+  border-radius: 50%;
+  background: linear-gradient(135deg, var(--lx-primary-accent), var(--lx-secondary-accent));
+  color: var(--lx-color-charcoal-black);
+  font-family: var(--lx-font-subtitles);
+  font-weight: var(--lx-fw-bold);
+  font-size: 0.75rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+.lx-user-details {
+  display: flex;
+  flex-direction: column;
+  line-height: 1.15;
+}
+
+.lx-user-name {
+  font-family: var(--lx-font-subtitles);
+  font-weight: var(--lx-fw-semibold);
+  font-size: 0.8rem;
+  color: var(--lx-text-primary);
+}
+
+.lx-user-role {
+  font-size: 0.675rem;
+  color: var(--lx-text-secondary);
+}
+
+.lx-user-chevron {
+  font-size: 0.7rem;
+  color: var(--lx-text-secondary);
+  transition: transform var(--lx-transition-fast);
+}
+
+.lx-user-btn.active .lx-user-chevron {
+  transform: rotate(180deg);
+}
+
+/* Popovers & Dropdowns */
+.lx-popover {
+  position: absolute;
+  top: calc(100% + 8px);
+  right: 0;
+  z-index: 1050;
+  background-color: var(--lx-bg-surface-elevated);
+  border: 1px solid var(--lx-border-subtle);
+  border-radius: var(--lx-radius-lg);
+  box-shadow: var(--lx-shadow-lg);
+  animation: fadeInDown 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.lx-notifications-popover {
+  width: 280px;
+}
+
+.lx-user-popover {
+  width: 240px;
+}
+
+.lx-popover-header,
+.lx-user-popover-header {
+  padding: 0.75rem 1rem;
+  border-bottom: 1px solid var(--lx-border-subtle);
+  background-color: var(--lx-bg-subtle);
+  border-top-left-radius: var(--lx-radius-lg);
+  border-top-right-radius: var(--lx-radius-lg);
+}
+
+.lx-dropdown-item {
+  display: flex;
+  align-items: center;
+  gap: 0.65rem;
+  padding: 0.55rem 1rem;
+  color: var(--lx-text-primary);
+  font-family: var(--lx-font-links);
+  font-size: 0.825rem;
+  font-weight: var(--lx-fw-medium);
+  text-decoration: none;
+  background: transparent;
+  border: none;
+  width: 100%;
+  text-align: left;
+  cursor: pointer;
+  transition: background-color var(--lx-transition-fast), color var(--lx-transition-fast);
+}
+
+.lx-dropdown-item i {
+  font-size: 1rem;
+  color: var(--lx-text-secondary);
+}
+
+.lx-dropdown-item:hover {
+  background-color: var(--lx-bg-hover);
+  color: var(--lx-primary-accent);
+}
+
+.lx-dropdown-item:hover i {
+  color: var(--lx-primary-accent);
+}
+
+.lx-dropdown-logout:hover {
+  background-color: rgba(217, 83, 79, 0.12) !important;
+  color: var(--lx-color-muted-red) !important;
+}
+
+.lx-dropdown-logout:hover i {
+  color: var(--lx-color-muted-red) !important;
+}
+
+@keyframes fadeInDown {
+  from {
+    opacity: 0;
+    transform: translateY(-6px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* Mobile Adjustments */
+@media (max-width: 576px) {
+  .lx-global-header {
+    height: 56px;
+  }
+
+  .lx-header-inner {
+    padding: 0 0.75rem;
+  }
+
+  .lx-brand-tag {
+    display: none;
+  }
+
+  .lx-theme-toggle-btn {
+    padding: 0.35rem;
+    border-radius: 50%;
+    width: 34px;
+    height: 34px;
+    justify-content: center;
+  }
+}

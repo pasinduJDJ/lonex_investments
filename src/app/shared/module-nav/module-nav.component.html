@@ -1,0 +1,49 @@
+<nav *ngIf="moduleTitle" class="lx-module-nav-bar" aria-label="Module Navigation and Breadcrumbs">
+  <div class="container-fluid lx-module-nav-inner">
+    
+    <!-- Left: Module Context & Breadcrumbs -->
+    <div class="lx-module-nav-left">
+      <div class="d-flex align-items-center gap-2">
+        <!-- Module Icon Indicator -->
+        <div class="lx-module-nav-icon">
+          <i [class]="'bi ' + moduleIcon"></i>
+        </div>
+        
+        <!-- Breadcrumbs & Title -->
+        <div class="lx-breadcrumb-wrapper">
+          <h2 class="lx-module-header-title d-none d-sm-block mb-0">{{ moduleTitle }}</h2>
+          <ol class="breadcrumb lx-breadcrumb mb-0">
+            <li *ngFor="let crumb of breadcrumbs; let last = last" 
+                class="breadcrumb-item" 
+                [class.active]="last">
+              <a *ngIf="crumb.url && !last" [routerLink]="crumb.url" class="lx-crumb-link">
+                {{ crumb.label }}
+              </a>
+              <span *ngIf="!crumb.url || last" class="lx-crumb-active" [attr.aria-current]="last ? 'page' : null">
+                {{ crumb.label }}
+              </span>
+            </li>
+          </ol>
+        </div>
+      </div>
+    </div>
+
+    <!-- Right: Module Action / Sub-Navigation Tabs -->
+    <div class="lx-module-nav-right">
+      <div class="lx-nav-tabs-group" role="tablist">
+        <a *ngFor="let tab of navTabs" 
+           [routerLink]="tab.url"
+           class="lx-module-tab-btn" 
+           [class.active]="isTabActive(tab.url)"
+           [class.lx-tab-primary]="tab.isPrimary && !isTabActive(tab.url)"
+           role="tab"
+           [attr.aria-selected]="isTabActive(tab.url)"
+        >
+          <i *ngIf="tab.icon" [class]="'bi ' + tab.icon + ' me-1'"></i>
+          <span>{{ tab.label }}</span>
+        </a>
+      </div>
+    </div>
+
+  </div>
+</nav>
