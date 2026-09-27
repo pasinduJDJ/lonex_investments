@@ -7,7 +7,6 @@ export interface LauncherModule {
   name: string;
   route: string;
   icon: string;
-  description: string;
   accentClass: string;
 }
 
@@ -25,32 +24,28 @@ export class HomeComponent {
       name: 'Customers',
       route: '/member',
       icon: 'bi-people-fill',
-      description: 'Client directory, registration & guarantor records',
-      accentClass: 'accent-customers'
+      accentClass: 'odoo-app-customers'
     },
     {
       id: 'finance',
       name: 'Finance',
       route: '/profit',
       icon: 'bi-wallet2',
-      description: 'Bank capital, expenses, investments & profit tracking',
-      accentClass: 'accent-finance'
+      accentClass: 'odoo-app-finance'
     },
     {
       id: 'loans',
       name: 'Loans',
       route: '/loan',
       icon: 'bi-cash-coin',
-      description: 'Daily, weekly & monthly loans and repayments',
-      accentClass: 'accent-loans'
+      accentClass: 'odoo-app-loans'
     },
     {
       id: 'settings',
       name: 'Settings',
       route: '/profile',
       icon: 'bi-gear-fill',
-      description: 'User profile, security credentials & configuration',
-      accentClass: 'accent-settings'
+      accentClass: 'odoo-app-settings'
     }
   ];
 

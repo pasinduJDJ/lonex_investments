@@ -1,70 +1,19 @@
-<div class="lx-launcher-container">
-  
-  <!-- Ambient Gold Glow Background Elements -->
-  <div class="lx-ambient-glow lx-glow-1"></div>
-  <div class="lx-ambient-glow lx-glow-2"></div>
-
-  <div class="container lx-launcher-content">
-    
-    <!-- Header / Brand Greeting -->
-    <div class="text-center mb-5 lx-launcher-header">
-      <div class="lx-launcher-badge d-inline-flex align-items-center gap-2 mb-3">
-        <span class="lx-pulse-dot"></span>
-        <span>Lonex Enterprise Suite</span>
+<div class="odoo-launcher-canvas">
+  <div class="odoo-apps-grid">
+    <div 
+      *ngFor="let mod of modules" 
+      class="odoo-app-item"
+      [routerLink]="mod.route"
+      tabindex="0"
+      role="button"
+      (keydown.enter)="navigateTo(mod.route)"
+      (keydown.space)="navigateTo(mod.route); $event.preventDefault()"
+      [attr.aria-label]="mod.name"
+    >
+      <div class="odoo-app-icon" [ngClass]="mod.accentClass">
+        <i [class]="'bi ' + mod.icon"></i>
       </div>
-      <h1 class="lx-launcher-title">Application Launcher</h1>
-      <p class="lx-launcher-subtitle">
-        Select a module to manage your investment and microfinance workflows
-      </p>
+      <span class="odoo-app-label">{{ mod.name }}</span>
     </div>
-
-    <!-- 4 Modules Grid (4 in 1 row on Desktop, 2x2 on Tablet, 1-2 on Mobile) -->
-    <div class="row g-4 justify-content-center lx-modules-grid">
-      
-      <div *ngFor="let mod of modules" class="col-12 col-sm-6 col-lg-3 d-flex">
-        <div 
-          class="lx-module-card w-100" 
-          [ngClass]="mod.accentClass"
-          [routerLink]="mod.route"
-          tabindex="0"
-          role="button"
-          (keydown.enter)="navigateTo(mod.route)"
-          (keydown.space)="navigateTo(mod.route); $event.preventDefault()"
-          [attr.aria-label]="'Open ' + mod.name + ' Module'"
-        >
-          <!-- Top Tile / Icon Container -->
-          <div class="lx-module-icon-box">
-            <div class="lx-module-icon-tile">
-              <i [class]="'bi ' + mod.icon"></i>
-            </div>
-          </div>
-
-          <!-- Module Details -->
-          <div class="lx-module-info text-center mt-3">
-            <h2 class="lx-module-name">{{ mod.name }}</h2>
-            <p class="lx-module-desc">{{ mod.description }}</p>
-          </div>
-
-          <!-- Action Indicator Arrow -->
-          <div class="lx-module-footer mt-auto pt-3">
-            <span class="lx-module-action-link">
-              <span>Launch</span>
-              <i class="bi bi-arrow-right"></i>
-            </span>
-          </div>
-        </div>
-      </div>
-
-    </div>
-
-    <!-- Quick Shortcuts / Tips Bar -->
-    <div class="text-center mt-5 lx-launcher-footer">
-      <p class="text-muted small mb-0">
-        <i class="bi bi-shield-check me-1 text-warning"></i>
-        Secure Enterprise Session · Microfinance Management System V2
-      </p>
-    </div>
-
   </div>
-
 </div>

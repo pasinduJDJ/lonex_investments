@@ -1,295 +1,145 @@
 /**
- * Lonex Investments - Odoo-Inspired Application Launcher
+ * Lonex Investments - Authentic Odoo-Style Application Launcher
  */
 
-.lx-launcher-container {
+.odoo-launcher-canvas {
   min-height: calc(100vh - 120px);
   display: flex;
   align-items: center;
   justify-content: center;
-  position: relative;
-  overflow: hidden;
-  padding: 2.5rem 1rem;
-  background-color: var(--lx-bg-main);
-  transition: background-color var(--lx-transition-base);
+  padding: 3rem 1.5rem;
 }
 
-/* Ambient Subtle Glows */
-.lx-ambient-glow {
-  position: absolute;
-  width: 450px;
-  height: 450px;
-  border-radius: 50%;
-  pointer-events: none;
-  filter: blur(90px);
-  opacity: 0.12;
-  z-index: 0;
-  transition: opacity var(--lx-transition-base);
+/* Centered Horizontal Grid */
+.odoo-apps-grid {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  align-items: center;
+  gap: 3rem;
+  max-width: 900px;
+  animation: fadeInApps 0.4s cubic-bezier(0.16, 1, 0.3, 1);
 }
 
-.lx-glow-1 {
-  top: 10%;
-  left: 15%;
-  background: radial-gradient(circle, var(--lx-primary-accent) 0%, transparent 70%);
-}
-
-.lx-glow-2 {
-  bottom: 10%;
-  right: 15%;
-  background: radial-gradient(circle, var(--lx-secondary-accent) 0%, transparent 70%);
-}
-
-.lx-launcher-content {
-  position: relative;
-  z-index: 1;
-  max-width: 1140px;
-}
-
-/* Launcher Header */
-.lx-launcher-header {
-  animation: fadeInDown 0.4s cubic-bezier(0.16, 1, 0.3, 1);
-}
-
-.lx-launcher-badge {
-  background-color: var(--lx-primary-accent-subtle);
-  border: 1px solid var(--lx-border-subtle);
-  color: var(--lx-primary-accent);
-  font-family: var(--lx-font-subtitles);
-  font-weight: var(--lx-fw-semibold);
-  font-size: var(--lx-fs-xs);
-  padding: 0.35rem 0.85rem;
-  border-radius: var(--lx-radius-pill);
-  letter-spacing: 0.04em;
-  text-transform: uppercase;
-}
-
-.lx-pulse-dot {
-  width: 7px;
-  height: 7px;
-  border-radius: 50%;
-  background-color: var(--lx-primary-accent);
-  box-shadow: 0 0 8px var(--lx-primary-accent);
-  animation: pulseGlow 2s infinite;
-}
-
-.lx-launcher-title {
-  font-family: var(--lx-font-titles);
-  font-weight: var(--lx-fw-bold);
-  font-size: clamp(1.75rem, 1.4rem + 1.2vw, 2.35rem);
-  color: var(--lx-text-primary);
-  margin-bottom: 0.5rem;
-  letter-spacing: var(--lx-tracking-tight);
-}
-
-.lx-launcher-subtitle {
-  font-family: var(--lx-font-paragraphs);
-  font-size: var(--lx-fs-base);
-  color: var(--lx-text-secondary);
-  max-width: 580px;
-  margin: 0 auto;
-}
-
-/* 4 Modules Grid */
-.lx-modules-grid {
-  animation: fadeInUp 0.5s cubic-bezier(0.16, 1, 0.3, 1);
-}
-
-/* Individual Module Card (Odoo Tile style) */
-.lx-module-card {
-  background-color: var(--lx-bg-card);
-  border: 1px solid var(--lx-border-subtle);
-  border-radius: var(--lx-radius-xl);
-  padding: 2rem 1.5rem;
+/* Individual App Item (Squircle Icon + Name) */
+.odoo-app-item {
   display: flex;
   flex-direction: column;
   align-items: center;
-  text-align: center;
   text-decoration: none;
   cursor: pointer;
-  box-shadow: var(--lx-shadow-sm);
-  transition: all 0.3s cubic-bezier(0.2, 0.8, 0.2, 1);
-  position: relative;
   outline: none;
+  width: 100px;
+  user-select: none;
 }
 
-.lx-module-card:hover {
-  transform: translateY(-6px) scale(1.02);
-  border-color: var(--lx-primary-accent);
-  box-shadow: 0 16px 28px -6px rgba(16, 24, 40, 0.12), 0 0 0 1px var(--lx-primary-accent);
-}
-
-.lx-module-card:focus-visible {
-  border-color: var(--lx-primary-accent);
-  box-shadow: 0 0 0 4px var(--lx-primary-accent-focus), 0 12px 24px rgba(16, 24, 40, 0.1);
-  transform: translateY(-4px);
-}
-
-.lx-module-card:active {
-  transform: translateY(-2px) scale(1);
-}
-
-/* Icon Box & Tile */
-.lx-module-icon-box {
-  margin-bottom: 0.5rem;
-}
-
-.lx-module-icon-tile {
-  width: 76px;
-  height: 76px;
-  border-radius: 20px;
+/* Odoo-style Squircle Tile */
+.odoo-app-icon {
+  width: 82px;
+  height: 82px;
+  border-radius: 22px;
   display: flex;
   align-items: center;
   justify-content: center;
-  font-size: 2.15rem;
-  transition: transform 0.3s ease, box-shadow 0.3s ease;
-  box-shadow: 0 8px 16px -4px rgba(0, 0, 0, 0.08);
-}
-
-.lx-module-card:hover .lx-module-icon-tile {
-  transform: scale(1.08) rotate(1deg);
-}
-
-/* Module Themed Accent Palettes */
-/* 1. Customers (Emerald / Mint Teal) */
-.accent-customers .lx-module-icon-tile {
-  background: linear-gradient(135deg, #10B981, #059669);
+  font-size: 2.35rem;
   color: #FFFFFF;
-}
-.accent-customers:hover {
-  border-color: #10B981 !important;
-  box-shadow: 0 16px 28px -6px rgba(16, 185, 129, 0.2), 0 0 0 1px #10B981 !important;
+  box-shadow: 0 10px 22px -4px rgba(0, 0, 0, 0.22), 0 2px 6px rgba(0, 0, 0, 0.12);
+  transition: transform 0.25s cubic-bezier(0.34, 1.56, 0.64, 1), box-shadow 0.25s ease;
+  position: relative;
 }
 
-/* 2. Finance (Gold / Amber Premium) */
-.accent-finance .lx-module-icon-tile {
-  background: linear-gradient(135deg, #F59E0B, #D97706);
-  color: #FFFFFF;
+/* Hover & Focus Effects */
+.odoo-app-item:hover .odoo-app-icon {
+  transform: translateY(-6px) scale(1.08);
+  box-shadow: 0 18px 30px -6px rgba(0, 0, 0, 0.32), 0 4px 10px rgba(0, 0, 0, 0.15);
 }
-.accent-finance:hover {
-  border-color: #F59E0B !important;
-  box-shadow: 0 16px 28px -6px rgba(245, 158, 11, 0.2), 0 0 0 1px #F59E0B !important;
+
+.odoo-app-item:focus-visible .odoo-app-icon {
+  outline: 3px solid var(--lx-primary-accent);
+  outline-offset: 3px;
+  transform: translateY(-4px) scale(1.05);
+}
+
+.odoo-app-item:active .odoo-app-icon {
+  transform: translateY(-2px) scale(0.98);
+}
+
+/* Distinct Module Palettes */
+/* 1. Customers (Teal / Emerald) */
+.odoo-app-customers {
+  background: linear-gradient(145deg, #10B981 0%, #059669 100%);
+}
+
+/* 2. Finance (Amber / Golden Orange) */
+.odoo-app-finance {
+  background: linear-gradient(145deg, #F59E0B 0%, #D97706 100%);
 }
 
 /* 3. Loans (Primary Brand Gold / Ochre) */
-.accent-loans .lx-module-icon-tile {
-  background: linear-gradient(135deg, #D4A437, #B88722);
-  color: #17191D;
-}
-.accent-loans:hover {
-  border-color: #D4A437 !important;
-  box-shadow: 0 16px 28px -6px rgba(212, 164, 55, 0.25), 0 0 0 1px #D4A437 !important;
+.odoo-app-loans {
+  background: linear-gradient(145deg, #E5B242 0%, #B88722 100%);
+  color: #17191D !important;
 }
 
-/* 4. Settings (Slate / Steel Dark) */
-.accent-settings .lx-module-icon-tile {
-  background: linear-gradient(135deg, #64748B, #475569);
-  color: #FFFFFF;
-}
-.accent-settings:hover {
-  border-color: #64748B !important;
-  box-shadow: 0 16px 28px -6px rgba(100, 116, 139, 0.2), 0 0 0 1px #64748B !important;
+/* 4. Settings (Modern Slate / Indigo) */
+.odoo-app-settings {
+  background: linear-gradient(145deg, #6366F1 0%, #4338CA 100%);
 }
 
-/* Module Info Typography */
-.lx-module-name {
-  font-family: var(--lx-font-titles);
-  font-weight: var(--lx-fw-bold);
-  font-size: 1.25rem;
-  color: var(--lx-text-primary);
-  margin-bottom: 0.4rem;
-  transition: color var(--lx-transition-fast);
-}
-
-.lx-module-desc {
-  font-family: var(--lx-font-paragraphs);
-  font-size: 0.825rem;
-  color: var(--lx-text-secondary);
-  line-height: 1.4;
-  margin-bottom: 0;
-  min-height: 38px;
-}
-
-/* Launch Action Link */
-.lx-module-action-link {
-  display: inline-flex;
-  align-items: center;
-  gap: 0.35rem;
+/* Module Label Underneath */
+.odoo-app-label {
   font-family: var(--lx-font-links);
-  font-size: 0.8rem;
-  font-weight: var(--lx-fw-semibold);
+  font-size: 0.925rem;
+  font-weight: 500;
+  color: var(--lx-text-primary);
+  margin-top: 0.85rem;
+  text-align: center;
+  transition: color var(--lx-transition-fast), transform var(--lx-transition-fast);
+  letter-spacing: 0.01em;
+}
+
+.odoo-app-item:hover .odoo-app-label {
   color: var(--lx-primary-accent);
-  transition: all var(--lx-transition-fast);
-  opacity: 0.85;
+  transform: translateY(-2px);
+  font-weight: 600;
 }
 
-.lx-module-card:hover .lx-module-action-link {
-  opacity: 1;
-  transform: translateX(3px);
-}
-
-.lx-module-action-link i {
-  font-size: 0.85rem;
-  transition: transform var(--lx-transition-fast);
-}
-
-.lx-module-card:hover .lx-module-action-link i {
-  transform: translateX(3px);
-}
-
-/* Keyframes */
-@keyframes fadeInDown {
+/* Keyframe Animations */
+@keyframes fadeInApps {
   from {
     opacity: 0;
-    transform: translateY(-12px);
+    transform: translateY(14px) scale(0.97);
   }
   to {
     opacity: 1;
-    transform: translateY(0);
+    transform: translateY(0) scale(1);
   }
 }
 
-@keyframes fadeInUp {
-  from {
-    opacity: 0;
-    transform: translateY(16px);
+/* Responsive Grid Rules */
+@media (max-width: 768px) {
+  .odoo-apps-grid {
+    gap: 2.25rem 2rem;
   }
-  to {
-    opacity: 1;
-    transform: translateY(0);
+  .odoo-app-icon {
+    width: 74px;
+    height: 74px;
+    border-radius: 19px;
+    font-size: 2.1rem;
   }
-}
-
-@keyframes pulseGlow {
-  0%, 100% {
-    transform: scale(1);
-    opacity: 1;
-  }
-  50% {
-    transform: scale(1.3);
-    opacity: 0.6;
+  .odoo-app-label {
+    font-size: 0.875rem;
   }
 }
 
-/* Responsive adjustments */
-@media (max-width: 991.98px) {
-  .lx-launcher-container {
-    padding: 2rem 1rem;
+@media (max-width: 480px) {
+  .odoo-apps-grid {
+    gap: 2rem 1.75rem;
   }
-  .lx-module-desc {
-    min-height: auto;
-  }
-}
-
-@media (max-width: 575.98px) {
-  .lx-launcher-container {
-    padding: 1.5rem 0.5rem;
-  }
-  .lx-module-card {
-    padding: 1.5rem 1.25rem;
-  }
-  .lx-module-icon-tile {
-    width: 64px;
-    height: 64px;
-    font-size: 1.85rem;
+  .odoo-app-icon {
+    width: 68px;
+    height: 68px;
+    border-radius: 18px;
+    font-size: 1.95rem;
   }
 }
