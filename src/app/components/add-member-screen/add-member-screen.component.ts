@@ -206,15 +206,47 @@ export class AddMemberScreenComponent implements OnInit {
       return false;
     }
 
-    // Mobile number validation (optional but if provided, should be valid)
-    if (this.mobileNumber.trim() && !/^\d{10}$/.test(this.mobileNumber.trim())) {
+    // Mobile number validation (required)
+    if (!this.mobileNumber.trim()) {
+      this.errorMessage = 'Mobile number is required';
+      return false;
+    }
+    if (!/^\d{10}$/.test(this.mobileNumber.trim())) {
       this.errorMessage = 'Please enter a valid 10-digit mobile number';
       return false;
     }
 
-    // Home number validation (optional but if provided, should be valid)
+    // Home number validation (required)
     if (!this.homeNumber.trim()) {
       this.errorMessage = 'Home number is required';
+      return false;
+    }
+    if (!/^\d{10}$/.test(this.homeNumber.trim())) {
+      this.errorMessage = 'Please enter a valid 10-digit home number';
+      return false;
+    }
+
+    // Street address validation (required)
+    if (!this.streetAddress.trim()) {
+      this.errorMessage = 'Street address is required';
+      return false;
+    }
+
+    // Town one validation (required)
+    if (!this.townOne.trim()) {
+      this.errorMessage = 'Town 01 is required';
+      return false;
+    }
+
+    // Town two validation (required)
+    if (!this.townTwo.trim()) {
+      this.errorMessage = 'Town 02 is required';
+      return false;
+    }
+
+    // Group validation (required)
+    if (!this.group.trim()) {
+      this.errorMessage = 'Group is required';
       return false;
     }
 

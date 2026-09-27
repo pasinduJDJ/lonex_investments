@@ -40,39 +40,39 @@
                        placeholder="e.g., 123456789V or 123456789012" required>
               </div>
 
-              <label for="mobileNumber" class="form-label">Enter Mobile number</label>
+              <label for="mobileNumber" class="form-label">Enter Mobile number *</label>
               <div class="input-group">
                 <input type="text" id="mobileNumber" class="form-control" name="mobileNumber" [(ngModel)]="mobileNumber" 
-                       placeholder="e.g., 0712345678">
+                       placeholder="e.g., 0712345678" required>
               </div>
 
-              <label for="homeNumber" class="form-label">Enter Home number</label>
+              <label for="homeNumber" class="form-label">Enter Home number *</label>
               <div class="input-group">
                 <input type="text" id="homeNumber" class="form-control" name="homeNumber" [(ngModel)]="homeNumber" 
-                       placeholder="e.g., 0112345678">
+                       placeholder="e.g., 0112345678" required>
               </div>
 
-              <label for="streetAddress" class="form-label">Enter Address (Street Address)</label>
+              <label for="streetAddress" class="form-label">Enter Address (Street Address) *</label>
               <div class="input-group">
-                <input type="text" id="streetAddress" class="form-control" name="streetAddress" [(ngModel)]="streetAddress">
+                <input type="text" id="streetAddress" class="form-control" name="streetAddress" [(ngModel)]="streetAddress" required>
               </div>
 
-              <label for="townOne" class="form-label">Enter Address (Town 01)</label>
+              <label for="townOne" class="form-label">Enter Address (Town 01) *</label>
               <div class="input-group">
-                <input type="text" id="townOne" class="form-control" name="townOne" [(ngModel)]="townOne">
+                <input type="text" id="townOne" class="form-control" name="townOne" [(ngModel)]="townOne" required>
               </div>
 
-              <label for="townTwo" class="form-label">Enter Address (Town 02)</label>
+              <label for="townTwo" class="form-label">Enter Address (Town 02) *</label>
               <div class="input-group">
-                <select id="townTwo" class="form-select" name="townTwo" [(ngModel)]="townTwo">
+                <select id="townTwo" class="form-select" name="townTwo" [(ngModel)]="townTwo" required>
                   <option value="" disabled selected>Select Town 02</option>
                   <option *ngFor="let city of cityNames" [value]="city">{{ city }}</option>
                 </select>
               </div>
 
-              <label for="group" class="form-label">Group</label>
+              <label for="group" class="form-label">Group *</label>
               <div class="input-group">
-                <select id="group" class="form-select" name="group" [(ngModel)]="group">
+                <select id="group" class="form-select" name="group" [(ngModel)]="group" required>
                   <option value="" disabled selected>Select Group</option>
                   <option *ngFor="let g of groupNames" [value]="g">{{ g }}</option>
                 </select>

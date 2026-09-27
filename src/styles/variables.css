@@ -1,0 +1,111 @@
+/**
+ * LONEX INVESTMENTS - Global Design System Tokens
+ * Brand Color Palette & Core Variables
+ */
+
+:root {
+  /* ==========================================================================
+     1. Brand Color Palette (Base Primitives)
+     ========================================================================== */
+  --lx-color-primary-gold: #D4A437;
+  --lx-color-premium-gold: #F5C45E;
+  --lx-color-charcoal-black: #17191D;
+  --lx-color-soft-white: #F8F9FB;
+  --lx-color-slate-gray: #667085;
+  --lx-color-emerald-green: #159A74;
+  --lx-color-amber: #E5A33D;
+  --lx-color-muted-red: #D9534F;
+
+  /* RGB Values for alpha compositing (rgba) */
+  --lx-rgb-primary-gold: 212, 164, 55;
+  --lx-rgb-premium-gold: 245, 196, 94;
+  --lx-rgb-charcoal-black: 23, 25, 29;
+  --lx-rgb-soft-white: 248, 249, 251;
+  --lx-rgb-slate-gray: 102, 112, 133;
+  --lx-rgb-emerald-green: 21, 154, 116;
+  --lx-rgb-amber: 229, 163, 61;
+  --lx-rgb-muted-red: 217, 83, 79;
+
+  /* Gold Palette Shades & Tints */
+  --lx-color-gold-50: #FCF8EC;
+  --lx-color-gold-100: #F7EFCF;
+  --lx-color-gold-200: #EEDFA3;
+  --lx-color-gold-300: #E5CF77;
+  --lx-color-gold-400: #DCBF57;
+  --lx-color-gold-500: #D4A437; /* Primary Gold */
+  --lx-color-gold-600: #B88722;
+  --lx-color-gold-700: #8E6515;
+  --lx-color-gold-800: #64450D;
+  --lx-color-gold-900: #3B2807;
+
+  /* Neutral Slate Palette Shades */
+  --lx-color-slate-50: #F8F9FA;
+  --lx-color-slate-100: #F2F4F7;
+  --lx-color-slate-200: #EAECF0;
+  --lx-color-slate-300: #D0D5DD;
+  --lx-color-slate-400: #98A2B3;
+  --lx-color-slate-500: #667085; /* Slate Gray */
+  --lx-color-slate-600: #475467;
+  --lx-color-slate-700: #344054;
+  --lx-color-slate-800: #1D2939;
+  --lx-color-slate-900: #101828;
+
+  /* Dark Charcoal Surfaces */
+  --lx-color-charcoal-950: #0C0D0F;
+  --lx-color-charcoal-900: #101114; /* Dark Mode Main Bg */
+  --lx-color-charcoal-850: #17191D; /* Charcoal Black - Surface & Sidebar */
+  --lx-color-charcoal-800: #1E2026;
+  --lx-color-charcoal-700: #24262B; /* Dark Mode Card Bg */
+  --lx-color-charcoal-600: #2D3037; /* Elevated Surface */
+  --lx-color-charcoal-500: #383B40; /* Dark Mode Border */
+  --lx-color-charcoal-400: #4E525A;
+
+  /* Financial Status Palettes */
+  /* Emerald Green - Successful transactions */
+  --lx-status-success-light-bg: #E7F6F1;
+  --lx-status-success-light-text: #0D7A5B;
+  --lx-status-success-light-border: #A3E2CF;
+  --lx-status-success-dark-bg: rgba(21, 154, 116, 0.20);
+  --lx-status-success-dark-text: #34D399;
+  --lx-status-success-dark-border: rgba(52, 211, 153, 0.35);
+
+  /* Amber - Pending payments */
+  --lx-status-pending-light-bg: #FEF6E7;
+  --lx-status-pending-light-text: #9A6715;
+  --lx-status-pending-light-border: #F8D89C;
+  --lx-status-pending-dark-bg: rgba(229, 163, 61, 0.20);
+  --lx-status-pending-dark-text: #FBBF24;
+  --lx-status-pending-dark-border: rgba(251, 191, 36, 0.35);
+
+  /* Muted Red - Overdue loans & errors */
+  --lx-status-error-light-bg: #FDF1F0;
+  --lx-status-error-light-text: #B93834;
+  --lx-status-error-light-border: #F3A9A7;
+  --lx-status-error-dark-bg: rgba(217, 83, 79, 0.22);
+  --lx-status-error-dark-text: #F87171;
+  --lx-status-error-dark-border: rgba(248, 113, 113, 0.35);
+
+  /* ==========================================================================
+     2. Layout & Spacing Tokens
+     ========================================================================== */
+  --lx-radius-xs: 4px;
+  --lx-radius-sm: 6px;
+  --lx-radius-md: 8px;
+  --lx-radius-lg: 12px;
+  --lx-radius-xl: 16px;
+  --lx-radius-2xl: 20px;
+  --lx-radius-pill: 9999px;
+
+  /* Shadows */
+  --lx-shadow-xs: 0 1px 2px rgba(16, 24, 40, 0.05);
+  --lx-shadow-sm: 0 1px 3px rgba(16, 24, 40, 0.1), 0 1px 2px rgba(16, 24, 40, 0.06);
+  --lx-shadow-md: 0 4px 8px -2px rgba(16, 24, 40, 0.1), 0 2px 4px -2px rgba(16, 24, 40, 0.06);
+  --lx-shadow-lg: 0 12px 16px -4px rgba(16, 24, 40, 0.08), 0 4px 6px -2px rgba(16, 24, 40, 0.03);
+  --lx-shadow-xl: 0 20px 24px -4px rgba(16, 24, 40, 0.08), 0 8px 8px -4px rgba(16, 24, 40, 0.03);
+  --lx-shadow-gold: 0 4px 14px rgba(212, 164, 55, 0.30);
+
+  /* Transitions */
+  --lx-transition-fast: 150ms cubic-bezier(0.4, 0, 0.2, 1);
+  --lx-transition-base: 250ms cubic-bezier(0.4, 0, 0.2, 1);
+  --lx-transition-smooth: 350ms cubic-bezier(0.4, 0, 0.2, 1);
+}

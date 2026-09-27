@@ -1,12 +1,56 @@
 /* You can add global styles to this file, and also import other style files */
 
-/* Ensure full height for sticky footer */
-html, body {
+/* ==========================================================================
+   LONEX INVESTMENTS - Global Design System Imports
+   ========================================================================== */
+@import './styles/variables.css';
+@import './styles/typography.css';
+@import './styles/themes.css';
+@import './styles/components.css';
+
+/* ==========================================================================
+   Core Layout & Transitions
+   ========================================================================== */
+*, *::before, *::after {
+  box-sizing: border-box;
+}
+
+html {
   height: 100%;
   margin: 0;
   padding: 0;
+  font-size: 16px;
+  scroll-behavior: smooth;
 }
 
-* {
-  box-sizing: border-box;
+body {
+  height: 100%;
+  margin: 0;
+  padding: 0;
+  background-color: var(--lx-bg-main);
+  color: var(--lx-text-primary);
+  font-family: var(--lx-font-paragraphs);
+  font-weight: var(--lx-fw-regular);
+  line-height: var(--lx-lh-normal);
+  transition: background-color var(--lx-transition-base), color var(--lx-transition-base);
+  overflow-x: hidden;
+}
+
+/* Main Container spacing consistency */
+main {
+  min-height: calc(100vh - 160px);
+  background-color: var(--lx-bg-main);
+  transition: background-color var(--lx-transition-base);
+}
+
+/* Ensure smooth transitions on cards and tables when toggling themes */
+.card,
+.table,
+.form-control,
+.form-select,
+.modal-content,
+.alert {
+  transition: background-color var(--lx-transition-base),
+              border-color var(--lx-transition-base),
+              color var(--lx-transition-base);
 }

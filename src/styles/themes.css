@@ -1,0 +1,206 @@
+/**
+ * LONEX INVESTMENTS - Global Theme System
+ * Centralized Light and Dark Themes with CSS Custom Properties & Bootstrap Integration
+ */
+
+/* ==========================================================================
+   1. Light Mode (Default)
+   ========================================================================== */
+:root,
+[data-theme="light"],
+[data-bs-theme="light"] {
+  /* Surfaces & Backgrounds */
+  --lx-bg-main: #F8F9FB;                  /* Soft White */
+  --lx-bg-card: #FFFFFF;                  /* Card Background */
+  --lx-bg-surface-elevated: #FFFFFF;
+  --lx-bg-subtle: #F2F4F7;
+  --lx-bg-hover: #F0F2F6;
+  --lx-bg-active: #E4E7EC;
+  --lx-bg-disabled: #F2F4F7;
+
+  /* Typography / Text Colors */
+  --lx-text-primary: #17191D;             /* Primary text (Charcoal Black) */
+  --lx-text-secondary: #667085;           /* Secondary text (Slate Gray) */
+  --lx-text-muted: #98A2B3;
+  --lx-text-disabled: #98A2B3;
+  --lx-text-inverse: #FFFFFF;
+  --lx-text-on-gold: #17191D;             /* Accessible high contrast text on gold */
+
+  /* Accents & Brand */
+  --lx-primary-accent: #D4A437;           /* Primary Gold */
+  --lx-primary-accent-hover: #B88722;
+  --lx-primary-accent-subtle: rgba(212, 164, 55, 0.12);
+  --lx-primary-accent-focus: rgba(212, 164, 55, 0.28);
+  --lx-secondary-accent: #F5C45E;         /* Premium Gold */
+
+  /* Borders & Dividers */
+  --lx-border-subtle: #EAECF0;            /* Subtle light gray */
+  --lx-border-default: #D0D5DD;
+  --lx-border-strong: #98A2B3;
+  --lx-border-focus: #D4A437;
+
+  /* Controls (Inputs, Selects) */
+  --lx-input-bg: #FFFFFF;
+  --lx-input-border: #D0D5DD;
+  --lx-input-text: #17191D;
+  --lx-input-placeholder: #98A2B3;
+  --lx-input-focus-border: #D4A437;
+  --lx-input-focus-ring: rgba(212, 164, 55, 0.25);
+  --lx-input-disabled-bg: #F2F4F7;
+  --lx-input-disabled-text: #98A2B3;
+
+  /* Tables */
+  --lx-table-bg: #FFFFFF;
+  --lx-table-header-bg: #F8F9FA;
+  --lx-table-header-text: #475467;
+  --lx-table-row-hover: rgba(212, 164, 55, 0.05);
+  --lx-table-row-striped: #F9FAFB;
+  --lx-table-border: #EAECF0;
+
+  /* Financial Status Colors - Consistent & Accessible */
+  --lx-status-success-color: #0D7A5B;
+  --lx-status-success-bg: #E7F6F1;
+  --lx-status-success-border: #A3E2CF;
+
+  --lx-status-pending-color: #9A6715;
+  --lx-status-pending-bg: #FEF6E7;
+  --lx-status-pending-border: #F8D89C;
+
+  --lx-status-error-color: #B93834;
+  --lx-status-error-bg: #FDF1F0;
+  --lx-status-error-border: #F3A9A7;
+
+  /* Dark Surface Elements (e.g. Header / Sidebar) */
+  --lx-surface-dark: #17191D;
+  --lx-surface-dark-text: #FFFFFF;
+
+  /* Shadows */
+  --lx-shadow-card: 0 2px 8px rgba(16, 24, 40, 0.06), 0 1px 2px rgba(16, 24, 40, 0.04);
+  --lx-shadow-dropdown: 0 10px 15px -3px rgba(16, 24, 40, 0.08), 0 4px 6px -4px rgba(16, 24, 40, 0.03);
+
+  /* ==========================================================================
+     Bootstrap 5 Variable Integration (Light Mode)
+     ========================================================================== */
+  --bs-body-bg: var(--lx-bg-main);
+  --bs-body-color: var(--lx-text-primary);
+  --bs-body-color-rgb: 23, 25, 29;
+  --bs-body-bg-rgb: 248, 249, 251;
+  --bs-primary: var(--lx-color-primary-gold);
+  --bs-primary-rgb: var(--lx-rgb-primary-gold);
+  --bs-secondary: var(--lx-color-slate-gray);
+  --bs-secondary-rgb: var(--lx-rgb-slate-gray);
+  --bs-success: var(--lx-color-emerald-green);
+  --bs-success-rgb: var(--lx-rgb-emerald-green);
+  --bs-warning: var(--lx-color-amber);
+  --bs-warning-rgb: var(--lx-rgb-amber);
+  --bs-danger: var(--lx-color-muted-red);
+  --bs-danger-rgb: var(--lx-rgb-muted-red);
+  --bs-border-color: var(--lx-border-subtle);
+  --bs-card-bg: var(--lx-bg-card);
+  --bs-card-color: var(--lx-text-primary);
+  --bs-card-border-color: var(--lx-border-subtle);
+  --bs-secondary-color: var(--lx-text-secondary);
+  --bs-link-color: var(--lx-primary-accent);
+  --bs-link-hover-color: var(--lx-primary-accent-hover);
+}
+
+/* ==========================================================================
+   2. Dark Mode
+   ========================================================================== */
+[data-theme="dark"],
+[data-bs-theme="dark"],
+.theme-dark {
+  /* Surfaces & Backgrounds */
+  --lx-bg-main: #101114;                  /* Main Background */
+  --lx-bg-card: #24262B;                  /* Card Background */
+  --lx-bg-surface-elevated: #2D3037;      /* Dialogs & elevated popups */
+  --lx-bg-subtle: #1A1C21;
+  --lx-bg-hover: #2C2F36;
+  --lx-bg-active: #34373F;
+  --lx-bg-disabled: #1E2025;
+
+  /* Typography / Text Colors */
+  --lx-text-primary: #FFFFFF;             /* Primary text (White) */
+  --lx-text-secondary: #98A2B3;           /* Secondary text (Readable Slate Gray) */
+  --lx-text-muted: #667085;
+  --lx-text-disabled: #475467;
+  --lx-text-inverse: #17191D;
+  --lx-text-on-gold: #17191D;             /* Accessible high contrast text on gold */
+
+  /* Accents & Brand */
+  --lx-primary-accent: #F5C45E;           /* Premium Gold for Dark Mode vibrancy */
+  --lx-primary-accent-hover: #E5B246;
+  --lx-primary-accent-subtle: rgba(245, 196, 94, 0.15);
+  --lx-primary-accent-focus: rgba(245, 196, 94, 0.35);
+  --lx-secondary-accent: #D4A437;         /* Primary Gold */
+
+  /* Borders & Dividers */
+  --lx-border-subtle: #383B40;            /* Dark Mode subtle border */
+  --lx-border-default: #474B52;
+  --lx-border-strong: #666C77;
+  --lx-border-focus: #F5C45E;
+
+  /* Controls (Inputs, Selects) */
+  --lx-input-bg: #1B1D22;
+  --lx-input-border: #383B40;
+  --lx-input-text: #FFFFFF;
+  --lx-input-placeholder: #667085;
+  --lx-input-focus-border: #F5C45E;
+  --lx-input-focus-ring: rgba(245, 196, 94, 0.28);
+  --lx-input-disabled-bg: #15171A;
+  --lx-input-disabled-text: #475467;
+
+  /* Tables */
+  --lx-table-bg: #24262B;
+  --lx-table-header-bg: #1B1D22;
+  --lx-table-header-text: #CBD5E1;
+  --lx-table-row-hover: rgba(245, 196, 94, 0.08);
+  --lx-table-row-striped: #1E2025;
+  --lx-table-border: #383B40;
+
+  /* Financial Status Colors - Consistent & Accessible for Dark Surfaces */
+  --lx-status-success-color: #34D399;
+  --lx-status-success-bg: rgba(21, 154, 116, 0.20);
+  --lx-status-success-border: rgba(52, 211, 153, 0.35);
+
+  --lx-status-pending-color: #FBBF24;
+  --lx-status-pending-bg: rgba(229, 163, 61, 0.20);
+  --lx-status-pending-border: rgba(251, 191, 36, 0.35);
+
+  --lx-status-error-color: #F87171;
+  --lx-status-error-bg: rgba(217, 83, 79, 0.22);
+  --lx-status-error-border: rgba(248, 113, 113, 0.35);
+
+  /* Dark Surface Elements */
+  --lx-surface-dark: #101114;
+  --lx-surface-dark-text: #FFFFFF;
+
+  /* Shadows */
+  --lx-shadow-card: 0 4px 12px rgba(0, 0, 0, 0.35), 0 1px 3px rgba(0, 0, 0, 0.2);
+  --lx-shadow-dropdown: 0 12px 24px rgba(0, 0, 0, 0.45);
+
+  /* ==========================================================================
+     Bootstrap 5 Variable Integration (Dark Mode)
+     ========================================================================== */
+  --bs-body-bg: var(--lx-bg-main);
+  --bs-body-color: var(--lx-text-primary);
+  --bs-body-color-rgb: 255, 255, 255;
+  --bs-body-bg-rgb: 16, 17, 20;
+  --bs-primary: var(--lx-color-premium-gold);
+  --bs-primary-rgb: var(--lx-rgb-premium-gold);
+  --bs-secondary: var(--lx-color-slate-gray);
+  --bs-secondary-rgb: var(--lx-rgb-slate-gray);
+  --bs-success: var(--lx-color-emerald-green);
+  --bs-success-rgb: var(--lx-rgb-emerald-green);
+  --bs-warning: var(--lx-color-amber);
+  --bs-warning-rgb: var(--lx-rgb-amber);
+  --bs-danger: var(--lx-color-muted-red);
+  --bs-danger-rgb: var(--lx-rgb-muted-red);
+  --bs-border-color: var(--lx-border-subtle);
+  --bs-card-bg: var(--lx-bg-card);
+  --bs-card-color: var(--lx-text-primary);
+  --bs-card-border-color: var(--lx-border-subtle);
+  --bs-secondary-color: var(--lx-text-secondary);
+  --bs-link-color: var(--lx-primary-accent);
+  --bs-link-hover-color: var(--lx-primary-accent-hover);
+}

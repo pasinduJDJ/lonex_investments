@@ -74,9 +74,17 @@
 
           <!-- Action Buttons -->
           <div class="d-flex flex-wrap gap-3 justify-content-center mt-5">
-            <button *ngIf="!isEditing" type="button" class="btn btn-success px-4" (click)="enableEdit()">Upgrade</button>
-            <button *ngIf="isEditing" type="button" class="btn btn-success px-4" (click)="saveEdit()">Save</button>
-            
+            <button *ngIf="!isEditing" type="button" class="btn btn-success px-4" (click)="enableEdit()">
+              <i class="bi bi-pencil me-2"></i>Edit
+            </button>
+            <button *ngIf="isEditing" type="button" class="btn btn-success px-4" (click)="saveEdit()" [disabled]="isSaving">
+              <span *ngIf="isSaving" class="spinner-border spinner-border-sm me-2" role="status"></span>
+              <i *ngIf="!isSaving" class="bi bi-check me-2"></i>
+              {{ isSaving ? 'Saving...' : 'Save' }}
+            </button>
+            <button *ngIf="isEditing" type="button" class="btn btn-secondary px-4" (click)="isEditing = false" [disabled]="isSaving">
+              Cancel
+            </button>
           </div>
         </div>
       </ng-container>

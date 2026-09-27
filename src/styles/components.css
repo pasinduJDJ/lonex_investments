@@ -1,0 +1,465 @@
+/**
+ * LONEX INVESTMENTS - Global Reusable Components & Bootstrap Integration
+ * Buttons, Cards, Tables, Forms, Navigation, Badges, Modals & Notifications
+ */
+
+/* ==========================================================================
+   1. Buttons
+   ========================================================================== */
+
+/* Primary Button (Primary Gold) */
+.btn-lx-primary,
+.lx-btn-primary,
+.btn-primary {
+  background-color: var(--lx-primary-accent) !important;
+  border-color: var(--lx-primary-accent) !important;
+  color: var(--lx-text-on-gold) !important;
+  font-family: var(--lx-font-links);
+  font-weight: var(--lx-fw-semibold);
+  font-size: var(--lx-fs-sm);
+  padding: 0.55rem 1.25rem;
+  border-radius: var(--lx-radius-md);
+  transition: all var(--lx-transition-fast);
+  box-shadow: 0 1px 2px rgba(16, 24, 40, 0.05);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  cursor: pointer;
+  text-decoration: none;
+}
+
+.btn-lx-primary:hover,
+.lx-btn-primary:hover,
+.btn-primary:hover {
+  background-color: var(--lx-primary-accent-hover) !important;
+  border-color: var(--lx-primary-accent-hover) !important;
+  color: var(--lx-text-on-gold) !important;
+  transform: translateY(-1px);
+  box-shadow: var(--lx-shadow-gold);
+}
+
+.btn-lx-primary:active,
+.lx-btn-primary:active,
+.btn-primary:active {
+  transform: translateY(0);
+}
+
+.btn-lx-primary:focus-visible,
+.lx-btn-primary:focus-visible,
+.btn-primary:focus-visible {
+  outline: none;
+  box-shadow: 0 0 0 3px var(--lx-primary-accent-focus) !important;
+}
+
+/* Secondary Button (Slate Gray / Surface Border) */
+.btn-lx-secondary,
+.lx-btn-secondary,
+.btn-secondary {
+  background-color: var(--lx-bg-card) !important;
+  border-color: var(--lx-border-default) !important;
+  color: var(--lx-text-primary) !important;
+  font-family: var(--lx-font-links);
+  font-weight: var(--lx-fw-semibold);
+  font-size: var(--lx-fs-sm);
+  padding: 0.55rem 1.25rem;
+  border-radius: var(--lx-radius-md);
+  transition: all var(--lx-transition-fast);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  cursor: pointer;
+  text-decoration: none;
+}
+
+.btn-lx-secondary:hover,
+.lx-btn-secondary:hover,
+.btn-secondary:hover {
+  background-color: var(--lx-bg-hover) !important;
+  border-color: var(--lx-border-strong) !important;
+  color: var(--lx-text-primary) !important;
+}
+
+/* Danger Button (Muted Red) */
+.btn-lx-danger,
+.lx-btn-danger,
+.btn-danger {
+  background-color: var(--lx-color-muted-red) !important;
+  border-color: var(--lx-color-muted-red) !important;
+  color: #FFFFFF !important;
+  font-family: var(--lx-font-links);
+  font-weight: var(--lx-fw-semibold);
+  font-size: var(--lx-fs-sm);
+  padding: 0.55rem 1.25rem;
+  border-radius: var(--lx-radius-md);
+  transition: all var(--lx-transition-fast);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  cursor: pointer;
+  text-decoration: none;
+}
+
+.btn-lx-danger:hover,
+.lx-btn-danger:hover,
+.btn-danger:hover {
+  background-color: #B93834 !important;
+  border-color: #B93834 !important;
+  color: #FFFFFF !important;
+  box-shadow: 0 4px 12px rgba(217, 83, 79, 0.35);
+}
+
+/* Outline Gold Button */
+.btn-lx-outline-primary,
+.lx-btn-outline-primary,
+.btn-outline-primary {
+  background-color: transparent !important;
+  border: 1.5px solid var(--lx-primary-accent) !important;
+  color: var(--lx-primary-accent) !important;
+  font-family: var(--lx-font-links);
+  font-weight: var(--lx-fw-semibold);
+  font-size: var(--lx-fs-sm);
+  padding: 0.5rem 1.25rem;
+  border-radius: var(--lx-radius-md);
+  transition: all var(--lx-transition-fast);
+}
+
+.btn-lx-outline-primary:hover,
+.lx-btn-outline-primary:hover,
+.btn-outline-primary:hover {
+  background-color: var(--lx-primary-accent) !important;
+  color: var(--lx-text-on-gold) !important;
+}
+
+/* Disabled Button States */
+button:disabled,
+.btn:disabled,
+.btn-lx-primary:disabled,
+.btn-lx-secondary:disabled,
+.btn-lx-danger:disabled {
+  opacity: 0.55 !important;
+  cursor: not-allowed !important;
+  box-shadow: none !important;
+  pointer-events: none;
+}
+
+/* ==========================================================================
+   2. Cards and Panels
+   ========================================================================== */
+.card,
+.lx-card,
+.lx-panel {
+  background-color: var(--lx-bg-card);
+  color: var(--lx-text-primary);
+  border: 1px solid var(--lx-border-subtle);
+  border-radius: var(--lx-radius-lg);
+  box-shadow: var(--lx-shadow-card);
+  transition: background-color var(--lx-transition-base), border-color var(--lx-transition-base), box-shadow var(--lx-transition-base);
+}
+
+.card-header,
+.lx-card-header {
+  background-color: transparent;
+  border-bottom: 1px solid var(--lx-border-subtle);
+  padding: 1.15rem 1.5rem;
+  font-family: var(--lx-font-subtitles);
+  font-weight: var(--lx-fw-semibold);
+}
+
+.card-body,
+.lx-card-body {
+  padding: 1.5rem;
+}
+
+.card-footer,
+.lx-card-footer {
+  background-color: transparent;
+  border-top: 1px solid var(--lx-border-subtle);
+  padding: 1rem 1.5rem;
+}
+
+/* Elevated Card (for highlights) */
+.lx-card-elevated {
+  background-color: var(--lx-bg-card);
+  border: 1px solid var(--lx-border-subtle);
+  box-shadow: var(--lx-shadow-lg);
+  border-radius: var(--lx-radius-xl);
+}
+
+.lx-card-highlight {
+  border-left: 4px solid var(--lx-primary-accent);
+}
+
+/* ==========================================================================
+   3. Tables
+   ========================================================================== */
+.table,
+.lx-table {
+  width: 100%;
+  color: var(--lx-text-primary);
+  border-collapse: separate;
+  border-spacing: 0;
+  border-color: var(--lx-table-border);
+  margin-bottom: 1rem;
+}
+
+.table > :not(caption) > * > *,
+.lx-table > :not(caption) > * > * {
+  background-color: transparent;
+  color: inherit;
+  border-bottom-width: 1px;
+  border-bottom-color: var(--lx-table-border);
+  padding: 0.85rem 1rem;
+  vertical-align: middle;
+}
+
+.table thead th,
+.lx-table thead th {
+  font-family: var(--lx-font-subtitles);
+  font-weight: var(--lx-fw-semibold);
+  font-size: var(--lx-fs-xs);
+  text-transform: uppercase;
+  letter-spacing: var(--lx-tracking-wide);
+  color: var(--lx-table-header-text);
+  background-color: var(--lx-table-header-bg);
+  border-bottom: 1.5px solid var(--lx-table-border);
+  padding-top: 0.75rem;
+  padding-bottom: 0.75rem;
+}
+
+.table tbody tr:hover,
+.lx-table tbody tr:hover {
+  background-color: var(--lx-table-row-hover);
+}
+
+.table-striped tbody tr:nth-of-type(odd) {
+  background-color: var(--lx-table-row-striped);
+}
+
+/* Table Responsive wrapper cleanups */
+.table-responsive {
+  border: 1px solid var(--lx-border-subtle);
+  border-radius: var(--lx-radius-md);
+  background-color: var(--lx-bg-card);
+}
+
+/* ==========================================================================
+   4. Form Controls
+   ========================================================================== */
+.form-control,
+.form-select,
+.lx-form-control,
+.lx-form-select {
+  background-color: var(--lx-input-bg);
+  border: 1px solid var(--lx-input-border);
+  color: var(--lx-input-text);
+  font-family: var(--lx-font-paragraphs);
+  font-size: var(--lx-fs-sm);
+  border-radius: var(--lx-radius-md);
+  padding: 0.55rem 0.85rem;
+  transition: border-color var(--lx-transition-fast), box-shadow var(--lx-transition-fast);
+}
+
+.form-control:focus,
+.form-select:focus,
+.lx-form-control:focus,
+.lx-form-select:focus {
+  background-color: var(--lx-input-bg);
+  border-color: var(--lx-input-focus-border);
+  color: var(--lx-input-text);
+  box-shadow: 0 0 0 3px var(--lx-input-focus-ring);
+  outline: none;
+}
+
+.form-control::placeholder {
+  color: var(--lx-input-placeholder);
+  opacity: 1;
+}
+
+.form-control:disabled,
+.form-select:disabled {
+  background-color: var(--lx-input-disabled-bg);
+  color: var(--lx-input-disabled-text);
+  cursor: not-allowed;
+  opacity: 0.7;
+}
+
+/* ==========================================================================
+   5. Navigation & Active States
+   ========================================================================== */
+.nav-link,
+.lx-nav-link {
+  font-family: var(--lx-font-links);
+  font-weight: var(--lx-fw-medium);
+  font-size: var(--lx-fs-sm);
+  color: var(--lx-text-secondary);
+  padding: 0.5rem 1rem;
+  border-radius: var(--lx-radius-sm);
+  transition: all var(--lx-transition-fast);
+}
+
+.nav-link:hover,
+.lx-nav-link:hover {
+  color: var(--lx-primary-accent);
+}
+
+.nav-link.active,
+.lx-nav-link.active {
+  color: var(--lx-primary-accent) !important;
+  font-weight: var(--lx-fw-semibold);
+  background-color: var(--lx-primary-accent-subtle);
+}
+
+/* Theme Switcher Button */
+.btn-theme-toggle {
+  background: transparent;
+  border: 1px solid var(--lx-border-subtle);
+  color: var(--lx-text-primary);
+  border-radius: var(--lx-radius-pill);
+  padding: 0.4rem 0.85rem;
+  font-family: var(--lx-font-links);
+  font-size: var(--lx-fs-xs);
+  font-weight: var(--lx-fw-semibold);
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  cursor: pointer;
+  transition: all var(--lx-transition-fast);
+}
+
+.btn-theme-toggle:hover {
+  border-color: var(--lx-primary-accent);
+  color: var(--lx-primary-accent);
+  background-color: var(--lx-primary-accent-subtle);
+}
+
+/* ==========================================================================
+   6. Status Badges
+   ========================================================================== */
+.badge,
+.lx-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+  font-family: var(--lx-font-subtitles);
+  font-size: var(--lx-fs-xs);
+  font-weight: var(--lx-fw-semibold);
+  padding: 0.28rem 0.65rem;
+  border-radius: var(--lx-radius-pill);
+  line-height: 1;
+}
+
+/* Emerald Green - Success */
+.badge-success,
+.lx-badge-success,
+.bg-success {
+  background-color: var(--lx-status-success-bg) !important;
+  color: var(--lx-status-success-color) !important;
+  border: 1px solid var(--lx-status-success-border);
+}
+
+/* Amber - Pending */
+.badge-warning,
+.lx-badge-warning,
+.lx-badge-pending,
+.bg-warning {
+  background-color: var(--lx-status-pending-bg) !important;
+  color: var(--lx-status-pending-color) !important;
+  border: 1px solid var(--lx-status-pending-border);
+}
+
+/* Muted Red - Overdue / Error */
+.badge-danger,
+.lx-badge-danger,
+.lx-badge-error,
+.bg-danger {
+  background-color: var(--lx-status-error-bg) !important;
+  color: var(--lx-status-error-color) !important;
+  border: 1px solid var(--lx-status-error-border);
+}
+
+/* Gold - Primary / Featured */
+.badge-gold,
+.lx-badge-gold,
+.badge-primary,
+.bg-primary {
+  background-color: var(--lx-primary-accent-subtle) !important;
+  color: var(--lx-primary-accent) !important;
+  border: 1px solid var(--lx-primary-accent);
+}
+
+/* Neutral - Slate */
+.badge-secondary,
+.lx-badge-neutral,
+.bg-secondary {
+  background-color: var(--lx-bg-subtle) !important;
+  color: var(--lx-text-secondary) !important;
+  border: 1px solid var(--lx-border-subtle);
+}
+
+/* ==========================================================================
+   7. Dialogs & Notifications
+   ========================================================================== */
+.modal-content,
+.lx-dialog,
+.lx-modal {
+  background-color: var(--lx-bg-surface-elevated);
+  color: var(--lx-text-primary);
+  border: 1px solid var(--lx-border-subtle);
+  border-radius: var(--lx-radius-xl);
+  box-shadow: var(--lx-shadow-xl);
+}
+
+.modal-header {
+  border-bottom: 1px solid var(--lx-border-subtle);
+  padding: 1.25rem 1.5rem;
+  font-family: var(--lx-font-titles);
+}
+
+.modal-footer {
+  border-top: 1px solid var(--lx-border-subtle);
+  padding: 1rem 1.5rem;
+}
+
+/* Alerts / Notifications */
+.alert,
+.lx-alert {
+  border-radius: var(--lx-radius-md);
+  padding: 0.85rem 1.15rem;
+  font-family: var(--lx-font-paragraphs);
+  font-size: var(--lx-fs-sm);
+  display: flex;
+  align-items: center;
+  gap: 0.65rem;
+  border-width: 1px;
+}
+
+.alert-success,
+.lx-alert-success {
+  background-color: var(--lx-status-success-bg);
+  border-color: var(--lx-status-success-border);
+  color: var(--lx-status-success-color);
+}
+
+.alert-warning,
+.lx-alert-warning {
+  background-color: var(--lx-status-pending-bg);
+  border-color: var(--lx-status-pending-border);
+  color: var(--lx-status-pending-color);
+}
+
+.alert-danger,
+.lx-alert-danger {
+  background-color: var(--lx-status-error-bg);
+  border-color: var(--lx-status-error-border);
+  color: var(--lx-status-error-color);
+}
+
+.alert-info,
+.lx-alert-info {
+  background-color: var(--lx-primary-accent-subtle);
+  border-color: var(--lx-primary-accent);
+  color: var(--lx-text-primary);
+}

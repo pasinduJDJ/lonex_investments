@@ -18,6 +18,7 @@ export class SingleMemberScreenComponent implements OnInit {
   client$: Observable<Client | undefined> = of(undefined);
   loans$: Observable<Loan[]> = of([]);
   isEditing = false;
+  isSaving = false;
   editableClient: any = {};
   private clientSubject = new BehaviorSubject<Client | undefined>(undefined);
 
@@ -47,10 +48,49 @@ export class SingleMemberScreenComponent implements OnInit {
   }
 
   saveEdit() {
-    // In a real app, call a service to save changes to the backend here
-    this.isEditing = false;
-    // Update the observable locally for now
-    this.clientSubject.next({ ...this.clientSubject.value, ...this.editableClient });
+    const client = this.clientSubject.value;
+    if (!client) {
+      console.error('No client data available');
+      return;
+    }
+
+    // Prepare the update data - only include fields that can be edited
+    const updateData: Partial<Client> = {
+      mobile_number: this.editableClient.mobile_number,
+      home_number: this.editableClient.home_number,
+      street_address: this.editableClient.street_address,
+      town_one: this.editableClient.town_one,
+      town_two: this.editableClient.town_two,
+      group: this.editableClient.group,
+      first_guarantor_name: this.editableClient.first_guarantor_name,
+      first_guarantor_nic: this.editableClient.first_guarantor_nic,
+      first_guarantor_tp: this.editableClient.first_guarantor_tp,
+      first_guarantor_address: this.editableClient.first_guarantor_address,
+      second_guarantor_name: this.editableClient.second_guarantor_name,
+      second_guarantor_nic: this.editableClient.second_guarantor_nic,
+      second_guarantor_tp: this.editableClient.second_guarantor_tp,
+      second_guarantor_address: this.editableClient.second_guarantor_address
+    };
+
+    // Set saving state
+    this.isSaving = true;
+
+    // Call the service to update the client in the database
+    this.loanService.updateClient(client.client_id, updateData).subscribe({
+      next: (updatedClient) => {
+        console.log('Client updated successfully:', updatedClient);
+        this.isEditing = false;
+        this.isSaving = false;
+        // Update the observable with the new data from the database
+        this.clientSubject.next(updatedClient);
+      },
+      error: (error) => {
+        console.error('Error updating client:', error);
+        this.isSaving = false;
+        // You might want to show an error message to the user here
+        alert('Error updating client: ' + error.message);
+      }
+    });
   }
 
   getPaidInstallments(loan: Loan): number | string {

@@ -4,6 +4,7 @@ import { HeaderComponent } from './shared/header/header.component';
 import { FooterComponent } from "./shared/footer/footer.component";
 import { filter } from 'rxjs/operators';
 import { CommonModule } from '@angular/common';
+import { ThemeService } from './service/theme.service';
 
 @Component({
   selector: 'app-root',
@@ -16,7 +17,10 @@ export class AppComponent {
   title = 'lonex_investments';
   currentUrl = '';
 
-  constructor(private router: Router) {
+  constructor(
+    private router: Router,
+    public themeService: ThemeService
+  ) {
     this.router.events.pipe(filter(event => event instanceof NavigationEnd)).subscribe((event: any) => {
       this.currentUrl = event.urlAfterRedirects;
     });

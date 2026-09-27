@@ -64,6 +64,8 @@
                 <i class="bi bi-check-circle me-2"></i>
                 Client found! You can now proceed with loan details.
             </div>
+
+
             <!-- Alert Messages -->
             <div *ngIf="errorMessage" class="alert alert-danger alert-dismissible fade show" role="alert">
                 <i class="bi bi-exclamation-triangle me-2"></i>
@@ -77,7 +79,9 @@
                 <button type="button" class="btn-close" (click)="successMessage = ''"></button>
             </div>
             
-            <form (ngSubmit)="onSubmit()" #loanForm="ngForm">
+            <!-- Loan Form (only show if client is found) -->
+            <form *ngIf="showLoanForm" (ngSubmit)="onSubmit()" #loanForm="ngForm">
+
                 <div class="row mt-4">
                     <div class="col-md-6">
                         <div class="px-4">
@@ -107,78 +111,66 @@
                             </div>
                             <br>
                             <br>
-                            <label for="houseNumber" class="form-label fw-bold">Enter Loan Amount</label>
-                            <div class="input-group">
-                                <input type="number" id="houseNumber" class="form-control" name="houseNumber" 
-                                       [(ngModel)]="principalAmount" (input)="calculateTotal()" step="0.01" min="0" required>
-                            </div>
-                            <div class="mt-5 text-center d-flex justify-content-around">
-                                <button type="button" class="btn btn-secondary px-5" (click)="onClear()" [disabled]="isLoading">Clear</button>
-                                <button type="submit" class="btn px-5 text-white" style="background-color: #003566;" 
-                                        [disabled]="isLoading || !loanForm.form.valid || !foundClient">
-                                    <span *ngIf="isLoading" class="spinner-border spinner-border-sm me-2" role="status"></span>
-                                    {{ isLoading ? 'Creating...' : 'Submit Loan ' }}
-                                </button>
-                            </div>
+                            
                         </div>
                     </div>
                     <div class="col-5">
                         <div class="form mt-4">
-                            <label for="mobileNumber" class="form-label">Select Loan Type</label>
-                            <div class="input-group">
-                                <select 
-                                    id="mobileNumber" 
-                                    class="form-control" 
-                                    name="mobileNumber" 
-                                    [(ngModel)]="loanType" 
-                                    (change)="onLoanTypeChange()"
-                                    required>
-                                    <option value="daily">Daily</option>
-                                    <option value="weekly">Weekly</option>
-                                    <option value="monthly">Monthly</option>
-                                </select>
-                            </div>
-                            <label for="houseNumber" class="form-label">Enter Loan Amount</label>
-                            <div class="input-group">
-                                <input type="number" id="houseNumber" class="form-control" name="houseNumber" 
-                                       [(ngModel)]="principalAmount" (input)="calculateTotal()" step="0.01" min="0" required>
-                            </div>
-                            <label for="streetName" class="form-label">Enter Document charges</label>
-                            <div class="input-group">
-                                <input type="number" id="streetName" class="form-control" name="streetName" 
-                                       [(ngModel)]="documentCharge" (input)="calculateTotal()" step="0.01" min="0">
-                            </div>
-                            <label for="townone" class="form-label">Enter Loan Rate (Annual %)</label>
-                            <div class="input-group">
-                                <input type="number" 
-                                       id="townone" 
-                                       class="form-control" 
-                                       name="townone" 
-                                       [(ngModel)]="interestRate" 
-                                       (input)="onInterestRateChange($event)" 
-                                       step="0.01" 
-                                       min="0" 
-                                       max="100"
-                                       placeholder="e.g., 4.32"
-                                       required>
-                                <span class="input-group-text">%</span>
-                            </div>
-                            <label for="townTwo" class="form-label">Total Payment</label>
-                            <div class="input-group">
-                                <input type="text" id="townTwo" class="form-control" name="townTwo" 
-                                       [value]="calculatedTotal | number:'1.2-2'" readonly>
-                            </div>
+                                                         <label for="loanType" class="form-label">Select Loan Type *</label>
+                             <div class="input-group">
+                                 <select 
+                                     id="loanType" 
+                                     class="form-control" 
+                                     name="loanType" 
+                                     [(ngModel)]="loanType" 
+                                     (change)="onLoanTypeChange()"
+                                     required>
+                                     <option value="daily">Daily</option>
+                                     <option value="weekly">Weekly</option>
+                                     <option value="monthly">Monthly</option>
+                                 </select>
+                             </div>
+                             <label for="principalAmount" class="form-label">Enter Loan Amount *</label>
+                             <div class="input-group">
+                                 <input type="number" id="principalAmount" class="form-control" name="principalAmount" 
+                                        [(ngModel)]="principalAmount" (input)="calculateTotal()" step="0.01" min="0" required>
+                             </div>
+                             <label for="documentCharge" class="form-label">Enter Document charges</label>
+                             <div class="input-group">
+                                 <input type="number" id="documentCharge" class="form-control" name="documentCharge" 
+                                        [(ngModel)]="documentCharge" (input)="calculateTotal()" step="0.01" min="0">
+                             </div>
+                                                         <label for="interestRate" class="form-label">Enter Loan Rate (Annual %) *</label>
+                             <div class="input-group">
+                                 <input type="number" 
+                                        id="interestRate" 
+                                        class="form-control" 
+                                        name="interestRate" 
+                                        [(ngModel)]="interestRate" 
+                                        (input)="onInterestRateChange($event)" 
+                                        step="0.01" 
+                                        min="0" 
+                                        max="100"
+                                        placeholder="e.g., 4.32"
+                                        required>
+                                 <span class="input-group-text">%</span>
+                             </div>
+                                                         <label for="calculatedTotal" class="form-label">Total Payment</label>
+                             <div class="input-group">
+                                 <input type="text" id="calculatedTotal" class="form-control" name="calculatedTotal" 
+                                        [value]="calculatedTotal | number:'1.2-2'" readonly>
+                             </div>
                             <label for="loanNumber" class="form-label">Loan Number</label>
                             <div class="input-group">
                                 <input type="text" id="loanNumber" class="form-control" name="loanNumber" 
-                                       [(ngModel)]="loanNumber" placeholder="Auto-generated" required>
+                                       [(ngModel)]="loanNumber" placeholder="Auto-generated" readonly>
                             </div>
-                            <label for="startDate" class="form-label">Select Start Date</label>
+                            <label for="startDate" class="form-label">Select Start Date *</label>
                             <div class="input-group">
                                 <input type="date" id="startDate" class="form-control" name="startDate" 
                                        [(ngModel)]="startDate" (change)="onStartDateChange()" required>
                             </div>
-                            <label for="endDate" class="form-label">Select End Date</label>
+                            <label for="endDate" class="form-label">Select End Date *</label>
                             <div class="input-group">
                                 <input type="date" id="endDate" class="form-control" name="endDate" 
                                        [(ngModel)]="endDate" (change)="onEndDateChange()" required>
@@ -188,6 +180,20 @@
                                 <input type="number" id="installments" class="form-control" name="installments" 
                                        [value]="numberOfInstallments" readonly>
                             </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Submit Button (always show but disabled until all validations pass) -->
+                <div class="row mt-4">
+                    <div class="col-12 text-center">
+                        <div class="d-flex justify-content-around">
+                            <button type="button" class="btn btn-secondary px-5" (click)="onClear()" [disabled]="isLoading">Clear</button>
+                            <button type="submit" class="btn px-5 text-white" style="background-color: #003566;" 
+                                    [disabled]="isLoading || !isFormReadyForSubmit()">
+                                <span *ngIf="isLoading" class="spinner-border spinner-border-sm me-2" role="status"></span>
+                                {{ isLoading ? 'Creating...' : 'Submit Loan' }}
+                            </button>
                         </div>
                     </div>
                 </div>

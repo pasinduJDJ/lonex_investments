@@ -1,0 +1,212 @@
+/**
+ * LONEX INVESTMENTS - Global Typography System
+ * Google Fonts: Poppins (Titles), Manrope (Subtitles), Inter (Paragraphs), DM Sans (Links)
+ */
+
+@import url('https://fonts.googleapis.com/css2?family=DM+Sans:ital,opsz,wght@0,9..40,500;0,9..40,600;1,9..40,500;1,9..40,600&family=Inter:wght@400;500;600&family=Manrope:wght@500;600;700&family=Poppins:wght@600;700&display=swap');
+
+:root {
+  /* ==========================================================================
+     1. Font Families
+     ========================================================================== */
+  --lx-font-titles: 'Poppins', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+  --lx-font-subtitles: 'Manrope', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+  --lx-font-paragraphs: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+  --lx-font-links: 'DM Sans', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+
+  /* Font Weights */
+  --lx-fw-regular: 400;
+  --lx-fw-medium: 500;
+  --lx-fw-semibold: 600;
+  --lx-fw-bold: 700;
+
+  /* Line Heights */
+  --lx-lh-tight: 1.2;
+  --lx-lh-snug: 1.35;
+  --lx-lh-normal: 1.5;
+  --lx-lh-relaxed: 1.625;
+
+  /* Letter Spacing */
+  --lx-tracking-tighter: -0.03em;
+  --lx-tracking-tight: -0.015em;
+  --lx-tracking-normal: 0em;
+  --lx-tracking-wide: 0.025em;
+  --lx-tracking-wider: 0.05em;
+
+  /* Responsive Font Sizes */
+  --lx-fs-xs: clamp(0.7rem, 0.65rem + 0.25vw, 0.75rem);   /* 11px - 12px */
+  --lx-fs-sm: clamp(0.8125rem, 0.78rem + 0.2vw, 0.875rem); /* 13px - 14px */
+  --lx-fs-base: clamp(0.9375rem, 0.9rem + 0.2vw, 1rem);    /* 15px - 16px */
+  --lx-fs-md: clamp(1.05rem, 1rem + 0.3vw, 1.125rem);      /* 16.8px - 18px */
+  --lx-fs-lg: clamp(1.15rem, 1.05rem + 0.5vw, 1.25rem);    /* 18.4px - 20px */
+  --lx-fs-xl: clamp(1.35rem, 1.2rem + 0.75vw, 1.5rem);     /* 21.6px - 24px */
+  --lx-fs-2xl: clamp(1.6rem, 1.4rem + 1vw, 1.875rem);      /* 25.6px - 30px */
+  --lx-fs-3xl: clamp(1.9rem, 1.6rem + 1.5vw, 2.25rem);     /* 30.4px - 36px */
+  --lx-fs-4xl: clamp(2.25rem, 1.8rem + 2vw, 2.75rem);      /* 36px - 44px */
+}
+
+/* ==========================================================================
+   2. Global Typography Element Defaults
+   ========================================================================== */
+
+/* Base Paragraphs / Normal Text */
+html,
+body,
+input,
+textarea,
+select,
+button,
+table,
+.lx-paragraph,
+.lx-body {
+  font-family: var(--lx-font-paragraphs);
+  font-weight: var(--lx-fw-regular);
+  line-height: var(--lx-lh-normal);
+  color: var(--lx-text-primary);
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+p {
+  margin-top: 0;
+  margin-bottom: 0.85rem;
+  font-family: var(--lx-font-paragraphs);
+  font-weight: var(--lx-fw-regular);
+  color: var(--lx-text-primary);
+}
+
+.text-muted,
+.lx-text-secondary {
+  color: var(--lx-text-secondary) !important;
+}
+
+/* Titles — Poppins (Weights 600, 700) */
+h1,
+h2,
+h3,
+h4,
+.lx-title-display,
+.lx-title-1,
+.lx-title-2,
+.lx-title-3,
+.lx-title-4,
+.module-title,
+.dashboard-heading {
+  font-family: var(--lx-font-titles);
+  font-weight: var(--lx-fw-bold);
+  line-height: var(--lx-lh-tight);
+  color: var(--lx-text-primary);
+  letter-spacing: var(--lx-tracking-tight);
+}
+
+h1, .lx-title-1 {
+  font-size: var(--lx-fs-3xl);
+  font-weight: var(--lx-fw-bold);
+  margin-bottom: 1rem;
+}
+
+h2, .lx-title-2 {
+  font-size: var(--lx-fs-2xl);
+  font-weight: var(--lx-fw-bold);
+  margin-bottom: 0.85rem;
+}
+
+h3, .lx-title-3 {
+  font-size: var(--lx-fs-xl);
+  font-weight: var(--lx-fw-semibold);
+  margin-bottom: 0.75rem;
+}
+
+h4, .lx-title-4 {
+  font-size: var(--lx-fs-lg);
+  font-weight: var(--lx-fw-semibold);
+  margin-bottom: 0.65rem;
+}
+
+/* Subtitles — Manrope (Weights 500, 600) */
+h5,
+h6,
+.lx-subtitle,
+.lx-subtitle-1,
+.lx-subtitle-2,
+.section-heading,
+.card-header-title,
+.card-title,
+.form-section-title {
+  font-family: var(--lx-font-subtitles);
+  font-weight: var(--lx-fw-semibold);
+  line-height: var(--lx-lh-snug);
+  color: var(--lx-text-primary);
+  letter-spacing: var(--lx-tracking-normal);
+}
+
+h5, .lx-subtitle-1 {
+  font-size: var(--lx-fs-md);
+  font-weight: var(--lx-fw-semibold);
+  margin-bottom: 0.5rem;
+}
+
+h6, .lx-subtitle-2 {
+  font-size: var(--lx-fs-base);
+  font-weight: var(--lx-fw-medium);
+  margin-bottom: 0.4rem;
+}
+
+.form-label,
+label,
+.lx-label {
+  font-family: var(--lx-font-subtitles);
+  font-size: var(--lx-fs-sm);
+  font-weight: var(--lx-fw-semibold);
+  color: var(--lx-text-primary);
+  margin-bottom: 0.35rem;
+  letter-spacing: var(--lx-tracking-normal);
+}
+
+/* Links & Navigation — DM Sans (Weights 500, 600) */
+a,
+.nav-link,
+.lx-link,
+.breadcrumb-item a,
+.btn-link {
+  font-family: var(--lx-font-links);
+  font-weight: var(--lx-fw-medium);
+  color: var(--lx-primary-accent);
+  text-decoration: none;
+  transition: color var(--lx-transition-fast);
+}
+
+a:hover,
+.nav-link:hover,
+.lx-link:hover {
+  color: var(--lx-primary-accent-hover);
+}
+
+.lx-link-action {
+  font-family: var(--lx-font-links);
+  font-weight: var(--lx-fw-semibold);
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+}
+
+/* Breadcrumbs with DM Sans */
+.breadcrumb {
+  font-family: var(--lx-font-links);
+  font-size: var(--lx-fs-sm);
+}
+
+.breadcrumb-item {
+  font-weight: var(--lx-fw-medium);
+}
+
+.breadcrumb-item.active {
+  color: var(--lx-text-secondary);
+  font-weight: var(--lx-fw-semibold);
+}
+
+/* Code & Numerical Data */
+code, kbd, samp, pre {
+  font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;
+  font-size: 0.875em;
+}

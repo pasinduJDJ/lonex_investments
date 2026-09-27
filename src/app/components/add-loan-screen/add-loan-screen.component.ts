@@ -17,7 +17,7 @@ const GROUP_CODE_MAP: { [key: string]: string } = {
   selector: 'app-add-loan-screen',
   standalone: true,
   imports: [CommonModule, FormsModule],
-  templateUrl: './add-loan-screen.component.html',
+  templateUrl:'./add-loan-screen.component.html',
   styleUrl: './add-loan-screen.component.css'
 })
 export class AddLoanScreenComponent implements OnInit {
@@ -50,6 +50,11 @@ export class AddLoanScreenComponent implements OnInit {
   isLoading: boolean = false;
   errorMessage: string = '';
   successMessage: string = '';
+  
+  // Step-by-step validation state
+  isClientSearched: boolean = false;
+  isClientFound: boolean = false;
+  showLoanForm: boolean = false;
   
   // Bank Capital
   currentBankCapital: number = 0;
@@ -98,6 +103,9 @@ export class AddLoanScreenComponent implements OnInit {
     this.isSearching = true;
     this.searchError = '';
     this.foundClient = null;
+    this.isClientSearched = true;
+    this.isClientFound = false;
+    this.showLoanForm = false;
 
     this.findClientByNic(this.searchNicNumber.trim());
   }
@@ -124,6 +132,8 @@ export class AddLoanScreenComponent implements OnInit {
 
       // Client found - populate the form
       this.foundClient = data as Client;
+      this.isClientFound = true;
+      this.showLoanForm = true;
       this.populateClientData(data as Client);
       this.generateLoanNumber();
       this.isSearching = false;
@@ -426,16 +436,21 @@ export class AddLoanScreenComponent implements OnInit {
   }
 
   validateForm(): boolean {
+    // Step 1: Check if client is found
     if (!this.foundClient) {
       this.errorMessage = 'Please search and select a client first';
       return false;
     }
-    if (!this.loanNumber.trim()) {
-      this.errorMessage = 'Please enter a loan number';
+
+    // Step 2: Validate principal amount
+    if (!this.principalAmount || this.principalAmount <= 0) {
+      this.errorMessage = 'Principal amount is required and must be greater than 0';
       return false;
     }
-    if (this.principalAmount <= 0) {
-      this.errorMessage = 'Principal amount must be greater than 0';
+
+    // Step 3: Validate interest rate
+    if (!this.interestRate && this.interestRate !== 0) {
+      this.errorMessage = 'Interest rate is required';
       return false;
     }
     if (this.interestRate < 0) {
@@ -446,30 +461,94 @@ export class AddLoanScreenComponent implements OnInit {
       this.errorMessage = 'Interest rate cannot exceed 100%';
       return false;
     }
-    if (!this.startDate) {
+
+    // Step 4: Validate loan type
+    if (!this.loanType || this.loanType.trim() === '') {
+      this.errorMessage = 'Please select a loan type';
+      return false;
+    }
+
+    // Step 5: Validate start date
+    if (!this.startDate || this.startDate.trim() === '') {
       this.errorMessage = 'Please select a start date';
       return false;
     }
-    if (!this.endDate) {
+
+    // Step 6: Validate end date
+    if (!this.endDate || this.endDate.trim() === '') {
       this.errorMessage = 'Please select an end date';
       return false;
     }
+
+    // Step 7: Validate date range
     if (new Date(this.endDate) <= new Date(this.startDate)) {
       this.errorMessage = 'End date must be after start date';
       return false;
     }
+
+    // Step 8: Validate number of installments
     if (this.numberOfInstallments <= 0) {
       this.errorMessage = 'Invalid date range for selected loan type';
       return false;
     }
-    
-    // Check if bank capital is sufficient
-    if (this.currentBankCapital < this.principalAmount) {
-      this.errorMessage = `Insufficient bank capital! Current capital: Rs. ${this.currentBankCapital.toLocaleString()}, Required: Rs. ${this.principalAmount.toLocaleString()}`;
+
+    // Step 9: Validate document charge (optional but if provided, should be non-negative)
+    if (this.documentCharge < 0) {
+      this.errorMessage = 'Document charge cannot be negative';
       return false;
     }
     
     return true;
+  }
+
+  // Check if all required fields are filled for submit button
+  isFormReadyForSubmit(): boolean {
+    const clientFound = !!this.foundClient;
+    const principalValid = this.principalAmount > 0;
+    const interestValid = this.interestRate > 0 && this.interestRate <= 100;
+    const loanTypeValid = !!this.loanType && this.loanType.trim() !== '';
+    const startDateValid = !!this.startDate && this.startDate.trim() !== '';
+    const endDateValid = !!this.endDate && this.endDate.trim() !== '';
+    const installmentsValid = this.numberOfInstallments > 0;
+    const documentChargeValid = this.documentCharge >= 0;
+    const dateRangeValid = !this.isEndDateInvalid();
+
+    console.log('Validation Debug:', {
+      clientFound,
+      principalValid,
+      interestValid,
+      loanTypeValid,
+      startDateValid,
+      endDateValid,
+      installmentsValid,
+      documentChargeValid,
+      dateRangeValid,
+      principalAmount: this.principalAmount,
+      interestRate: this.interestRate,
+      loanType: this.loanType,
+      startDate: this.startDate,
+      endDate: this.endDate,
+      numberOfInstallments: this.numberOfInstallments,
+      documentCharge: this.documentCharge
+    });
+
+    return clientFound && 
+           principalValid && 
+           interestValid &&
+           loanTypeValid && 
+           startDateValid && 
+           endDateValid && 
+           installmentsValid &&
+           documentChargeValid &&
+           dateRangeValid;
+  }
+
+  // Check if end date is before or equal to start date
+  isEndDateInvalid(): boolean {
+    if (!this.startDate || !this.endDate) {
+      return false;
+    }
+    return new Date(this.endDate) <= new Date(this.startDate);
   }
 
   resetForm(): void {
@@ -477,6 +556,9 @@ export class AddLoanScreenComponent implements OnInit {
     this.searchNicNumber = '';
     this.foundClient = null;
     this.searchError = '';
+    this.isClientSearched = false;
+    this.isClientFound = false;
+    this.showLoanForm = false;
 
     // Client Information
     this.selectedClientId = '';

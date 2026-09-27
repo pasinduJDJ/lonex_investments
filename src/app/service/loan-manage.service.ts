@@ -478,4 +478,24 @@ export class LoanManageService {
         .eq('loan_number', loanRegNumber)
     );
   }
+
+  // Update client information
+  updateClient(clientId: string, updateData: Partial<Client>): Observable<Client> {
+    const supabase = this.supabaseService.getClient();
+    return from(
+      supabase
+        .from('clients')
+        .update(updateData)
+        .eq('client_id', clientId)
+        .select()
+        .single()
+    ).pipe(
+      map(response => {
+        if (response.error) {
+          throw new Error(response.error.message);
+        }
+        return response.data as Client;
+      })
+    );
+  }
 }
