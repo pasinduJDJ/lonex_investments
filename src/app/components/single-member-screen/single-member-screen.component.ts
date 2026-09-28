@@ -20,6 +20,8 @@ export class SingleMemberScreenComponent implements OnInit {
   isEditing = false;
   isSaving = false;
   editableClient: any = {};
+  activeTab: 'guarantors' | 'loans' = 'guarantors';
+  
   private clientSubject = new BehaviorSubject<Client | undefined>(undefined);
 
   constructor(private route: ActivatedRoute, private loanService: LoanManageService) {}
@@ -41,6 +43,14 @@ export class SingleMemberScreenComponent implements OnInit {
 
   enableEdit() {
     this.isEditing = true;
+    const client = this.clientSubject.value;
+    if (client) {
+      this.editableClient = { ...client };
+    }
+  }
+
+  cancelEdit() {
+    this.isEditing = false;
     const client = this.clientSubject.value;
     if (client) {
       this.editableClient = { ...client };
@@ -87,22 +97,28 @@ export class SingleMemberScreenComponent implements OnInit {
       error: (error) => {
         console.error('Error updating client:', error);
         this.isSaving = false;
-        // You might want to show an error message to the user here
         alert('Error updating client: ' + error.message);
       }
     });
   }
 
-  getPaidInstallments(loan: Loan): number | string {
-    if (!loan.installments || !loan.total_paid || !loan.total_amount_due) return 'N/A';
-    const perInstallment = loan.total_amount_due / loan.installments;
-    return Math.floor(loan.total_paid / perInstallment);
+  setActiveTab(tab: 'guarantors' | 'loans'): void {
+    this.activeTab = tab;
   }
 
-  getRemainingInstallments(loan: Loan): number | string {
-    if (!loan.installments || !loan.total_paid || !loan.total_amount_due) return 'N/A';
-    const paid = this.getPaidInstallments(loan);
-    if (typeof paid === 'string') return 'N/A';
-    return loan.installments - paid;
+  getTotalLoanAmount(loans: Loan[]): number {
+    if (!loans || loans.length === 0) return 0;
+    return loans.reduce((sum, l) => sum + (l.principal_amount || 0), 0);
+  }
+
+  getTotalRemainingDebt(loans: Loan[]): number {
+    if (!loans || loans.length === 0) return 0;
+    return loans.reduce((sum, l) => sum + (l.remaining_amount || 0), 0);
+  }
+
+  getInitials(firstName?: string, lastName?: string): string {
+    const f = firstName?.trim() ? firstName.trim()[0] : '';
+    const l = lastName?.trim() ? lastName.trim()[0] : '';
+    return (f + l).toUpperCase() || 'CU';
   }
 }

@@ -1,143 +1,461 @@
-<!-- Angular Component Template (HTML) with Bootstrap classes -->
-<div class="container">
-  <div class="row">
-    <div class="col-2"></div>
-    <div class="col-8">
-      <h5><strong>Add New Member</strong></h5>
-      <hr class="mb-5">
+<div class="lx-add-member-container">
+  
+  <form (ngSubmit)="onSubmit()" #memberForm="ngForm" autocomplete="off">
+    
+    <!-- Top Control & Action Bar (Odoo Sub-Header) -->
+    <div class="odoo-control-panel py-2 mb-3">
+      <div class="container-fluid px-3 px-md-4">
+        <div class="d-flex flex-wrap justify-content-between align-items-center gap-3">
+          
+          <!-- Left: Save / Discard & Breadcrumbs -->
+          <div class="d-flex align-items-center gap-3 flex-wrap">
+            <div class="odoo-action-buttons d-flex align-items-center gap-2">
+              <button 
+                type="submit" 
+                class="btn btn-lx-primary btn-sm px-3" 
+                [disabled]="isLoading || !memberForm.form.valid"
+              >
+                <span *ngIf="isLoading" class="spinner-border spinner-border-sm me-1" role="status"></span>
+                <i *ngIf="!isLoading" class="bi bi-cloud-arrow-up me-1"></i>
+                <span>{{ isLoading ? 'Saving Customer...' : 'Save Customer' }}</span>
+              </button>
 
-      <!-- Alert Messages -->
-      <div *ngIf="errorMessage" class="alert alert-danger alert-dismissible fade show" role="alert">
-        <i class="bi bi-exclamation-triangle me-2"></i>
-        {{ errorMessage }}
-        <button type="button" class="btn-close" (click)="errorMessage = ''"></button>
+              <button 
+                type="button" 
+                class="btn btn-lx-secondary btn-sm px-3" 
+                (click)="onDiscard()" 
+                [disabled]="isLoading"
+              >
+                <span>Discard</span>
+              </button>
+            </div>
+
+            <!-- Breadcrumbs -->
+            <div class="odoo-breadcrumb-trail d-none d-sm-flex align-items-center">
+              <a routerLink="/member" class="odoo-crumb-link">Customers</a>
+              <span class="odoo-crumb-sep">/</span>
+              <span class="odoo-crumb-current">New Customer</span>
+            </div>
+          </div>
+
+          <!-- Right: Context Info -->
+          <div class="d-flex align-items-center gap-2 text-muted small">
+            <span class="badge badge-gold" style="font-size: 0.75rem;">
+              <i class="bi bi-person-plus-fill me-1"></i>New Registration
+            </span>
+          </div>
+
+        </div>
       </div>
-      
-      <div *ngIf="successMessage" class="alert alert-success alert-dismissible fade show" role="alert">
-        <i class="bi bi-check-circle me-2"></i>
-        {{ successMessage }}
-        <button type="button" class="btn-close" (click)="successMessage = ''"></button>
+    </div>
+
+    <!-- Alert Messages -->
+    <div class="container-fluid px-3 px-md-4" *ngIf="errorMessage || successMessage">
+      <div class="row justify-content-center">
+        <div class="col-12 col-xl-10">
+          <div *ngIf="errorMessage" class="alert alert-danger alert-dismissible fade show mb-3" role="alert">
+            <i class="bi bi-exclamation-triangle-fill me-2"></i>
+            <span>{{ errorMessage }}</span>
+            <button type="button" class="btn-close" (click)="errorMessage = ''"></button>
+          </div>
+          
+          <div *ngIf="successMessage" class="alert alert-success alert-dismissible fade show mb-3" role="alert">
+            <i class="bi bi-check-circle-fill me-2"></i>
+            <span>{{ successMessage }}</span>
+            <button type="button" class="btn-close" (click)="successMessage = ''"></button>
+          </div>
+        </div>
       </div>
+    </div>
 
-      <form (ngSubmit)="onSubmit()" #memberForm="ngForm">
-        <div class="row mt-5">
-          <div class="col-md-6">
-            <div class="px-4">
-
-              <label for="firstName" class="form-label">Enter First name *</label>
-              <div class="input-group">
-                <input type="text" id="firstName" class="form-control" name="firstName" [(ngModel)]="firstName" required>
+    <!-- Main Odoo Form Sheet Canvas -->
+    <div class="container-fluid px-3 px-md-4">
+      <div class="row justify-content-center">
+        <div class="col-12 col-xl-10">
+          
+          <div class="odoo-form-sheet shadow-sm">
+            
+            <!-- Sheet Header: Avatar & Main Name Inputs -->
+            <div class="odoo-sheet-header d-flex align-items-start gap-3 flex-wrap">
+              <!-- Avatar Placeholder -->
+              <div class="odoo-customer-avatar">
+                <span>{{ getInitials() }}</span>
               </div>
 
-              <label for="lastName" class="form-label">Enter Last name *</label>
-              <div class="input-group">
-                <input type="text" id="lastName" class="form-control" name="lastName" [(ngModel)]="lastName" required>
+              <!-- Main Name Title Form Fields -->
+              <div class="flex-grow-1">
+                <div class="d-flex align-items-center gap-2 mb-2 flex-wrap">
+                  <span class="badge badge-secondary" style="font-size: 0.75rem;">
+                    <i class="bi bi-person-fill me-1"></i>Individual Person
+                  </span>
+                  <span class="text-muted small">· Enter customer full name below</span>
+                </div>
+
+                <div class="row g-2">
+                  <div class="col-12 col-sm-6">
+                    <label class="odoo-name-label" for="firstName">First Name *</label>
+                    <input 
+                      type="text" 
+                      id="firstName" 
+                      class="odoo-title-input" 
+                      name="firstName" 
+                      [(ngModel)]="firstName" 
+                      placeholder="e.g. W M Ishara" 
+                      required 
+                    />
+                  </div>
+                  <div class="col-12 col-sm-6">
+                    <label class="odoo-name-label" for="lastName">Last Name *</label>
+                    <input 
+                      type="text" 
+                      id="lastName" 
+                      class="odoo-title-input" 
+                      name="lastName" 
+                      [(ngModel)]="lastName" 
+                      placeholder="e.g. Gayani" 
+                      required 
+                    />
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <!-- Sheet Body: 2-Column Info Grid -->
+            <div class="odoo-sheet-grid row g-4 my-3 pt-3 border-top">
+              
+              <!-- Left Column: Address & Location -->
+              <div class="col-12 col-md-6">
+                <h4 class="odoo-group-title">
+                  <i class="bi bi-geo-alt me-1 text-gold"></i>
+                  <span>Address & Location</span>
+                </h4>
+
+                <div class="d-flex flex-column gap-3">
+                  <div class="form-group">
+                    <label class="form-label" for="streetAddress">Street Address *</label>
+                    <input 
+                      type="text" 
+                      id="streetAddress" 
+                      class="form-control" 
+                      name="streetAddress" 
+                      [(ngModel)]="streetAddress" 
+                      placeholder="e.g. 27/A, Main Street" 
+                      required 
+                    />
+                  </div>
+
+                  <div class="form-group">
+                    <label class="form-label" for="homeNumber">Home Number *</label>
+                    <input 
+                      type="text" 
+                      id="homeNumber" 
+                      class="form-control" 
+                      name="homeNumber" 
+                      [(ngModel)]="homeNumber" 
+                      placeholder="e.g. 0112345678" 
+                      required 
+                    />
+                  </div>
+
+                  <div class="row g-2">
+                    <div class="col-12 col-sm-6">
+                      <label class="form-label" for="townOne">Town 01 *</label>
+                      <input 
+                        type="text" 
+                        id="townOne" 
+                        class="form-control" 
+                        name="townOne" 
+                        [(ngModel)]="townOne" 
+                        placeholder="Primary Town" 
+                        required 
+                      />
+                    </div>
+                    <div class="col-12 col-sm-6">
+                      <label class="form-label" for="townTwo">Town 02 *</label>
+                      <select 
+                        id="townTwo" 
+                        class="form-select" 
+                        name="townTwo" 
+                        [(ngModel)]="townTwo" 
+                        required
+                      >
+                        <option value="" disabled selected>Select City / Town 02</option>
+                        <option *ngFor="let city of cityNames" [value]="city">{{ city }}</option>
+                      </select>
+                    </div>
+                  </div>
+
+                  <div class="form-group">
+                    <label class="form-label" for="group">Assigned Group / Unit *</label>
+                    <select 
+                      id="group" 
+                      class="form-select" 
+                      name="group" 
+                      [(ngModel)]="group" 
+                      required
+                    >
+                      <option value="" disabled selected>Select Group</option>
+                      <option *ngFor="let g of groupNames" [value]="g">{{ g }}</option>
+                    </select>
+                  </div>
+                </div>
               </div>
 
-              <label for="nicNumber" class="form-label">Enter Nic number *</label>
-              <div class="input-group">
-                <input type="text" id="nicNumber" class="form-control" name="nicNumber" [(ngModel)]="nicNumber" 
-                       placeholder="e.g., 123456789V or 123456789012" required>
+              <!-- Right Column: Identification & Contact -->
+              <div class="col-12 col-md-6">
+                <h4 class="odoo-group-title">
+                  <i class="bi bi-person-lines-fill me-1 text-gold"></i>
+                  <span>Contact & Identification</span>
+                </h4>
+
+                <div class="d-flex flex-column gap-3">
+                  <div class="form-group">
+                    <label class="form-label" for="nicNumber">National Identity Card (NIC) *</label>
+                    <input 
+                      type="text" 
+                      id="nicNumber" 
+                      class="form-control" 
+                      name="nicNumber" 
+                      [(ngModel)]="nicNumber" 
+                      placeholder="e.g. 123456789V or 123456789012" 
+                      required 
+                    />
+                    <small class="text-muted" style="font-size: 0.75rem;">Format: 9 digits + V/X or 12 digits</small>
+                  </div>
+
+                  <div class="form-group">
+                    <label class="form-label" for="mobileNumber">Mobile Number (10 Digits) *</label>
+                    <input 
+                      type="text" 
+                      id="mobileNumber" 
+                      class="form-control" 
+                      name="mobileNumber" 
+                      [(ngModel)]="mobileNumber" 
+                      placeholder="e.g. 0712345678" 
+                      required 
+                    />
+                  </div>
+
+                  <div class="form-group pt-2">
+                    <div class="form-check form-switch">
+                      <input 
+                        class="form-check-input" 
+                        type="checkbox" 
+                        role="switch" 
+                        id="isMember" 
+                        name="isMember" 
+                        [(ngModel)]="isMember" 
+                      />
+                      <label class="form-check-label fw-semibold" for="isMember" style="color: var(--lx-text-primary);">
+                        Set as Active Loan-Eligible Member
+                      </label>
+                    </div>
+                    <small class="text-muted d-block mt-1" style="font-size: 0.75rem;">
+                      Enables credit assessment and issuance of daily, weekly, or monthly loans.
+                    </small>
+                  </div>
+                </div>
               </div>
 
-              <label for="mobileNumber" class="form-label">Enter Mobile number *</label>
-              <div class="input-group">
-                <input type="text" id="mobileNumber" class="form-control" name="mobileNumber" [(ngModel)]="mobileNumber" 
-                       placeholder="e.g., 0712345678" required>
-              </div>
+            </div>
 
-              <label for="homeNumber" class="form-label">Enter Home number *</label>
-              <div class="input-group">
-                <input type="text" id="homeNumber" class="form-control" name="homeNumber" [(ngModel)]="homeNumber" 
-                       placeholder="e.g., 0112345678" required>
-              </div>
+            <!-- Notebook Tabs: Guarantor Details -->
+            <div class="odoo-notebook mt-4">
+              
+              <!-- Tab Headers -->
+              <div class="odoo-tabs-header border-bottom">
+                <button 
+                  type="button" 
+                  class="odoo-tab-nav-btn" 
+                  [class.active]="activeTab === 'guarantors'"
+                  (click)="setActiveTab('guarantors')"
+                >
+                  <i class="bi bi-shield-check me-1"></i>
+                  <span>Guarantor Information</span>
+                </button>
 
-              <label for="streetAddress" class="form-label">Enter Address (Street Address) *</label>
-              <div class="input-group">
-                <input type="text" id="streetAddress" class="form-control" name="streetAddress" [(ngModel)]="streetAddress" required>
-              </div>
-
-              <label for="townOne" class="form-label">Enter Address (Town 01) *</label>
-              <div class="input-group">
-                <input type="text" id="townOne" class="form-control" name="townOne" [(ngModel)]="townOne" required>
-              </div>
-
-              <label for="townTwo" class="form-label">Enter Address (Town 02) *</label>
-              <div class="input-group">
-                <select id="townTwo" class="form-select" name="townTwo" [(ngModel)]="townTwo" required>
-                  <option value="" disabled selected>Select Town 02</option>
-                  <option *ngFor="let city of cityNames" [value]="city">{{ city }}</option>
-                </select>
-              </div>
-
-              <label for="group" class="form-label">Group *</label>
-              <div class="input-group">
-                <select id="group" class="form-select" name="group" [(ngModel)]="group" required>
-                  <option value="" disabled selected>Select Group</option>
-                  <option *ngFor="let g of groupNames" [value]="g">{{ g }}</option>
-                </select>
-              </div>
-
-              <div class="mt-5 text-center d-flex justify-content-around">
-                <button type="button" class="btn btn-secondary px-5" (click)="onClear()" [disabled]="isLoading">Clear</button>
-                
-                <button type="submit" class="btn text-white px-5" style="background-color: #003566;" 
-                        [disabled]="isLoading || !memberForm.form.valid">
-                  <span *ngIf="isLoading" class="spinner-border spinner-border-sm me-2" role="status"></span>
-                  {{ isLoading ? 'Adding Member...' : 'Submit Client ' }}
+                <button 
+                  type="button" 
+                  class="odoo-tab-nav-btn" 
+                  [class.active]="activeTab === 'additional'"
+                  (click)="setActiveTab('additional')"
+                >
+                  <i class="bi bi-info-circle me-1"></i>
+                  <span>Registration Notes</span>
                 </button>
               </div>
 
+              <!-- Tab 1: Guarantors Form -->
+              <div class="odoo-tab-pane py-3" *ngIf="activeTab === 'guarantors'">
+                <div class="row g-3">
+                  
+                  <!-- First Guarantor Card -->
+                  <div class="col-12 col-md-6">
+                    <div class="odoo-sub-card p-3">
+                      <div class="d-flex align-items-center gap-2 mb-3 pb-2 border-bottom">
+                        <div class="odoo-guarantor-avatar">1</div>
+                        <div>
+                          <h5 class="mb-0 fw-bold" style="font-size: 0.95rem; color: var(--lx-text-primary);">First Guarantor</h5>
+                          <small class="text-muted">Primary Guarantee Contact</small>
+                        </div>
+                      </div>
+
+                      <div class="d-flex flex-column gap-2">
+                        <div class="form-group">
+                          <label class="form-label small" for="firstGuarantorName">Guarantor Name</label>
+                          <input 
+                            type="text" 
+                            id="firstGuarantorName" 
+                            class="form-control form-control-sm" 
+                            name="firstGuarantorName" 
+                            [(ngModel)]="firstGuarantorName" 
+                            placeholder="Full Name" 
+                          />
+                        </div>
+
+                        <div class="form-group">
+                          <label class="form-label small" for="firstGuarantorNic">NIC Number</label>
+                          <input 
+                            type="text" 
+                            id="firstGuarantorNic" 
+                            class="form-control form-control-sm" 
+                            name="firstGuarantorNic" 
+                            [(ngModel)]="firstGuarantorNic" 
+                            placeholder="e.g. 123456789V" 
+                          />
+                        </div>
+
+                        <div class="form-group">
+                          <label class="form-label small" for="firstGuarantorTp">Phone Number</label>
+                          <input 
+                            type="text" 
+                            id="firstGuarantorTp" 
+                            class="form-control form-control-sm" 
+                            name="firstGuarantorTp" 
+                            [(ngModel)]="firstGuarantorTp" 
+                            placeholder="07XXXXXXXX" 
+                          />
+                        </div>
+
+                        <div class="form-group">
+                          <label class="form-label small" for="firstGuarantorAddress">Address</label>
+                          <input 
+                            type="text" 
+                            id="firstGuarantorAddress" 
+                            class="form-control form-control-sm" 
+                            name="firstGuarantorAddress" 
+                            [(ngModel)]="firstGuarantorAddress" 
+                            placeholder="Residential Address" 
+                          />
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+
+                  <!-- Second Guarantor Card -->
+                  <div class="col-12 col-md-6">
+                    <div class="odoo-sub-card p-3">
+                      <div class="d-flex align-items-center gap-2 mb-3 pb-2 border-bottom">
+                        <div class="odoo-guarantor-avatar">2</div>
+                        <div>
+                          <h5 class="mb-0 fw-bold" style="font-size: 0.95rem; color: var(--lx-text-primary);">Second Guarantor</h5>
+                          <small class="text-muted">Secondary Guarantee Contact</small>
+                        </div>
+                      </div>
+
+                      <div class="d-flex flex-column gap-2">
+                        <div class="form-group">
+                          <label class="form-label small" for="secondGuarantorName">Guarantor Name</label>
+                          <input 
+                            type="text" 
+                            id="secondGuarantorName" 
+                            class="form-control form-control-sm" 
+                            name="secondGuarantorName" 
+                            [(ngModel)]="secondGuarantorName" 
+                            placeholder="Full Name" 
+                          />
+                        </div>
+
+                        <div class="form-group">
+                          <label class="form-label small" for="secondGuarantorNic">NIC Number</label>
+                          <input 
+                            type="text" 
+                            id="secondGuarantorNic" 
+                            class="form-control form-control-sm" 
+                            name="secondGuarantorNic" 
+                            [(ngModel)]="secondGuarantorNic" 
+                            placeholder="e.g. 123456789V" 
+                          />
+                        </div>
+
+                        <div class="form-group">
+                          <label class="form-label small" for="secondGuarantorTp">Phone Number</label>
+                          <input 
+                            type="text" 
+                            id="secondGuarantorTp" 
+                            class="form-control form-control-sm" 
+                            name="secondGuarantorTp" 
+                            [(ngModel)]="secondGuarantorTp" 
+                            placeholder="07XXXXXXXX" 
+                          />
+                        </div>
+
+                        <div class="form-group">
+                          <label class="form-label small" for="secondGuarantorAddress">Address</label>
+                          <input 
+                            type="text" 
+                            id="secondGuarantorAddress" 
+                            class="form-control form-control-sm" 
+                            name="secondGuarantorAddress" 
+                            [(ngModel)]="secondGuarantorAddress" 
+                            placeholder="Residential Address" 
+                          />
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+
+                </div>
+              </div>
+
+              <!-- Tab 2: Additional Info -->
+              <div class="odoo-tab-pane py-3" *ngIf="activeTab === 'additional'">
+                <div class="odoo-sub-card p-4">
+                  <h6 class="fw-bold mb-2" style="color: var(--lx-text-primary);">Registration Guidelines</h6>
+                  <ul class="text-muted small ps-3 mb-0" style="line-height: 1.6;">
+                    <li>Member ID is automatically generated upon submission (sequential register number).</li>
+                    <li>NIC numbers must be unique across all registered clients.</li>
+                    <li>Guarantor details are securely recorded and linked to any subsequent loan applications issued to this customer.</li>
+                  </ul>
+                </div>
+              </div>
+
             </div>
+
+            <!-- Bottom Action Footer -->
+            <div class="d-flex justify-content-between align-items-center mt-4 pt-3 border-top">
+              <button type="button" class="btn btn-sm btn-link text-muted" (click)="onClear()" [disabled]="isLoading">
+                <i class="bi bi-arrow-counterclockwise me-1"></i>Reset Form
+              </button>
+              
+              <div class="d-flex gap-2">
+                <button type="button" class="btn btn-lx-secondary btn-sm px-3" (click)="onDiscard()" [disabled]="isLoading">
+                  Discard
+                </button>
+                <button type="submit" class="btn btn-lx-primary btn-sm px-4" [disabled]="isLoading || !memberForm.form.valid">
+                  <span *ngIf="isLoading" class="spinner-border spinner-border-sm me-1" role="status"></span>
+                  <i *ngIf="!isLoading" class="bi bi-check2 me-1"></i>
+                  <span>{{ isLoading ? 'Saving...' : 'Save Customer' }}</span>
+                </button>
+              </div>
+            </div>
+
           </div>
 
-          <div class="col-md-6">
-            <label for="" class="form-label fw-bold">First Guarantor Details</label>
-            <br>
-            <label for="firstGuarantorName" class="form-label">Name</label>
-            <div class="input-group">
-              <input type="text" id="firstGuarantorName" class="form-control" name="firstGuarantorName" [(ngModel)]="firstGuarantorName">
-            </div>
-            <label for="firstGuarantorNic" class="form-label">NIC number</label>
-            <div class="input-group">
-              <input type="text" id="firstGuarantorNic" class="form-control" name="firstGuarantorNic" [(ngModel)]="firstGuarantorNic" 
-                     placeholder="e.g., 123456789V">
-            </div>
-            <label for="firstGuarantorTp" class="form-label">Phone Number</label>
-            <div class="input-group">
-              <input type="text" id="firstGuarantorTp" class="form-control" name="firstGuarantorTp" [(ngModel)]="firstGuarantorTp" 
-                     placeholder="e.g., 0712345678">
-            </div>
-            <label for="firstGuarantorAddress" class="form-label">Address</label>
-            <div class="input-group">
-              <input type="text" id="firstGuarantorAddress" class="form-control" name="firstGuarantorAddress" [(ngModel)]="firstGuarantorAddress">
-            </div>
-
-            <label for="" class="form-label fw-bold mt-5">Second Guarantor Details</label>
-            <br>
-            <label for="secondGuarantorName" class="form-label">Name</label>
-            <div class="input-group">
-              <input type="text" id="secondGuarantorName" class="form-control" name="secondGuarantorName" [(ngModel)]="secondGuarantorName">
-            </div>
-            <label for="secondGuarantorNic" class="form-label">NIC number</label>
-            <div class="input-group">
-              <input type="text" id="secondGuarantorNic" class="form-control" name="secondGuarantorNic" [(ngModel)]="secondGuarantorNic" 
-                     placeholder="e.g., 123456789V">
-            </div>
-            <label for="secondGuarantorTp" class="form-label">Phone Number</label>
-            <div class="input-group">
-              <input type="text" id="secondGuarantorTp" class="form-control" name="secondGuarantorTp" [(ngModel)]="secondGuarantorTp" 
-                     placeholder="e.g., 0712345678">
-            </div>
-            <label for="secondGuarantorAddress" class="form-label">Address</label>
-            <div class="input-group">
-              <input type="text" id="secondGuarantorAddress" class="form-control" name="secondGuarantorAddress" [(ngModel)]="secondGuarantorAddress">
-            </div>
-
-          </div>
         </div>
-      </form>
+      </div>
     </div>
-    <div class="col-2"></div>
-  </div>
+
+  </form>
+
 </div>

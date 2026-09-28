@@ -1,7 +1,7 @@
 import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
-import { Router } from '@angular/router';
+import { Router, RouterModule } from '@angular/router';
 import { SupabaseService } from '../../service/supabase.service';
 import { CITY_CODE_MAP } from '../../constants/city.constants';
 import { LoanManageService } from '../../service/loan-manage.service';
@@ -15,7 +15,7 @@ export const GROUP_CODE_MAP = {
 @Component({
   selector: 'app-add-member-screen',
   standalone: true,
-  imports: [CommonModule, FormsModule],
+  imports: [CommonModule, FormsModule, RouterModule],
   templateUrl: './add-member-screen.component.html',
   styleUrl: './add-member-screen.component.css'
 })
@@ -49,6 +49,7 @@ export class AddMemberScreenComponent implements OnInit {
   errorMessage: string = '';
   successMessage: string = '';
   generatedRegisterNumber: number | null = null;
+  activeTab: 'guarantors' | 'additional' = 'guarantors';
 
   cityNames = Object.keys(CITY_CODE_MAP);
   groupNames = Object.keys(GROUP_CODE_MAP);
@@ -61,6 +62,21 @@ export class AddMemberScreenComponent implements OnInit {
 
   ngOnInit(): void {
     // Initialization logic if any
+  }
+
+  setActiveTab(tab: 'guarantors' | 'additional'): void {
+    this.activeTab = tab;
+  }
+
+  getInitials(): string {
+    const f = this.firstName.trim() ? this.firstName.trim()[0] : '';
+    const l = this.lastName.trim() ? this.lastName.trim()[0] : '';
+    return (f + l).toUpperCase() || '+';
+  }
+
+  onDiscard(): void {
+    this.resetForm();
+    this.router.navigate(['/member']);
   }
 
   onSubmit(): void {
@@ -167,10 +183,10 @@ export class AddMemberScreenComponent implements OnInit {
       this.successMessage = `Client ${clientData.first_name} ${clientData.last_name} added successfully! Member ID: ${formattedRegisterNumber}`;
       this.resetForm();
       
-      // Redirect to home after 3 seconds to show the success message
+      // Redirect to home or member list after 2 seconds
       setTimeout(() => {
-        this.router.navigate(['/home']);
-      }, 3000);
+        this.router.navigate(['/member']);
+      }, 2000);
 
     } catch (error: any) {
       this.errorMessage = 'Error adding client: ' + error.message;
@@ -307,7 +323,6 @@ export class AddMemberScreenComponent implements OnInit {
   }
 
   generateLoanNumber(): void {
-    // This method is kept for future use if needed
     console.log('Generate loan number functionality can be implemented here');
   }
 }

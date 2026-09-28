@@ -1,7 +1,7 @@
 import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
-import { Router } from '@angular/router';
+import { Router, RouterModule } from '@angular/router';
 import { LoanManageService, Client } from '../../service/loan-manage.service';
 import { SupabaseService } from '../../service/supabase.service';
 import { CITY_CODE_MAP } from '../../constants/city.constants';
@@ -16,7 +16,7 @@ const GROUP_CODE_MAP: { [key: string]: string } = {
 @Component({
   selector: 'app-add-loan-screen',
   standalone: true,
-  imports: [CommonModule, FormsModule],
+  imports: [CommonModule, FormsModule, RouterModule],
   templateUrl:'./add-loan-screen.component.html',
   styleUrl: './add-loan-screen.component.css'
 })
@@ -577,6 +577,27 @@ export class AddLoanScreenComponent implements OnInit {
     this.numberOfInstallments = 0;
     this.setDefaultDates();
     this.errorMessage = '';
+  }
+
+  get clientInitials(): string {
+    if (!this.foundClient) return 'LX';
+    const first = (this.foundClient.first_name || '').trim()[0] || '';
+    const last = (this.foundClient.last_name || '').trim()[0] || '';
+    return (first + last).toUpperCase() || 'LX';
+  }
+
+  get estimatedInstallmentAmount(): number {
+    if (this.numberOfInstallments > 0 && this.calculatedTotal > 0) {
+      return this.calculatedTotal / this.numberOfInstallments;
+    }
+    return 0;
+  }
+
+  get totalInterestAmount(): number {
+    if (this.calculatedTotal > this.principalAmount) {
+      return this.calculatedTotal - this.principalAmount;
+    }
+    return 0;
   }
 
   onClear(): void {

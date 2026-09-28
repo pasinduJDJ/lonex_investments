@@ -5,6 +5,12 @@ import { ThemeService } from '../../service/theme.service';
 import { filter } from 'rxjs/operators';
 import { Subscription } from 'rxjs';
 
+export interface HeaderNavTab {
+  label: string;
+  url: string;
+  icon?: string;
+}
+
 @Component({
   selector: 'app-header',
   standalone: true,
@@ -15,6 +21,10 @@ import { Subscription } from 'rxjs';
 export class HeaderComponent implements OnInit, OnDestroy {
   currentUrl: string = '';
   activeModuleTitle: string = '';
+  activeModuleIcon: string = '';
+  activeModuleAccentClass: string = '';
+  activeModuleTabs: HeaderNavTab[] = [];
+
   userEmail: string = 'admin@lonex.lk';
   userInitials: string = 'LX';
   
@@ -70,19 +80,49 @@ export class HeaderComponent implements OnInit, OnDestroy {
   private updateActiveModule(url: string): void {
     if (url.startsWith('/member') || url.startsWith('/add-member') || url.startsWith('/single-member')) {
       this.activeModuleTitle = 'Customers';
+      this.activeModuleIcon = 'bi-people-fill';
+      this.activeModuleAccentClass = 'odoo-badge-customers';
+      this.activeModuleTabs = [
+        { label: 'All Customers', url: '/member', icon: 'bi-people' },
+        { label: 'Add Customer', url: '/add-member', icon: 'bi-person-plus' }
+      ];
     } else if (url.startsWith('/loan') || url.startsWith('/add-loan') || url.startsWith('/single-loan') || url.startsWith('/add-payments')) {
       this.activeModuleTitle = 'Loans';
+      this.activeModuleIcon = 'bi-cash-coin';
+      this.activeModuleAccentClass = 'odoo-badge-loans';
+      this.activeModuleTabs = [
+        { label: 'All Loans', url: '/loan', icon: 'bi-card-list' },
+        { label: 'Issue Loan', url: '/add-loan', icon: 'bi-plus-circle' },
+        { label: 'Add Payment', url: '/add-payments', icon: 'bi-cash-stack' }
+      ];
     } else if (url.startsWith('/profit')) {
       this.activeModuleTitle = 'Finance';
+      this.activeModuleIcon = 'bi-wallet2';
+      this.activeModuleAccentClass = 'odoo-badge-finance';
+      this.activeModuleTabs = [
+        { label: 'Profits & Capital', url: '/profit', icon: 'bi-graph-up-arrow' }
+      ];
     } else if (url.startsWith('/profile')) {
       this.activeModuleTitle = 'Settings';
+      this.activeModuleIcon = 'bi-gear-fill';
+      this.activeModuleAccentClass = 'odoo-badge-settings';
+      this.activeModuleTabs = [
+        { label: 'Profile & Security', url: '/profile', icon: 'bi-shield-lock' }
+      ];
     } else {
       this.activeModuleTitle = '';
+      this.activeModuleIcon = '';
+      this.activeModuleAccentClass = '';
+      this.activeModuleTabs = [];
     }
   }
 
   get isHome(): boolean {
-    return this.currentUrl === '/home' || this.currentUrl === '/';
+    return this.currentUrl === '/home' || this.currentUrl === '/' || this.currentUrl === '';
+  }
+
+  isTabActive(tabUrl: string): boolean {
+    return this.currentUrl === tabUrl;
   }
 
   toggleTheme(): void {

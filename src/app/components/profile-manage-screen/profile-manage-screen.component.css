@@ -1,102 +1,186 @@
-.login-bg {
+/**
+ * Lonex Investments - Profile & Settings Screen (Odoo-Inspired Sheet Layout)
+ */
+
+.lx-profile-container {
+  padding-bottom: 3rem;
 }
 
-.login-container {
+/* Odoo-Style Top Control Panel */
+.odoo-control-panel {
+  background-color: var(--lx-bg-card);
+  border-bottom: 1px solid var(--lx-border-subtle);
+  transition: background-color var(--lx-transition-base), border-color var(--lx-transition-base);
+}
+
+.odoo-breadcrumb-trail {
+  font-family: var(--lx-font-links);
+  font-size: 0.875rem;
+  font-weight: 500;
+}
+
+.odoo-crumb-link {
+  color: var(--lx-text-secondary);
+  text-decoration: none;
+  transition: color var(--lx-transition-fast);
+}
+
+.odoo-crumb-link:hover {
+  color: var(--lx-primary-accent);
+}
+
+.odoo-crumb-sep {
+  color: var(--lx-text-muted);
+  margin: 0 0.4rem;
+}
+
+.odoo-crumb-current {
+  color: var(--lx-text-primary);
+  font-weight: 600;
+}
+
+/* Main Form Sheet */
+.odoo-form-sheet {
+  background-color: var(--lx-bg-card);
+  border: 1px solid var(--lx-border-subtle);
+  border-radius: var(--lx-radius-lg);
+  padding: 2rem;
+  color: var(--lx-text-primary);
+  transition: background-color var(--lx-transition-base), border-color var(--lx-transition-base);
+}
+
+/* User Identity Avatar & Email */
+.odoo-user-avatar {
+  width: 64px;
+  height: 64px;
+  border-radius: 16px;
+  background: linear-gradient(135deg, #003566, #001D3D);
+  color: var(--lx-primary-accent);
+  font-family: var(--lx-font-titles);
+  font-weight: 700;
+  font-size: 1.6rem;
   display: flex;
   align-items: center;
   justify-content: center;
+  border: 2px solid var(--lx-primary-accent);
+  box-shadow: 0 4px 14px rgba(0, 53, 102, 0.25);
+  flex-shrink: 0;
 }
 
-.login-card {
-  background: #fff;
-  padding: 2.5rem 2rem 2rem 2rem;
-  border-radius: 18px;
-  box-shadow: 0 8px 32px rgba(0,0,0,0.18);
-  min-width: 340px;
-  max-width: 90vw;
+.odoo-profile-email {
+  font-family: var(--lx-font-titles);
+  font-weight: 700;
+  font-size: clamp(1.3rem, 1.1rem + 1vw, 1.75rem);
+  color: var(--lx-text-primary);
+  line-height: 1.2;
+}
+
+/* Notebook & Tabs */
+.odoo-tabs-header {
   display: flex;
-  flex-direction: column;
+  gap: 0.4rem;
+  overflow-x: auto;
+  scrollbar-width: none;
+}
+
+.odoo-tabs-header::-webkit-scrollbar {
+  display: none;
+}
+
+.odoo-tab-nav-btn {
+  background: transparent;
+  border: none;
+  border-bottom: 2px solid transparent;
+  color: var(--lx-text-secondary);
+  font-family: var(--lx-font-links);
+  font-size: 0.9rem;
+  font-weight: 600;
+  padding: 0.65rem 1rem;
+  cursor: pointer;
+  transition: all var(--lx-transition-fast);
+  margin-bottom: -1px;
+  white-space: nowrap;
+  display: inline-flex;
   align-items: center;
 }
 
-.login-title {
-  font-size: 2rem;
-  font-weight: 700;
-  color: #003566;
-  margin-bottom: 1.5rem;
-  letter-spacing: 1px;
-  text-align: center;
+.odoo-tab-nav-btn:hover {
+  color: var(--lx-primary-accent);
 }
 
-.form-group {
-  width: 100%;
-  margin-bottom: 1.2rem;
+.odoo-tab-nav-btn.active {
+  color: var(--lx-primary-accent);
+  border-bottom-color: var(--lx-primary-accent);
+}
+
+/* Section Cards */
+.odoo-section-card {
+  background-color: var(--lx-bg-subtle);
+  border-color: var(--lx-border-subtle) !important;
+}
+
+.odoo-group-title {
+  font-family: var(--lx-font-subtitles);
+  font-size: 0.95rem;
+  font-weight: 600;
+  color: var(--lx-text-primary);
+  border-color: var(--lx-border-subtle) !important;
   display: flex;
-  flex-direction: column;
+  align-items: center;
 }
 
-.form-group label {
+/* Form Groups & Inputs */
+.odoo-form-label {
+  display: block;
+  font-family: var(--lx-font-paragraphs);
+  font-size: 0.8125rem;
   font-weight: 600;
-  color: #003566;
-  margin-bottom: 0.4rem;
+  color: var(--lx-text-secondary);
+  margin-bottom: 0.35rem;
 }
 
-.form-group input {
-  padding: 0.7rem 1rem;
-  border: 1.5px solid #e0e0e0;
-  border-radius: 8px;
-  font-size: 1rem;
-  outline: none;
-  transition: border 0.2s;
+.odoo-form-control {
+  background-color: var(--lx-bg-card);
+  border: 1px solid var(--lx-border-subtle);
+  color: var(--lx-text-primary);
+  font-size: 0.9rem;
+  border-radius: var(--lx-radius-sm);
+  padding: 0.5rem 0.75rem;
+  transition: border-color var(--lx-transition-fast), box-shadow var(--lx-transition-fast);
 }
 
-.form-group input:focus {
-  border: 1.5px solid #1e90ff;
+.odoo-form-control:focus {
+  background-color: var(--lx-bg-card);
+  border-color: var(--lx-primary-accent);
+  box-shadow: 0 0 0 2px var(--lx-primary-accent-subtle);
+  color: var(--lx-text-primary);
 }
 
-.login-btn {
-  width: 100%;
-  padding: 0.8rem 0;
-  background: linear-gradient(90deg, #003566 0%, #1e90ff 100%);
-  color: #fff;
-  font-size: 1.1rem;
-  font-weight: 700;
-  border: none;
-  border-radius: 8px;
-  margin-top: 0.5rem;
+.odoo-input-addon {
+  background-color: var(--lx-bg-card);
+  border-color: var(--lx-border-subtle);
+  color: var(--lx-text-secondary);
   cursor: pointer;
-  box-shadow: 0 2px 8px rgba(30,144,255,0.08);
-  transition: background 0.2s, box-shadow 0.2s;
+  transition: all var(--lx-transition-fast);
 }
 
-.login-btn:disabled {
-  background: #b0c4de;
-  cursor: not-allowed;
+.odoo-input-addon:hover {
+  color: var(--lx-primary-accent);
+  background-color: var(--lx-bg-subtle);
 }
 
-.login-btn:hover:not(:disabled) {
-  background: linear-gradient(90deg, #1e90ff 0%, #003566 100%);
-  box-shadow: 0 4px 16px rgba(30,144,255,0.15);
+.text-gold {
+  color: var(--lx-primary-accent) !important;
 }
 
-.login-error {
-  color: #d90429;
-  background: #ffeaea;
-  border-radius: 6px;
-  padding: 0.6rem 1rem;
-  margin-top: 1rem;
-  font-weight: 600;
-  text-align: center;
-  width: 100%;
-}
-
-.login-success {
-  color: #218838;
-  background: #e6ffed;
-  border-radius: 6px;
-  padding: 0.6rem 1rem;
-  margin-top: 1rem;
-  font-weight: 600;
-  text-align: center;
-  width: 100%;
+/* Responsive adjustments */
+@media (max-width: 768px) {
+  .odoo-form-sheet {
+    padding: 1.25rem;
+  }
+  .odoo-user-avatar {
+    width: 50px;
+    height: 50px;
+    font-size: 1.3rem;
+  }
 }

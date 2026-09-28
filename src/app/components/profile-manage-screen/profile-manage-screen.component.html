@@ -1,30 +1,371 @@
-<div class="container">
-  <div class="row">
-    <div class="col-4">
-    </div>
-    <div class="col-4">
-      <h2 class="login-title mb-5">Reset Password</h2>
-      <form (ngSubmit)="changePassword()" #changeForm="ngForm" autocomplete="off">
-        <div class="form-group">
-          <label for="currentPassword">Current Password</label>
-          <input id="currentPassword" type="password" [(ngModel)]="currentPassword" name="currentPassword" required
-            placeholder="Enter current password" />
-        </div>
-        <div class="form-group">
-          <label for="newPassword">New Password</label>
-          <input id="newPassword" type="password" [(ngModel)]="newPassword" name="newPassword" required
-            placeholder="Enter new password" />
-        </div>
-        <button class="login-btn" type="submit" [disabled]="loading || !changeForm.form.valid">
-          {{ loading ? "Changing..." : "Change Password" }}
-        </button>
-        <div *ngIf="error" class="login-error">{{ error }}</div>
-        <div *ngIf="success" class="login-success">{{ success }}</div>
-      </form>
+<div class="lx-profile-container">
 
-    </div>
-    <div class="col-4"></div>
+  <!-- Top Control & Action Bar (Odoo Sub-Header) -->
+  <div class="odoo-control-panel py-2 mb-3">
+    <div class="container-fluid px-3 px-md-4">
+      <div class="d-flex flex-wrap justify-content-between align-items-center gap-3">
+        
+        <!-- Left: Breadcrumb Trail -->
+        <div class="d-flex align-items-center gap-3 flex-wrap">
+          <div class="odoo-breadcrumb-trail d-flex align-items-center">
+            <span class="odoo-crumb-link">Settings</span>
+            <span class="odoo-crumb-sep">/</span>
+            <span class="odoo-crumb-current">Profile & Security</span>
+          </div>
+        </div>
 
+        <!-- Right: Sign Out Action -->
+        <div class="d-flex align-items-center gap-2">
+          <button 
+            type="button" 
+            class="btn btn-sm btn-outline-danger d-flex align-items-center gap-1"
+            (click)="logout()"
+          >
+            <i class="bi bi-box-arrow-right"></i>
+            <span>Sign Out</span>
+          </button>
+        </div>
+
+      </div>
+    </div>
+  </div>
+
+  <!-- Alert Notifications -->
+  <div class="container-fluid px-3 px-md-4" *ngIf="error || success">
+    <div class="row justify-content-center">
+      <div class="col-12 col-xl-10">
+        <div *ngIf="error" class="alert alert-danger alert-dismissible fade show mb-3" role="alert">
+          <i class="bi bi-exclamation-triangle-fill me-2"></i>
+          <span>{{ error }}</span>
+          <button type="button" class="btn-close" (click)="error = ''"></button>
+        </div>
+
+        <div *ngIf="success" class="alert alert-success alert-dismissible fade show mb-3" role="alert">
+          <i class="bi bi-check-circle-fill me-2"></i>
+          <span>{{ success }}</span>
+          <button type="button" class="btn-close" (click)="success = ''"></button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Main Odoo Form Sheet Canvas -->
+  <div class="container-fluid px-3 px-md-4">
+    <div class="row justify-content-center">
+      <div class="col-12 col-xl-10">
+        
+        <div class="odoo-form-sheet shadow-sm">
+          
+          <!-- Sheet Header: User Identity Banner -->
+          <div class="odoo-sheet-header d-flex align-items-center gap-3 flex-wrap pb-4 border-bottom">
+            <div class="odoo-user-avatar">
+              {{ userInitials }}
+            </div>
+
+            <div class="flex-grow-1">
+              <div class="d-flex align-items-center gap-2 mb-1 flex-wrap">
+                <span class="badge badge-gold" style="font-size: 0.75rem;">
+                  <i class="bi bi-shield-lock-fill me-1"></i>Administrator
+                </span>
+                <span class="badge badge-success" style="font-size: 0.75rem;">
+                  <i class="bi bi-circle-fill me-1" style="font-size: 0.45rem;"></i>Active Session
+                </span>
+                <span class="badge badge-secondary" style="font-size: 0.75rem;">
+                  Lonex Enterprise
+                </span>
+              </div>
+
+              <h1 class="odoo-profile-email mb-0">
+                {{ userEmail }}
+              </h1>
+            </div>
+          </div>
+
+          <!-- Odoo Notebook Tabbed Navigation -->
+          <div class="odoo-notebook mt-4">
+            
+            <!-- Tab Headers -->
+            <div class="odoo-tabs-header border-bottom">
+              <button 
+                type="button" 
+                class="odoo-tab-nav-btn" 
+                [class.active]="activeTab === 'security'"
+                (click)="setActiveTab('security')"
+              >
+                <i class="bi bi-key-fill me-1 text-gold"></i>
+                <span>Security & Credentials</span>
+              </button>
+
+              <button 
+                type="button" 
+                class="odoo-tab-nav-btn" 
+                [class.active]="activeTab === 'preferences'"
+                (click)="setActiveTab('preferences')"
+              >
+                <i class="bi bi-palette-fill me-1"></i>
+                <span>Preferences & Theme</span>
+              </button>
+
+              <button 
+                type="button" 
+                class="odoo-tab-nav-btn" 
+                [class.active]="activeTab === 'system'"
+                (click)="setActiveTab('system')"
+              >
+                <i class="bi bi-info-circle-fill me-1"></i>
+                <span>System Information</span>
+              </button>
+            </div>
+
+            <!-- Tab 1: Security & Password Pane -->
+            <div class="odoo-tab-pane py-4" *ngIf="activeTab === 'security'">
+              <div class="row g-4">
+                
+                <!-- Left: Password Update Form -->
+                <div class="col-12 col-md-7">
+                  <div class="odoo-section-card p-4 rounded border h-100">
+                    <h5 class="odoo-group-title mb-3 pb-2 border-bottom">
+                      <i class="bi bi-lock me-1 text-gold"></i>
+                      <span>Change Account Password</span>
+                    </h5>
+
+                    <form (ngSubmit)="changePassword()" #changeForm="ngForm" autocomplete="off">
+                      
+                      <div class="mb-3">
+                        <label for="currentPassword" class="odoo-form-label">
+                          Current Password <span class="text-danger">*</span>
+                        </label>
+                        <div class="input-group">
+                          <input 
+                            [type]="showCurrentPassword ? 'text' : 'password'" 
+                            id="currentPassword" 
+                            class="odoo-form-control form-control" 
+                            [(ngModel)]="currentPassword" 
+                            name="currentPassword" 
+                            required 
+                            placeholder="Enter current password"
+                          />
+                          <button 
+                            type="button" 
+                            class="btn btn-outline-secondary odoo-input-addon" 
+                            (click)="showCurrentPassword = !showCurrentPassword"
+                          >
+                            <i class="bi" [ngClass]="showCurrentPassword ? 'bi-eye-slash-fill' : 'bi-eye-fill'"></i>
+                          </button>
+                        </div>
+                      </div>
+
+                      <div class="mb-4">
+                        <label for="newPassword" class="odoo-form-label">
+                          New Password <span class="text-danger">*</span>
+                        </label>
+                        <div class="input-group">
+                          <input 
+                            [type]="showNewPassword ? 'text' : 'password'" 
+                            id="newPassword" 
+                            class="odoo-form-control form-control" 
+                            [(ngModel)]="newPassword" 
+                            name="newPassword" 
+                            required 
+                            minlength="6"
+                            placeholder="Enter new password (min. 6 chars)"
+                          />
+                          <button 
+                            type="button" 
+                            class="btn btn-outline-secondary odoo-input-addon" 
+                            (click)="showNewPassword = !showNewPassword"
+                          >
+                            <i class="bi" [ngClass]="showNewPassword ? 'bi-eye-slash-fill' : 'bi-eye-fill'"></i>
+                          </button>
+                        </div>
+                        <div class="form-text small text-muted">
+                          Password must be at least 6 characters long.
+                        </div>
+                      </div>
+
+                      <div class="d-flex justify-content-start">
+                        <button 
+                          type="submit" 
+                          class="btn btn-lx-primary px-4 py-2" 
+                          [disabled]="loading || !changeForm.form.valid || newPassword.length < 6"
+                        >
+                          <span *ngIf="loading" class="spinner-border spinner-border-sm me-1" role="status"></span>
+                          <i *ngIf="!loading" class="bi bi-shield-check me-1"></i>
+                          {{ loading ? "Updating Password..." : "Update Password" }}
+                        </button>
+                      </div>
+
+                    </form>
+                  </div>
+                </div>
+
+                <!-- Right: Security Best Practices Card -->
+                <div class="col-12 col-md-5">
+                  <div class="odoo-section-card p-4 rounded border h-100 d-flex flex-column justify-content-between">
+                    <div>
+                      <h5 class="odoo-group-title mb-3 pb-2 border-bottom">
+                        <i class="bi bi-shield-shaded me-1 text-gold"></i>
+                        <span>Security Advice</span>
+                      </h5>
+
+                      <ul class="list-unstyled small d-flex flex-column gap-3 mb-0" style="line-height: 1.6;">
+                        <li class="d-flex align-items-start gap-2">
+                          <i class="bi bi-check2-circle text-success fs-6 mt-1"></i>
+                          <span><strong>Strong Passwords:</strong> Use a combination of uppercase, lowercase letters, numbers, and symbols.</span>
+                        </li>
+
+                        <li class="d-flex align-items-start gap-2">
+                          <i class="bi bi-shield-lock text-gold fs-6 mt-1"></i>
+                          <span><strong>Cloud Authentication:</strong> Password changes instantly update across all active Supabase sessions.</span>
+                        </li>
+
+                        <li class="d-flex align-items-start gap-2">
+                          <i class="bi bi-person-x text-danger fs-6 mt-1"></i>
+                          <span><strong>Keep Private:</strong> Never share your administrative login credentials with unauthorized personnel.</span>
+                        </li>
+                      </ul>
+                    </div>
+
+                    <div class="p-2 mt-4 rounded border text-center small text-muted" style="background-color: var(--lx-bg-subtle);">
+                      <i class="bi bi-lock-fill text-gold me-1"></i>
+                      <span>SSL 256-bit Encrypted Connection</span>
+                    </div>
+                  </div>
+                </div>
+
+              </div>
+            </div>
+
+            <!-- Tab 2: Preferences & Theme Pane -->
+            <div class="odoo-tab-pane py-4" *ngIf="activeTab === 'preferences'">
+              <div class="row g-4">
+                
+                <div class="col-12 col-md-6">
+                  <div class="odoo-section-card p-4 rounded border h-100">
+                    <h5 class="odoo-group-title mb-3 pb-2 border-bottom">
+                      <i class="bi bi-brightness-high me-1 text-gold"></i>
+                      <span>Theme & Display Mode</span>
+                    </h5>
+
+                    <p class="small text-muted mb-3">
+                      Choose between Dark and Light mode depending on your working environment.
+                    </p>
+
+                    <div class="d-flex align-items-center justify-content-between p-3 rounded border mb-3" style="background-color: var(--lx-bg-subtle);">
+                      <div class="d-flex align-items-center gap-3">
+                        <i class="bi fs-4" [ngClass]="themeService.isDarkMode() ? 'bi-moon-stars-fill text-gold' : 'bi-sun-fill text-warning'"></i>
+                        <div>
+                          <h6 class="mb-0 fw-bold" style="color: var(--lx-text-primary);">
+                            {{ themeService.isDarkMode() ? 'Dark Mode Enabled' : 'Light Mode Enabled' }}
+                          </h6>
+                          <span class="small text-muted">Toggle your visual workspace theme</span>
+                        </div>
+                      </div>
+
+                      <button 
+                        type="button" 
+                        class="btn btn-sm"
+                        [ngClass]="themeService.isDarkMode() ? 'btn-lx-primary' : 'btn-lx-secondary'"
+                        (click)="toggleTheme()"
+                      >
+                        <i class="bi bi-arrow-repeat me-1"></i>Switch Theme
+                      </button>
+                    </div>
+                  </div>
+                </div>
+
+                <div class="col-12 col-md-6">
+                  <div class="odoo-section-card p-4 rounded border h-100">
+                    <h5 class="odoo-group-title mb-3 pb-2 border-bottom">
+                      <i class="bi bi-globe me-1 text-gold"></i>
+                      <span>Regional & Localization</span>
+                    </h5>
+
+                    <div class="d-flex flex-column gap-2 small">
+                      <div class="d-flex justify-content-between py-2 border-bottom">
+                        <span class="text-muted">Default Currency</span>
+                        <strong style="color: var(--lx-text-primary);">Sri Lankan Rupee (LKR / Rs.)</strong>
+                      </div>
+                      <div class="d-flex justify-content-between py-2 border-bottom">
+                        <span class="text-muted">Timezone</span>
+                        <strong style="color: var(--lx-text-primary);">Asia / Colombo (UTC+05:30)</strong>
+                      </div>
+                      <div class="d-flex justify-content-between py-2">
+                        <span class="text-muted">Language</span>
+                        <strong style="color: var(--lx-text-primary);">English (EN-LK)</strong>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+
+              </div>
+            </div>
+
+            <!-- Tab 3: System Details Pane -->
+            <div class="odoo-tab-pane py-4" *ngIf="activeTab === 'system'">
+              <div class="row g-4">
+                
+                <div class="col-12 col-md-6">
+                  <div class="odoo-section-card p-4 rounded border h-100">
+                    <h5 class="odoo-group-title mb-3 pb-2 border-bottom">
+                      <i class="bi bi-cpu me-1 text-gold"></i>
+                      <span>Platform Metadata</span>
+                    </h5>
+
+                    <div class="d-flex flex-column gap-2 small">
+                      <div class="d-flex justify-content-between py-2 border-bottom">
+                        <span class="text-muted">Application</span>
+                        <strong style="color: var(--lx-text-primary);">Lonex Investments V2 Enterprise</strong>
+                      </div>
+                      <div class="d-flex justify-content-between py-2 border-bottom">
+                        <span class="text-muted">Framework</span>
+                        <strong style="color: var(--lx-text-primary);">Angular 18 (Standalone Components)</strong>
+                      </div>
+                      <div class="d-flex justify-content-between py-2 border-bottom">
+                        <span class="text-muted">Database Engine</span>
+                        <strong style="color: var(--lx-text-primary);">Supabase Cloud PostgreSQL</strong>
+                      </div>
+                      <div class="d-flex justify-content-between py-2">
+                        <span class="text-muted">UI Architecture</span>
+                        <strong style="color: var(--lx-text-primary);">Odoo-Inspired Responsive Design System</strong>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+
+                <div class="col-12 col-md-6">
+                  <div class="odoo-section-card p-4 rounded border h-100">
+                    <h5 class="odoo-group-title mb-3 pb-2 border-bottom">
+                      <i class="bi bi-check-circle-fill me-1 text-success"></i>
+                      <span>System Status</span>
+                    </h5>
+
+                    <div class="d-flex flex-column gap-2 small">
+                      <div class="d-flex justify-content-between py-2 border-bottom">
+                        <span class="text-muted">Supabase Auth API</span>
+                        <span class="badge badge-success">Online & Healthy</span>
+                      </div>
+                      <div class="d-flex justify-content-between py-2 border-bottom">
+                        <span class="text-muted">Database Connection</span>
+                        <span class="badge badge-success">Connected</span>
+                      </div>
+                      <div class="d-flex justify-content-between py-2">
+                        <span class="text-muted">Theme Service</span>
+                        <span class="badge badge-gold">Active</span>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+
+              </div>
+            </div>
+
+          </div>
+
+        </div>
+
+      </div>
+    </div>
   </div>
 
 </div>

@@ -1,263 +1,539 @@
-<div class="profit-container container my-4">
-  <!-- Date Range Picker -->
-  <div class="row mb-3">
-    <div class="col-md-12 d-flex align-items-center justify-content-start" style="gap: 1.5rem;">
-      <label class="form-label mb-0 fw-bold" style="font-size: 1.1rem; color: #003566;">Filter by Date:</label>
-      <div class="input-group" style="max-width: 220px;">
-        <span class="input-group-text bg-light border-0"><i class="bi bi-calendar-date"></i></span>
-        <input type="date" class="form-control border-0 shadow-sm" [(ngModel)]="startDate" (change)="onDateRangeChange()">
-      </div>
-      <span class="mx-2 fw-bold">to</span>
-      <div class="input-group" style="max-width: 220px;">
-        <span class="input-group-text bg-light border-0"><i class="bi bi-calendar-date"></i></span>
-        <input type="date" class="form-control border-0 shadow-sm" [(ngModel)]="endDate" (change)="onDateRangeChange()">
-      </div>
-    </div>
-  </div>
-  <hr />
-  <!-- Capital & Document Charges Cards -->
-  <div class="row mb-4">
-    <div class="col-md-6 mb-3">
-      <div class="stat-card card h-100">
-        <div class="card-body">
-          <h5 class="card-title text-white">Current Capital</h5>
-          <p class="card-text display-6 text-white">Rs. {{ capital | number: '1.2-2' }}</p>
-        </div>
-      </div>
-    </div>
-    <div class="col-md-6 mb-3">
-      <div class="stat-card card h-100" style="background: linear-gradient(135deg, #FFC300 0%, #FF8C00 100%);">
-        <div class="card-body">
-          <h5 class="card-title text-white">Total Document Charges</h5>
-          <p class="card-text display-6 text-white">Rs. {{ totalDocumentCharges | number: '1.2-2' }}</p>
-        </div>
-      </div>
-    </div>
-  </div>
+<div class="lx-finance-container">
 
-  <!-- Add Expense + Add Capital Forms -->
-  <div class="row mb-4">
-    <div class="col-md-6 mb-3">
-      <div class="card data-card h-100">
-        <div class="card-header section-header" style="background-color: #dc3545; color: white;">Add Expense (Salary)</div>
-        <div class="card-body">
-                     <form [formGroup]="addExpenseForm" (ngSubmit)="onAddExpense()" (ngModelChange)="onExpenseFormChange()">
-             <div class="mb-3">
-               <label class="form-label">Amount <span class="text-danger">*</span></label>
-               <input type="number" class="form-control" formControlName="amount" min="1" required>
-               <div *ngIf="addExpenseForm.get('amount')?.invalid && addExpenseForm.get('amount')?.touched" class="text-danger small mt-1">
-                 <span *ngIf="addExpenseForm.get('amount')?.errors?.['required']">Amount is required</span>
-                 <span *ngIf="addExpenseForm.get('amount')?.errors?.['min']">Amount must be at least 1</span>
-               </div>
-             </div>
-             <div class="mb-3">
-               <label class="form-label">Remark <span class="text-danger">*</span></label>
-               <input type="text" class="form-control" formControlName="remark" placeholder="e.g., Salary payment" required>
-               <div *ngIf="addExpenseForm.get('remark')?.invalid && addExpenseForm.get('remark')?.touched" class="text-danger small mt-1">
-                 <span *ngIf="addExpenseForm.get('remark')?.errors?.['required']">Remark is required</span>
-                 <span *ngIf="addExpenseForm.get('remark')?.errors?.['minlength']">Remark must be at least 3 characters</span>
-               </div>
-             </div>
-             <button type="submit" class="btn btn-danger w-100" [disabled]="addExpenseForm.invalid">Add Expense</button>
-           </form>
-          <div *ngIf="addExpenseSuccess" class="alert alert-success mt-3">Expense added successfully!</div>
-          <div *ngIf="addExpenseError" class="alert alert-danger mt-3">{{ addExpenseError }}</div>
-        </div>
-      </div>
-    </div>
-
-    <div class="col-md-6 mb-3">
-      <div class="card data-card h-100">
-        <div class="card-header section-header" style="background-color: #28a745; color: white;">Add Money to Capital</div>
-        <div class="card-body">
-                     <form [formGroup]="addCapitalForm" (ngSubmit)="onAddCapital()" (ngModelChange)="onCapitalFormChange()">
-             <div class="mb-3">
-               <label class="form-label">Amount <span class="text-danger">*</span></label>
-               <input type="number" class="form-control" formControlName="amount" min="1" required>
-               <div *ngIf="addCapitalForm.get('amount')?.invalid && addCapitalForm.get('amount')?.touched" class="text-danger small mt-1">
-                 <span *ngIf="addCapitalForm.get('amount')?.errors?.['required']">Amount is required</span>
-                 <span *ngIf="addCapitalForm.get('amount')?.errors?.['min']">Amount must be at least 1</span>
-               </div>
-             </div>
-             <div class="mb-3">
-               <label class="form-label">Remark <span class="text-danger">*</span></label>
-               <input type="text" class="form-control" formControlName="remark" placeholder="e.g., Investment, Loan repayment" required>
-               <div *ngIf="addCapitalForm.get('remark')?.invalid && addCapitalForm.get('remark')?.touched" class="text-danger small mt-1">
-                 <span *ngIf="addCapitalForm.get('remark')?.errors?.['required']">Remark is required</span>
-                 <span *ngIf="addCapitalForm.get('remark')?.errors?.['minlength']">Remark must be at least 3 characters</span>
-               </div>
-             </div>
-             <button type="submit" class="btn btn-success w-100" [disabled]="addCapitalForm.invalid">Add to Capital</button>
-           </form>
-          <div *ngIf="addCapitalSuccess" class="alert alert-success mt-3">Money added to capital successfully!</div>
-          <div *ngIf="addCapitalError" class="alert alert-danger mt-3">{{ addCapitalError }}</div>
-        </div>
-      </div>
-    </div>
-  </div>
-
-   <!-- Loans Table -->
-   <div class="row mb-4">
-     <div class="col-12">
-       <div class="card data-card">
-         <div class="card-header section-header" style="background-color: #1B4965; color: white;">Loans Details</div>
-         <div class="card-body p-0">
-                       <div class="table-responsive" style="max-height: 400px; overflow-y: auto;">
-              <table class="table table-hover modern-table mb-0">
-                <thead style="position: sticky; top: 0; background-color: #f8f9fa; z-index: 1;">
-                  <tr>
-                    <th>Loan Number</th>
-                    <th>Client Name</th>
-                    <th>Document Charge</th>
-                    <th>Status</th>
-                    <th>Start Date</th>
-                    <th>Principal Amount</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  <tr *ngFor="let loan of loans.slice(0, 10)">
-                    <td>{{ loan.loan_number }}</td>
-                    <td>{{ loan.client_name }}</td>
-                    <td>Rs. {{ loan.document_charge | number: '1.2-2' }}</td>
-                    <td>
-                      <span class="badge" [ngClass]="{
-                        'bg-success': loan.status === 'active',
-                        'bg-secondary': loan.status === 'closed'
-                      }">
-                        {{ loan.status | titlecase }}
-                      </span>
-                    </td>
-                    <td>{{ loan.start_date | date: 'dd/MM/yyyy' }}</td>
-                    <td>Rs. {{ loan.principal_amount | number: '1.2-2' }}</td>
-                  </tr>
-                  <tr *ngIf="loans.length === 0">
-                    <td colspan="6" class="text-center text-muted">No loans found.</td>
-                  </tr>
-                  <tr *ngIf="loans.length > 10">
-                    <td colspan="6" class="text-center text-muted">
-                      Showing first 10 of {{ loans.length }} loans. Scroll to see more.
-                    </td>
-                  </tr>
-                </tbody>
-              </table>
-            </div>
-         </div>
-       </div>
-     </div>
-   </div>
-
-       <!-- Latest Payments Table -->
-    <div class="row mb-4">
-      <div class="col-12">
-        <div class="card data-card">
-          <div class="card-header section-header">Latest Payments</div>
-          <div class="card-body p-0">
-            <div class="table-responsive" style="max-height: 400px; overflow-y: auto;">
-              <table class="table table-hover modern-table mb-0">
-                <thead style="position: sticky; top: 0; background-color: #f8f9fa; z-index: 1;">
-                  <tr>
-                    <th>Date</th>
-                    <th>Amount</th>
-                    <th>Remark</th>
-                    <th>Loan Number</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  <tr *ngFor="let p of payments.slice(0, 10)">
-                    <td>{{ p.paid_date }}</td>
-                    <td>Rs. {{ p.paid_amount | number: '1.2-2' }}</td>
-                    <td>{{ p.remark }}</td>
-                    <td>{{ p.loan_number }}</td>
-                  </tr>
-                  <tr *ngIf="payments.length === 0">
-                    <td colspan="4" class="text-center text-muted">No payments found.</td>
-                  </tr>
-                  <tr *ngIf="payments.length > 10">
-                    <td colspan="4" class="text-center text-muted">
-                      Showing first 10 of {{ payments.length }} payments. Scroll to see more.
-                    </td>
-                  </tr>
-                </tbody>
-              </table>
-            </div>
+  <!-- Top Control & Action Bar (Odoo Sub-Header) -->
+  <div class="odoo-control-panel py-2 mb-3">
+    <div class="container-fluid px-3 px-md-4">
+      <div class="d-flex flex-wrap justify-content-between align-items-center gap-3">
+        
+        <!-- Left: Breadcrumb Trail -->
+        <div class="d-flex align-items-center gap-3 flex-wrap">
+          <div class="odoo-breadcrumb-trail d-flex align-items-center">
+            <span class="odoo-crumb-link">Finance</span>
+            <span class="odoo-crumb-sep">/</span>
+            <span class="odoo-crumb-current">Profits & Capital</span>
           </div>
         </div>
-      </div>
-    </div>
 
-    <!-- Expense History Table -->
-    <div class="row mb-4">
-      <div class="col-12">
-        <div class="card data-card">
-          <div class="card-header section-header" style="background-color: #1B4965; color: white;">Expense History</div>
-          <div class="card-body p-0">
-            <div class="table-responsive" style="max-height: 400px; overflow-y: auto;">
-              <table class="table table-hover modern-table mb-0">
-                <thead style="position: sticky; top: 0; background-color: #f8f9fa; z-index: 1;">
-                  <tr>
-                    <th>Date</th>
-                    <th>Amount</th>
-                    <th>Remark</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  <tr *ngFor="let expense of expenses.slice(0, 10)">
-                    <td>{{ expense.expense_date | date: 'dd/MM/yyyy' }}</td>
-                    <td class="text-danger fw-bold">Rs. {{ expense.amount | number: '1.2-2' }}</td>
-                    <td>{{ expense.remark || '-' }}</td>
-                  </tr>
-                  <tr *ngIf="expenses.length === 0">
-                    <td colspan="3" class="text-center text-muted">No expenses found.</td>
-                  </tr>
-                  <tr *ngIf="expenses.length > 10">
-                    <td colspan="3" class="text-center text-muted">
-                      Showing first 10 of {{ expenses.length }} expenses. Scroll to see more.
-                    </td>
-                  </tr>
-                </tbody>
-              </table>
-            </div>
+        <!-- Right: Integrated Date Filter Bar -->
+        <div class="odoo-date-filter-bar d-flex align-items-center gap-2 flex-wrap">
+          <span class="small fw-semibold text-muted d-none d-sm-inline">
+            <i class="bi bi-funnel-fill me-1 text-gold"></i>Period:
+          </span>
+
+          <div class="odoo-date-input-group d-flex align-items-center">
+            <span class="odoo-date-label">From</span>
+            <input 
+              type="date" 
+              class="odoo-date-input" 
+              [(ngModel)]="startDate" 
+              (change)="onDateRangeChange()"
+              title="Start Date"
+            />
           </div>
-        </div>
-      </div>
-    </div>
 
-    <!-- Invest History Table -->
-    <div class="row mb-4">
-      <div class="col-12">
-        <div class="card data-card">
-          <div class="card-header section-header" style="background-color: #1B4965; color: white;">Capital Addition History</div>
-          <div class="card-body p-0">
-            <div class="table-responsive" style="max-height: 400px; overflow-y: auto;">
-              <table class="table table-hover modern-table mb-0">
-                <thead style="position: sticky; top: 0; background-color: #f8f9fa; z-index: 1;">
-                  <tr>
-                    <th>Date</th>
-                    <th>Amount</th>
-                    <th>Remark</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  <tr *ngFor="let invest of investHistory.slice(0, 10)">
-                    <td>{{ invest.date | date: 'dd/MM/yyyy' }}</td>
-                    <td class="text-success fw-bold">Rs. {{ invest.amount | number: '1.2-2' }}</td>
-                    <td>{{ invest.remark || '-' }}</td>
-                  </tr>
-                  <tr *ngIf="investHistory.length === 0">
-                    <td colspan="3" class="text-center text-muted">No capital additions found.</td>
-                  </tr>
-                  <tr *ngIf="investHistory.length > 10">
-                    <td colspan="3" class="text-center text-muted">
-                      Showing first 10 of {{ investHistory.length }} capital additions. Scroll to see more.
-                    </td>
-                  </tr>
-                </tbody>
-              </table>
-            </div>
+          <div class="odoo-date-input-group d-flex align-items-center">
+            <span class="odoo-date-label">To</span>
+            <input 
+              type="date" 
+              class="odoo-date-input" 
+              [(ngModel)]="endDate" 
+              (change)="onDateRangeChange()"
+              title="End Date"
+            />
           </div>
+
+          <button 
+            *ngIf="startDate || endDate" 
+            type="button" 
+            class="btn btn-sm btn-outline-danger d-flex align-items-center gap-1"
+            (click)="clearDateFilter()"
+            title="Reset date filter"
+          >
+            <i class="bi bi-x-circle"></i>
+            <span class="d-none d-md-inline">Reset</span>
+          </button>
         </div>
+
       </div>
     </div>
-
- 
   </div>
+
+  <!-- Alert Notifications -->
+  <div class="container-fluid px-3 px-md-4" *ngIf="addExpenseSuccess || addExpenseError || addCapitalSuccess || addCapitalError">
+    <div class="row justify-content-center">
+      <div class="col-12 col-xl-11">
+        
+        <div *ngIf="addExpenseSuccess" class="alert alert-success alert-dismissible fade show mb-3" role="alert">
+          <i class="bi bi-check-circle-fill me-2"></i>
+          <span>Expense recorded and deducted from bank capital successfully!</span>
+          <button type="button" class="btn-close" (click)="addExpenseSuccess = false"></button>
+        </div>
+
+        <div *ngIf="addExpenseError" class="alert alert-danger alert-dismissible fade show mb-3" role="alert">
+          <i class="bi bi-exclamation-triangle-fill me-2"></i>
+          <span>{{ addExpenseError }}</span>
+          <button type="button" class="btn-close" (click)="addExpenseError = ''"></button>
+        </div>
+
+        <div *ngIf="addCapitalSuccess" class="alert alert-success alert-dismissible fade show mb-3" role="alert">
+          <i class="bi bi-check-circle-fill me-2"></i>
+          <span>Money deposited to capital successfully!</span>
+          <button type="button" class="btn-close" (click)="addCapitalSuccess = false"></button>
+        </div>
+
+        <div *ngIf="addCapitalError" class="alert alert-danger alert-dismissible fade show mb-3" role="alert">
+          <i class="bi bi-exclamation-triangle-fill me-2"></i>
+          <span>{{ addCapitalError }}</span>
+          <button type="button" class="btn-close" (click)="addCapitalError = ''"></button>
+        </div>
+
+      </div>
+    </div>
+  </div>
+
+  <!-- Main Odoo Form Sheet Canvas -->
+  <div class="container-fluid px-3 px-md-4">
+    <div class="row justify-content-center">
+      <div class="col-12 col-xl-11">
+        
+        <div class="odoo-form-sheet shadow-sm">
+          
+          <!-- Sheet Header: Title & Overview -->
+          <div class="odoo-sheet-header d-flex align-items-start gap-3 flex-wrap pb-3 border-bottom">
+            <div class="odoo-header-avatar">
+              <i class="bi bi-graph-up-arrow"></i>
+            </div>
+            
+            <div class="flex-grow-1">
+              <div class="d-flex align-items-center gap-2 mb-1 flex-wrap">
+                <span class="badge badge-gold" style="font-size: 0.75rem;">
+                  <i class="bi bi-shield-check me-1"></i>Financial Ledgers
+                </span>
+                <span *ngIf="startDate || endDate" class="badge badge-secondary" style="font-size: 0.75rem;">
+                  Filtered View
+                </span>
+              </div>
+              <h1 class="odoo-sheet-title mb-0">
+                Financial & Capital Management
+              </h1>
+            </div>
+          </div>
+
+          <!-- Odoo Smart KPI Stats Grid (3 Key Metrics) -->
+          <div class="row g-3 my-3">
+            
+            <!-- 1. Current Capital -->
+            <div class="col-12 col-md-4">
+              <div class="odoo-kpi-card p-3 rounded">
+                <div class="d-flex justify-content-between align-items-center mb-2">
+                  <span class="kpi-label">Current Bank Capital</span>
+                  <div class="kpi-icon-badge kpi-emerald">
+                    <i class="bi bi-bank"></i>
+                  </div>
+                </div>
+                <h3 class="kpi-value mb-1" [ngClass]="(capital || 0) < 0 ? 'text-danger' : 'text-success'">
+                  Rs. {{ capital || 0 | number: '1.2-2' }}
+                </h3>
+                <span class="small text-muted">Available liquidity in bank</span>
+              </div>
+            </div>
+
+            <!-- 2. Total Profit -->
+            <div class="col-12 col-md-4">
+              <div class="odoo-kpi-card p-3 rounded">
+                <div class="d-flex justify-content-between align-items-center mb-2">
+                  <span class="kpi-label">Total Profit</span>
+                  <div class="kpi-icon-badge kpi-gold">
+                    <i class="bi bi-trophy"></i>
+                  </div>
+                </div>
+                <h3 class="kpi-value text-gold mb-1">
+                  Rs. {{ totalProfit || 0 | number: '1.2-2' }}
+                </h3>
+                <span class="small text-muted">Cumulative net earnings</span>
+              </div>
+            </div>
+
+            <!-- 3. Assets Account (User Requested Rename from Doc Charges) -->
+            <div class="col-12 col-md-4">
+              <div class="odoo-kpi-card p-3 rounded">
+                <div class="d-flex justify-content-between align-items-center mb-2">
+                  <span class="kpi-label">Assets Account</span>
+                  <div class="kpi-icon-badge kpi-blue">
+                    <i class="bi bi-safe2"></i>
+                  </div>
+                </div>
+                <h3 class="kpi-value mb-1" style="color: var(--lx-text-primary);">
+                  Rs. {{ totalDocumentCharges | number: '1.2-2' }}
+                </h3>
+                <span class="small text-muted">Total documented assets reserve</span>
+              </div>
+            </div>
+
+          </div>
+
+          <!-- Odoo Notebook Tabbed Navigation -->
+          <div class="odoo-notebook mt-4">
+            
+            <!-- Tab Headers -->
+            <div class="odoo-tabs-header border-bottom">
+              
+              <button 
+                type="button" 
+                class="odoo-tab-nav-btn" 
+                [class.active]="activeTab === 'actions'"
+                (click)="setActiveTab('actions')"
+              >
+                <i class="bi bi-lightning-charge-fill me-1 text-gold"></i>
+                <span>Quick Actions</span>
+              </button>
+
+              <button 
+                type="button" 
+                class="odoo-tab-nav-btn" 
+                [class.active]="activeTab === 'expenses'"
+                (click)="setActiveTab('expenses')"
+              >
+                <i class="bi bi-cash-stack me-1"></i>
+                <span>Expense Journal</span>
+                <span class="badge badge-secondary ms-1">{{ expenses.length }}</span>
+              </button>
+
+              <button 
+                type="button" 
+                class="odoo-tab-nav-btn" 
+                [class.active]="activeTab === 'capital'"
+                (click)="setActiveTab('capital')"
+              >
+                <i class="bi bi-piggy-bank me-1"></i>
+                <span>Capital History</span>
+                <span class="badge badge-secondary ms-1">{{ investHistory.length }}</span>
+              </button>
+
+              <button 
+                type="button" 
+                class="odoo-tab-nav-btn" 
+                [class.active]="activeTab === 'loans'"
+                (click)="setActiveTab('loans')"
+              >
+                <i class="bi bi-card-list me-1"></i>
+                <span>Loans Book</span>
+                <span class="badge badge-secondary ms-1">{{ loans.length }}</span>
+              </button>
+
+              <button 
+                type="button" 
+                class="odoo-tab-nav-btn" 
+                [class.active]="activeTab === 'payments'"
+                (click)="setActiveTab('payments')"
+              >
+                <i class="bi bi-receipt me-1"></i>
+                <span>Payment Inflows</span>
+                <span class="badge badge-secondary ms-1">{{ payments.length }}</span>
+              </button>
+
+            </div>
+
+            <!-- Tab 1: Quick Actions (Side-by-Side Forms) -->
+            <div class="odoo-tab-pane py-4" *ngIf="activeTab === 'actions'">
+              <div class="row g-4">
+                
+                <!-- Form 1: Add Expense -->
+                <div class="col-12 col-md-6">
+                  <div class="odoo-action-card p-4 rounded h-100 border">
+                    <div class="d-flex align-items-center gap-2 mb-3 pb-2 border-bottom">
+                      <div class="action-card-icon text-danger">
+                        <i class="bi bi-dash-circle-fill"></i>
+                      </div>
+                      <div>
+                        <h5 class="mb-0 fw-bold" style="color: var(--lx-text-primary);">Record Expense</h5>
+                        <span class="small text-muted">Salaries, utilities & operating expenses</span>
+                      </div>
+                    </div>
+
+                    <form [formGroup]="addExpenseForm" (ngSubmit)="onAddExpense()" (ngModelChange)="onExpenseFormChange()">
+                      <div class="mb-3">
+                        <label class="odoo-form-label">Expense Amount (Rs.) <span class="text-danger">*</span></label>
+                        <div class="input-group">
+                          <span class="input-group-text odoo-input-addon">Rs.</span>
+                          <input 
+                            type="number" 
+                            class="odoo-form-control form-control" 
+                            formControlName="amount" 
+                            min="1" 
+                            placeholder="e.g. 25000"
+                            required
+                          />
+                        </div>
+                        <div *ngIf="addExpenseForm.get('amount')?.invalid && addExpenseForm.get('amount')?.touched" class="text-danger small mt-1">
+                          <span *ngIf="addExpenseForm.get('amount')?.errors?.['required']">Amount is required</span>
+                          <span *ngIf="addExpenseForm.get('amount')?.errors?.['min']">Amount must be at least Rs. 1</span>
+                        </div>
+                      </div>
+
+                      <div class="mb-3">
+                        <label class="odoo-form-label">Description / Remark <span class="text-danger">*</span></label>
+                        <input 
+                          type="text" 
+                          class="odoo-form-control form-control" 
+                          formControlName="remark" 
+                          placeholder="e.g. Monthly Staff Salary, Office Rent" 
+                          required
+                        />
+                        <div *ngIf="addExpenseForm.get('remark')?.invalid && addExpenseForm.get('remark')?.touched" class="text-danger small mt-1">
+                          <span *ngIf="addExpenseForm.get('remark')?.errors?.['required']">Description is required</span>
+                          <span *ngIf="addExpenseForm.get('remark')?.errors?.['minlength']">Must be at least 3 characters</span>
+                        </div>
+                      </div>
+
+                      <button 
+                        type="submit" 
+                        class="btn btn-danger w-100 py-2 fw-semibold mt-2" 
+                        [disabled]="addExpenseForm.invalid"
+                      >
+                        <i class="bi bi-dash-circle me-1"></i>Deduct & Record Expense
+                      </button>
+                    </form>
+                  </div>
+                </div>
+
+                <!-- Form 2: Add Capital -->
+                <div class="col-12 col-md-6">
+                  <div class="odoo-action-card p-4 rounded h-100 border">
+                    <div class="d-flex align-items-center gap-2 mb-3 pb-2 border-bottom">
+                      <div class="action-card-icon text-success">
+                        <i class="bi bi-plus-circle-fill"></i>
+                      </div>
+                      <div>
+                        <h5 class="mb-0 fw-bold" style="color: var(--lx-text-primary);">Deposit Capital</h5>
+                        <span class="small text-muted">Investor equity, capital infusion & funding</span>
+                      </div>
+                    </div>
+
+                    <form [formGroup]="addCapitalForm" (ngSubmit)="onAddCapital()" (ngModelChange)="onCapitalFormChange()">
+                      <div class="mb-3">
+                        <label class="odoo-form-label">Deposit Amount (Rs.) <span class="text-danger">*</span></label>
+                        <div class="input-group">
+                          <span class="input-group-text odoo-input-addon">Rs.</span>
+                          <input 
+                            type="number" 
+                            class="odoo-form-control form-control" 
+                            formControlName="amount" 
+                            min="1" 
+                            placeholder="e.g. 100000"
+                            required
+                          />
+                        </div>
+                        <div *ngIf="addCapitalForm.get('amount')?.invalid && addCapitalForm.get('amount')?.touched" class="text-danger small mt-1">
+                          <span *ngIf="addCapitalForm.get('amount')?.errors?.['required']">Amount is required</span>
+                          <span *ngIf="addCapitalForm.get('amount')?.errors?.['min']">Amount must be at least Rs. 1</span>
+                        </div>
+                      </div>
+
+                      <div class="mb-3">
+                        <label class="odoo-form-label">Description / Remark <span class="text-danger">*</span></label>
+                        <input 
+                          type="text" 
+                          class="odoo-form-control form-control" 
+                          formControlName="remark" 
+                          placeholder="e.g. Shareholder Equity Deposit, Bank Transfer" 
+                          required
+                        />
+                        <div *ngIf="addCapitalForm.get('remark')?.invalid && addCapitalForm.get('remark')?.touched" class="text-danger small mt-1">
+                          <span *ngIf="addCapitalForm.get('remark')?.errors?.['required']">Description is required</span>
+                          <span *ngIf="addCapitalForm.get('remark')?.errors?.['minlength']">Must be at least 3 characters</span>
+                        </div>
+                      </div>
+
+                      <button 
+                        type="submit" 
+                        class="btn btn-success w-100 py-2 fw-semibold mt-2" 
+                        [disabled]="addCapitalForm.invalid"
+                      >
+                        <i class="bi bi-plus-circle me-1"></i>Deposit to Bank Capital
+                      </button>
+                    </form>
+                  </div>
+                </div>
+
+              </div>
+            </div>
+
+            <!-- Tab 2: Expense Journal -->
+            <div class="odoo-tab-pane py-3" *ngIf="activeTab === 'expenses'">
+              <div *ngIf="expenses.length > 0; else noExpenses">
+                <div class="table-responsive odoo-table-wrapper">
+                  <table class="table lx-table mb-0">
+                    <thead>
+                      <tr>
+                        <th>Date</th>
+                        <th>Amount Deducted</th>
+                        <th>Description / Remark</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      <tr *ngFor="let expense of expenses">
+                        <td class="fw-semibold">
+                          <i class="bi bi-calendar3 me-1 text-gold"></i>
+                          {{ expense.expense_date | date: 'mediumDate' }}
+                        </td>
+                        <td class="text-danger fw-bold">Rs. {{ expense.amount | number: '1.2-2' }}</td>
+                        <td>{{ expense.remark || '-' }}</td>
+                      </tr>
+                    </tbody>
+                  </table>
+                </div>
+                <div class="d-flex justify-content-between align-items-center mt-2 px-1 text-muted small">
+                  <span>Total {{ expenses.length }} expense record(s)</span>
+                </div>
+              </div>
+
+              <ng-template #noExpenses>
+                <div class="odoo-empty-state text-center py-5">
+                  <i class="bi bi-cash-stack text-muted mb-2" style="font-size: 2.2rem;"></i>
+                  <h6 class="fw-bold mb-1" style="color: var(--lx-text-primary);">No Expenses Found</h6>
+                  <p class="small text-muted mb-0">No expenses recorded for the selected period.</p>
+                </div>
+              </ng-template>
+            </div>
+
+            <!-- Tab 3: Capital Addition History -->
+            <div class="odoo-tab-pane py-3" *ngIf="activeTab === 'capital'">
+              <div *ngIf="investHistory.length > 0; else noInvestments">
+                <div class="table-responsive odoo-table-wrapper">
+                  <table class="table lx-table mb-0">
+                    <thead>
+                      <tr>
+                        <th>Date</th>
+                        <th>Amount Deposited</th>
+                        <th>Description / Remark</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      <tr *ngFor="let invest of investHistory">
+                        <td class="fw-semibold">
+                          <i class="bi bi-calendar3 me-1 text-gold"></i>
+                          {{ invest.date | date: 'mediumDate' }}
+                        </td>
+                        <td class="text-success fw-bold">Rs. {{ invest.amount | number: '1.2-2' }}</td>
+                        <td>{{ invest.remark || '-' }}</td>
+                      </tr>
+                    </tbody>
+                  </table>
+                </div>
+                <div class="d-flex justify-content-between align-items-center mt-2 px-1 text-muted small">
+                  <span>Total {{ investHistory.length }} capital deposit(s)</span>
+                </div>
+              </div>
+
+              <ng-template #noInvestments>
+                <div class="odoo-empty-state text-center py-5">
+                  <i class="bi bi-piggy-bank text-muted mb-2" style="font-size: 2.2rem;"></i>
+                  <h6 class="fw-bold mb-1" style="color: var(--lx-text-primary);">No Capital Deposits Found</h6>
+                  <p class="small text-muted mb-0">No capital additions recorded for the selected period.</p>
+                </div>
+              </ng-template>
+            </div>
+
+            <!-- Tab 4: Loans Portfolio Book -->
+            <div class="odoo-tab-pane py-3" *ngIf="activeTab === 'loans'">
+              <div *ngIf="loans.length > 0; else noLoans">
+                <div class="table-responsive odoo-table-wrapper">
+                  <table class="table lx-table mb-0">
+                    <thead>
+                      <tr>
+                        <th>Loan Number</th>
+                        <th>Client Name</th>
+                        <th>Principal Amount</th>
+                        <th>Document Fee</th>
+                        <th>Start Date</th>
+                        <th>Status</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      <tr *ngFor="let loan of loans">
+                        <td>
+                          <a [routerLink]="['/single-loan', loan.loan_number]" class="fw-bold text-decoration-none" style="color: var(--lx-primary-accent);">
+                            <i class="bi bi-box-arrow-up-right me-1 small"></i>{{ loan.loan_number }}
+                          </a>
+                        </td>
+                        <td>{{ loan.client_name }}</td>
+                        <td class="fw-semibold">Rs. {{ loan.principal_amount | number: '1.2-2' }}</td>
+                        <td>Rs. {{ loan.document_charge || 0 | number: '1.2-2' }}</td>
+                        <td class="text-muted">{{ loan.start_date | date: 'mediumDate' }}</td>
+                        <td>
+                          <span class="badge" [ngClass]="loan.status === 'active' ? 'badge-success' : 'badge-secondary'">
+                            {{ loan.status | titlecase }}
+                          </span>
+                        </td>
+                      </tr>
+                    </tbody>
+                  </table>
+                </div>
+                <div class="d-flex justify-content-between align-items-center mt-2 px-1 text-muted small">
+                  <span>Total {{ loans.length }} loan portfolio item(s)</span>
+                </div>
+              </div>
+
+              <ng-template #noLoans>
+                <div class="odoo-empty-state text-center py-5">
+                  <i class="bi bi-card-list text-muted mb-2" style="font-size: 2.2rem;"></i>
+                  <h6 class="fw-bold mb-1" style="color: var(--lx-text-primary);">No Loans Found</h6>
+                  <p class="small text-muted mb-0">No loans recorded in the selected period.</p>
+                </div>
+              </ng-template>
+            </div>
+
+            <!-- Tab 5: Inflow Payments Stream -->
+            <div class="odoo-tab-pane py-3" *ngIf="activeTab === 'payments'">
+              <div *ngIf="payments.length > 0; else noPayments">
+                <div class="table-responsive odoo-table-wrapper">
+                  <table class="table lx-table mb-0">
+                    <thead>
+                      <tr>
+                        <th>Payment Date</th>
+                        <th>Amount Paid</th>
+                        <th>Loan Reference</th>
+                        <th>Remark</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      <tr *ngFor="let p of payments">
+                        <td class="fw-semibold">
+                          <i class="bi bi-calendar3 me-1 text-gold"></i>
+                          {{ p.paid_date | date: 'mediumDate' }}
+                        </td>
+                        <td class="text-success fw-bold">Rs. {{ p.paid_amount | number: '1.2-2' }}</td>
+                        <td>
+                          <a [routerLink]="['/single-loan', p.loan_number]" class="text-decoration-none fw-semibold" style="color: var(--lx-primary-accent);">
+                            {{ p.loan_number }}
+                          </a>
+                        </td>
+                        <td class="text-muted">{{ p.remark || '-' }}</td>
+                      </tr>
+                    </tbody>
+                  </table>
+                </div>
+                <div class="d-flex justify-content-between align-items-center mt-2 px-1 text-muted small">
+                  <span>Total {{ payments.length }} payment inflow transaction(s)</span>
+                </div>
+              </div>
+
+              <ng-template #noPayments>
+                <div class="odoo-empty-state text-center py-5">
+                  <i class="bi bi-receipt text-muted mb-2" style="font-size: 2.2rem;"></i>
+                  <h6 class="fw-bold mb-1" style="color: var(--lx-text-primary);">No Payment Inflows Found</h6>
+                  <p class="small text-muted mb-0">No borrower repayments recorded for the selected period.</p>
+                </div>
+              </ng-template>
+            </div>
+
+          </div>
+
+        </div>
+
+      </div>
+    </div>
+  </div>
+
+</div>

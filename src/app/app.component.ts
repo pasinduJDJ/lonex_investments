@@ -2,7 +2,6 @@ import { Component } from '@angular/core';
 import { RouterOutlet, Router, NavigationEnd } from '@angular/router';
 import { HeaderComponent } from './shared/header/header.component';
 import { FooterComponent } from "./shared/footer/footer.component";
-import { ModuleNavComponent } from './shared/module-nav/module-nav.component';
 import { filter } from 'rxjs/operators';
 import { CommonModule } from '@angular/common';
 import { ThemeService } from './service/theme.service';
@@ -10,7 +9,7 @@ import { ThemeService } from './service/theme.service';
 @Component({
   selector: 'app-root',
   standalone: true,
-  imports: [RouterOutlet, HeaderComponent, ModuleNavComponent, FooterComponent, CommonModule],
+  imports: [RouterOutlet, HeaderComponent, FooterComponent, CommonModule],
   templateUrl: './app.component.html',
   styleUrl: './app.component.css'
 })

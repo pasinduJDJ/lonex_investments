@@ -10,7 +10,7 @@
   border-bottom: 1px solid var(--lx-border-subtle);
   box-shadow: var(--lx-shadow-sm);
   transition: background-color var(--lx-transition-base), border-color var(--lx-transition-base), box-shadow var(--lx-transition-base);
-  height: 60px;
+  height: 56px;
   display: flex;
   align-items: center;
 }
@@ -35,8 +35,8 @@
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  width: 38px;
-  height: 38px;
+  width: 36px;
+  height: 36px;
   border-radius: var(--lx-radius-md);
   color: var(--lx-text-secondary);
   background: transparent;
@@ -67,77 +67,76 @@
   background-color: var(--lx-border-subtle);
 }
 
-/* Branding */
-.lx-brand-link {
-  display: inline-flex;
+/* Module Branding in Header */
+.lx-module-brand {
+  display: flex;
   align-items: center;
-  gap: 0.6rem;
-  text-decoration: none;
-  transition: opacity var(--lx-transition-fast);
 }
 
-.lx-brand-link:hover {
-  opacity: 0.9;
-}
-
-.lx-logo-container {
+.lx-module-badge-icon {
+  width: 28px;
+  height: 28px;
+  border-radius: 7px;
   display: flex;
   align-items: center;
   justify-content: center;
-  width: 34px;
-  height: 34px;
-  border-radius: var(--lx-radius-md);
-  background: var(--lx-bg-subtle);
-  border: 1px solid var(--lx-border-subtle);
-  padding: 3px;
+  font-size: 0.95rem;
+  color: #FFFFFF;
+  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.15);
 }
 
-.lx-brand-logo {
-  max-width: 100%;
-  max-height: 100%;
-  object-fit: contain;
+.odoo-badge-customers {
+  background: linear-gradient(145deg, #10B981, #059669);
+}
+.odoo-badge-finance {
+  background: linear-gradient(145deg, #F59E0B, #D97706);
+}
+.odoo-badge-loans {
+  background: linear-gradient(145deg, #E5B242, #B88722);
+  color: #17191D !important;
+}
+.odoo-badge-settings {
+  background: linear-gradient(145deg, #6366F1, #4338CA);
 }
 
-.lx-brand-text {
-  display: flex;
-  flex-direction: column;
-  line-height: 1.1;
-}
-
-.lx-brand-name {
+.lx-module-title-text {
   font-family: var(--lx-font-titles);
   font-weight: var(--lx-fw-bold);
   font-size: 1.05rem;
-  letter-spacing: 0.05em;
   color: var(--lx-text-primary);
+  letter-spacing: -0.01em;
 }
 
-.lx-brand-tag {
-  font-family: var(--lx-font-subtitles);
-  font-weight: var(--lx-fw-semibold);
-  font-size: 0.625rem;
-  letter-spacing: 0.12em;
-  color: var(--lx-primary-accent);
+/* In-Header Module Action Tabs */
+.lx-header-tabs {
+  margin-left: 1rem;
 }
 
-/* Active Module Context Tag */
-.lx-active-module-pill {
+.lx-header-tab-btn {
   display: inline-flex;
   align-items: center;
-  gap: 0.25rem;
-  font-family: var(--lx-font-subtitles);
+  padding: 0.35rem 0.85rem;
+  border-radius: 4px;
+  font-family: var(--lx-font-links);
   font-size: 0.85rem;
-  font-weight: var(--lx-fw-semibold);
+  font-weight: 500;
+  color: var(--lx-text-secondary);
+  text-decoration: none;
+  background: transparent;
+  border: 1px solid transparent;
+  transition: all var(--lx-transition-fast);
+}
+
+.lx-header-tab-btn:hover {
+  background-color: var(--lx-bg-hover);
   color: var(--lx-text-primary);
 }
 
-.lx-module-current-tag {
+.lx-header-tab-btn.active {
   background-color: var(--lx-primary-accent-subtle);
   color: var(--lx-primary-accent);
-  padding: 0.2rem 0.6rem;
-  border-radius: var(--lx-radius-sm);
-  font-size: 0.8rem;
-  border: 1px solid var(--lx-border-subtle);
+  font-weight: 600;
+  border-color: var(--lx-primary-accent);
 }
 
 /* Icon Buttons (Notifications, etc) */
@@ -374,17 +373,11 @@
 /* Mobile Adjustments */
 @media (max-width: 576px) {
   .lx-global-header {
-    height: 56px;
+    height: 52px;
   }
-
   .lx-header-inner {
     padding: 0 0.75rem;
   }
-
-  .lx-brand-tag {
-    display: none;
-  }
-
   .lx-theme-toggle-btn {
     padding: 0.35rem;
     border-radius: 50%;

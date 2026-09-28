@@ -1,125 +1,463 @@
-<div class="single-member-container container my-5">
-  <div class="row justify-content-center">
-    <div class="col-md-10 col-lg-8">
-      <ng-container *ngIf="client$ | async as client; else loadingOrNotFound">
-        <div class="member-card p-4 ">
-          <h4 class="text-primary mb-3 fw-bold">{{ client.first_name }} {{ client.last_name }}</h4>
-          <hr class="mb-4">
+<div class="lx-customer-view-container">
+  
+  <ng-container *ngIf="client$ | async as client; else loadingOrNotFound">
+    <ng-container *ngIf="loans$ | async as loans">
+      
+      <!-- Top Control & Action Bar (Odoo Sub-Header) -->
+      <div class="odoo-control-panel py-2 mb-3">
+        <div class="container-fluid px-3 px-md-4">
+          <div class="d-flex flex-wrap justify-content-between align-items-center gap-3">
+            
+            <!-- Left: Actions & Breadcrumbs -->
+            <div class="d-flex align-items-center gap-3 flex-wrap">
+              <!-- Action Buttons -->
+              <div class="odoo-action-buttons d-flex align-items-center gap-2">
+                <button 
+                  *ngIf="!isEditing" 
+                  type="button" 
+                  class="btn btn-lx-primary btn-sm" 
+                  (click)="enableEdit()"
+                >
+                  <i class="bi bi-pencil-square me-1"></i>
+                  <span>Edit</span>
+                </button>
 
-          <div class="member-info">
-            <p><strong>Client Register Number:</strong> {{ client.register_number }}</p>
-            <p><strong>Client Full Name:</strong> {{ client.first_name }} {{ client.last_name }}</p>
+                <button 
+                  *ngIf="isEditing" 
+                  type="button" 
+                  class="btn btn-lx-primary btn-sm" 
+                  (click)="saveEdit()" 
+                  [disabled]="isSaving"
+                >
+                  <span *ngIf="isSaving" class="spinner-border spinner-border-sm me-1" role="status"></span>
+                  <i *ngIf="!isSaving" class="bi bi-check2 me-1"></i>
+                  <span>{{ isSaving ? 'Saving...' : 'Save' }}</span>
+                </button>
 
-            <p><strong>Client Address:</strong>
-              <span *ngIf="!isEditing">
-                {{ client.home_number || '' }} {{ client.street_address || '' }} {{ client.town_one || '' }} {{ client.town_two || '' }}
-                <span *ngIf="client.group"> | {{ client.group }}</span>
-              </span>
-              <span *ngIf="isEditing" class="d-block mt-2">
-                <input [(ngModel)]="editableClient.home_number" placeholder="Home No" class="edit-field" />
-                <input [(ngModel)]="editableClient.street_address" placeholder="Street" class="edit-field" />
-                <input [(ngModel)]="editableClient.town_one" placeholder="Town 1" class="edit-field" />
-                <input [(ngModel)]="editableClient.town_two" placeholder="Town 2" class="edit-field" />
-                <input [(ngModel)]="editableClient.group" placeholder="Group" class="edit-field" />
-              </span>
-            </p>
+                <button 
+                  *ngIf="isEditing" 
+                  type="button" 
+                  class="btn btn-lx-secondary btn-sm" 
+                  (click)="cancelEdit()" 
+                  [disabled]="isSaving"
+                >
+                  <span>Discard</span>
+                </button>
+              </div>
 
-            <p><strong>Mobile Number:</strong>
-              <span *ngIf="!isEditing">{{ client.mobile_number }}</span>
-              <input *ngIf="isEditing" [(ngModel)]="editableClient.mobile_number" class="edit-field" placeholder="Mobile Number" />
-            </p>
-
-            <p><strong>NIC Number:</strong> {{ client.nic_number }}</p>
-
-            <!-- Guarantor 1 -->
-            <hr class="my-4">
-            <h6 class="fw-bold text-dark">First Guarantor Details</h6>
-            <p><strong>Name:</strong>
-              <span *ngIf="!isEditing">{{ client.first_guarantor_name }}</span>
-              <input *ngIf="isEditing" [(ngModel)]="editableClient.first_guarantor_name" class="edit-field" placeholder="Name" />
-            </p>
-            <p><strong>NIC:</strong>
-              <span *ngIf="!isEditing">{{ client.first_guarantor_nic }}</span>
-              <input *ngIf="isEditing" [(ngModel)]="editableClient.first_guarantor_nic" class="edit-field" placeholder="NIC" />
-            </p>
-            <p><strong>Phone:</strong>
-              <span *ngIf="!isEditing">{{ client.first_guarantor_tp }}</span>
-              <input *ngIf="isEditing" [(ngModel)]="editableClient.first_guarantor_tp" class="edit-field" placeholder="Phone" />
-            </p>
-            <p><strong>Address:</strong>
-              <span *ngIf="!isEditing">{{ client.first_guarantor_address }}</span>
-              <input *ngIf="isEditing" [(ngModel)]="editableClient.first_guarantor_address" class="edit-field" placeholder="Address" />
-            </p>
-
-            <!-- Guarantor 2 -->
-            <hr class="my-4">
-            <h6 class="fw-bold text-dark">Second Guarantor Details</h6>
-            <p><strong>Name:</strong>
-              <span *ngIf="!isEditing">{{ client.second_guarantor_name }}</span>
-              <input *ngIf="isEditing" [(ngModel)]="editableClient.second_guarantor_name" class="edit-field" placeholder="Name" />
-            </p>
-            <p><strong>NIC:</strong>
-              <span *ngIf="!isEditing">{{ client.second_guarantor_nic }}</span>
-              <input *ngIf="isEditing" [(ngModel)]="editableClient.second_guarantor_nic" class="edit-field" placeholder="NIC" />
-            </p>
-            <p><strong>Phone:</strong>
-              <span *ngIf="!isEditing">{{ client.second_guarantor_tp }}</span>
-              <input *ngIf="isEditing" [(ngModel)]="editableClient.second_guarantor_tp" class="edit-field" placeholder="Phone" />
-            </p>
-            <p><strong>Address:</strong>
-              <span *ngIf="!isEditing">{{ client.second_guarantor_address }}</span>
-              <input *ngIf="isEditing" [(ngModel)]="editableClient.second_guarantor_address" class="edit-field" placeholder="Address" />
-            </p>
-          </div>
-
-          <!-- Action Buttons -->
-          <div class="d-flex flex-wrap gap-3 justify-content-center mt-5">
-            <button *ngIf="!isEditing" type="button" class="btn btn-success px-4" (click)="enableEdit()">
-              <i class="bi bi-pencil me-2"></i>Edit
-            </button>
-            <button *ngIf="isEditing" type="button" class="btn btn-success px-4" (click)="saveEdit()" [disabled]="isSaving">
-              <span *ngIf="isSaving" class="spinner-border spinner-border-sm me-2" role="status"></span>
-              <i *ngIf="!isSaving" class="bi bi-check me-2"></i>
-              {{ isSaving ? 'Saving...' : 'Save' }}
-            </button>
-            <button *ngIf="isEditing" type="button" class="btn btn-secondary px-4" (click)="isEditing = false" [disabled]="isSaving">
-              Cancel
-            </button>
-          </div>
-        </div>
-      </ng-container>
-
-      <!-- Member Loans Section -->
-      <div class="member-loans-section mt-5">
-        <h5 class="fw-bold text-primary mb-3">Loans for this Member</h5>
-        <ng-container *ngIf="loans$ | async as loans">
-          <div *ngIf="loans.length > 0; else noLoans">
-            <div *ngFor="let loan of loans" class="loan-card card my-3 p-3" style="border-radius: 16px; box-shadow: 0 2px 8px rgba(0,0,0,0.07); cursor: pointer;" [routerLink]="['/single-loan', loan.loan_number]">
-              <div class="card-body">
-                <h6 class="card-title mb-2">Loan Reg Number: {{ loan.loan_reg_number }}</h6>
-                <div class="row">
-                  <div class="col-6 col-md-4 mb-1"><strong>Amount:</strong> {{ loan.principal_amount }}</div>
-                  <div class="col-6 col-md-4 mb-1"><strong>Type:</strong> {{ loan.loan_type | titlecase }}</div>
-                  <div class="col-6 col-md-4 mb-1"><strong>Status:</strong> {{ loan.status | titlecase }}</div>
-                  <div class="col-6 col-md-4 mb-1"><strong>Paid Amount:</strong> {{ loan.total_paid }}</div>
-                  <div class="col-6 col-md-4 mb-1"><strong>Remaining:</strong> {{ loan.remaining_amount }}</div>
-                  <div class="col-6 col-md-4 mb-1"><strong>End Date:</strong> {{ loan.end_date }}</div>
-                </div>
+              <!-- Breadcrumb Context -->
+              <div class="odoo-breadcrumb-trail d-none d-sm-flex align-items-center">
+                <a routerLink="/member" class="odoo-crumb-link">Customers</a>
+                <span class="odoo-crumb-sep">/</span>
+                <span class="odoo-crumb-current">{{ client.first_name }} {{ client.last_name }}</span>
               </div>
             </div>
+
+            <!-- Right: Odoo Smart Stat Buttons -->
+            <div class="odoo-smart-buttons d-flex align-items-center gap-2">
+              <button 
+                type="button" 
+                class="odoo-stat-btn" 
+                (click)="setActiveTab('loans')"
+                [class.active]="activeTab === 'loans'"
+                title="View Customer Loans"
+              >
+                <div class="odoo-stat-icon">
+                  <i class="bi bi-cash-coin"></i>
+                </div>
+                <div class="odoo-stat-info">
+                  <span class="odoo-stat-value">{{ loans.length }}</span>
+                  <span class="odoo-stat-label">Loans</span>
+                </div>
+              </button>
+
+              <button 
+                type="button" 
+                class="odoo-stat-btn"
+                (click)="setActiveTab('loans')"
+                title="Total Remaining Due"
+              >
+                <div class="odoo-stat-icon">
+                  <i class="bi bi-hourglass-split text-warning"></i>
+                </div>
+                <div class="odoo-stat-info">
+                  <span class="odoo-stat-value text-truncate" style="max-width: 90px;">
+                    {{ getTotalRemainingDebt(loans) | number }}
+                  </span>
+                  <span class="odoo-stat-label">Remaining</span>
+                </div>
+              </button>
+
+              <button 
+                type="button" 
+                class="odoo-stat-btn" 
+                (click)="setActiveTab('guarantors')"
+                [class.active]="activeTab === 'guarantors'"
+                title="Guarantors"
+              >
+                <div class="odoo-stat-icon">
+                  <i class="bi bi-shield-check text-success"></i>
+                </div>
+                <div class="odoo-stat-info">
+                  <span class="odoo-stat-value">2</span>
+                  <span class="odoo-stat-label">Guarantors</span>
+                </div>
+              </button>
+            </div>
+
           </div>
-          <ng-template #noLoans>
-            <div class="text-muted">No loans found for this member.</div>
-          </ng-template>
-        </ng-container>
+        </div>
       </div>
 
-      <ng-template #loadingOrNotFound>
-        <div class="text-center text-muted my-5">
-          Loading...<br>
-          <span *ngIf="(client$ | async) === undefined">Member not found.</span>
+      <!-- Main Odoo Form Sheet Canvas -->
+      <div class="container-fluid px-3 px-md-4">
+        <div class="row justify-content-center">
+          <div class="col-12 col-xl-10">
+            
+            <div class="odoo-form-sheet shadow-sm">
+              
+              <!-- Sheet Header: Avatar & Main Title -->
+              <div class="odoo-sheet-header d-flex align-items-start gap-3 flex-wrap">
+                <!-- Customer Avatar -->
+                <div class="odoo-customer-avatar">
+                  <span>{{ getInitials(client.first_name, client.last_name) }}</span>
+                </div>
+
+                <!-- Customer Identity -->
+                <div class="flex-grow-1">
+                  <div class="d-flex align-items-center gap-2 mb-1 flex-wrap">
+                    <span class="badge badge-secondary" style="font-size: 0.75rem;">
+                      <i class="bi bi-person-fill me-1"></i>Individual Customer
+                    </span>
+                    <span class="badge badge-gold" style="font-size: 0.75rem;">
+                      Member #{{ client.register_number || 'N/A' }}
+                    </span>
+                    <span *ngIf="client.is_member" class="badge badge-success" style="font-size: 0.75rem;">
+                      <i class="bi bi-check-circle-fill me-1"></i>Active Member
+                    </span>
+                  </div>
+
+                  <h1 class="odoo-customer-title mb-1">
+                    {{ client.first_name }} {{ client.last_name }}
+                  </h1>
+
+                  <div class="odoo-quick-meta d-flex flex-wrap align-items-center gap-3 mt-2">
+                    <span class="odoo-meta-pill" *ngIf="client.mobile_number">
+                      <i class="bi bi-telephone text-gold me-1"></i>
+                      <span>{{ client.mobile_number }}</span>
+                    </span>
+                    <span class="odoo-meta-pill" *ngIf="client.nic_number">
+                      <i class="bi bi-person-vcard text-gold me-1"></i>
+                      <span>NIC: {{ client.nic_number }}</span>
+                    </span>
+                  </div>
+                </div>
+              </div>
+
+              <!-- Sheet Body: 2-Column Info Grid -->
+              <div class="odoo-sheet-grid row g-4 my-3 pt-3 border-top">
+                
+                <!-- Left Column: Address & Location -->
+                <div class="col-12 col-md-6">
+                  <h4 class="odoo-group-title">
+                    <i class="bi bi-geo-alt me-1 text-gold"></i>
+                    <span>Address & Location</span>
+                  </h4>
+
+                  <div class="odoo-field-group" *ngIf="!isEditing">
+                    <div class="odoo-field-row">
+                      <span class="odoo-field-label">Street Address:</span>
+                      <span class="odoo-field-value">
+                        {{ client.home_number ? client.home_number + ', ' : '' }}{{ client.street_address || 'Not specified' }}
+                      </span>
+                    </div>
+
+                    <div class="odoo-field-row">
+                      <span class="odoo-field-label">Towns / Area:</span>
+                      <span class="odoo-field-value">
+                        {{ client.town_one || '-' }} {{ client.town_two ? '· ' + client.town_two : '' }}
+                      </span>
+                    </div>
+
+                    <div class="odoo-field-row">
+                      <span class="odoo-field-label">Group / Unit:</span>
+                      <span class="odoo-field-value">{{ client.group || 'Default Group' }}</span>
+                    </div>
+                  </div>
+
+                  <!-- Edit Form for Address -->
+                  <div class="odoo-edit-form d-flex flex-column gap-2" *ngIf="isEditing">
+                    <div class="form-group">
+                      <label class="form-label small">Home Number</label>
+                      <input type="text" [(ngModel)]="editableClient.home_number" class="form-control form-control-sm" placeholder="e.g. 27/A" />
+                    </div>
+                    <div class="form-group">
+                      <label class="form-label small">Street Address</label>
+                      <input type="text" [(ngModel)]="editableClient.street_address" class="form-control form-control-sm" placeholder="Street Name" />
+                    </div>
+                    <div class="row g-2">
+                      <div class="col-6">
+                        <label class="form-label small">Town 1</label>
+                        <input type="text" [(ngModel)]="editableClient.town_one" class="form-control form-control-sm" placeholder="Primary Town" />
+                      </div>
+                      <div class="col-6">
+                        <label class="form-label small">Town 2</label>
+                        <input type="text" [(ngModel)]="editableClient.town_two" class="form-control form-control-sm" placeholder="Secondary Town" />
+                      </div>
+                    </div>
+                    <div class="form-group">
+                      <label class="form-label small">Group</label>
+                      <input type="text" [(ngModel)]="editableClient.group" class="form-control form-control-sm" placeholder="Group / Unit Name" />
+                    </div>
+                  </div>
+                </div>
+
+                <!-- Right Column: Registration & Contact Info -->
+                <div class="col-12 col-md-6">
+                  <h4 class="odoo-group-title">
+                    <i class="bi bi-person-lines-fill me-1 text-gold"></i>
+                    <span>Contact & Registration</span>
+                  </h4>
+
+                  <div class="odoo-field-group" *ngIf="!isEditing">
+                    <div class="odoo-field-row">
+                      <span class="odoo-field-label">Mobile Number:</span>
+                      <span class="odoo-field-value">{{ client.mobile_number || 'N/A' }}</span>
+                    </div>
+
+                    <div class="odoo-field-row">
+                      <span class="odoo-field-label">NIC Number:</span>
+                      <span class="odoo-field-value">{{ client.nic_number || 'N/A' }}</span>
+                    </div>
+
+                    <div class="odoo-field-row">
+                      <span class="odoo-field-label">Member Reg ID:</span>
+                      <span class="odoo-field-value font-monospace">{{ client.register_number }}</span>
+                    </div>
+
+                    <div class="odoo-field-row">
+                      <span class="odoo-field-label">Registered Date:</span>
+                      <span class="odoo-field-value">{{ client.created_at | date:'mediumDate' }}</span>
+                    </div>
+                  </div>
+
+                  <!-- Edit Form for Contact -->
+                  <div class="odoo-edit-form d-flex flex-column gap-2" *ngIf="isEditing">
+                    <div class="form-group">
+                      <label class="form-label small">Mobile Number</label>
+                      <input type="text" [(ngModel)]="editableClient.mobile_number" class="form-control form-control-sm" placeholder="07XXXXXXXX" />
+                    </div>
+                    <div class="form-group">
+                      <label class="form-label small">NIC Number</label>
+                      <input type="text" [value]="client.nic_number" disabled class="form-control form-control-sm text-muted" title="NIC cannot be changed" />
+                    </div>
+                  </div>
+                </div>
+
+              </div>
+
+              <!-- Notebook Tabs: Guarantors & Loans -->
+              <div class="odoo-notebook mt-4">
+                
+                <!-- Tab Headers -->
+                <div class="odoo-tabs-header border-bottom">
+                  <button 
+                    type="button" 
+                    class="odoo-tab-nav-btn" 
+                    [class.active]="activeTab === 'guarantors'"
+                    (click)="setActiveTab('guarantors')"
+                  >
+                    <i class="bi bi-shield-check me-1"></i>
+                    <span>Guarantors</span>
+                  </button>
+
+                  <button 
+                    type="button" 
+                    class="odoo-tab-nav-btn" 
+                    [class.active]="activeTab === 'loans'"
+                    (click)="setActiveTab('loans')"
+                  >
+                    <i class="bi bi-cash-stack me-1"></i>
+                    <span>Loans & Repayments ({{ loans.length }})</span>
+                  </button>
+                </div>
+
+                <!-- Tab 1: Guarantors Content -->
+                <div class="odoo-tab-pane py-3" *ngIf="activeTab === 'guarantors'">
+                  <div class="row g-3">
+                    
+                    <!-- First Guarantor Card -->
+                    <div class="col-12 col-md-6">
+                      <div class="odoo-sub-card p-3">
+                        <div class="d-flex align-items-center gap-2 mb-3 pb-2 border-bottom">
+                          <div class="odoo-guarantor-avatar">1</div>
+                          <div>
+                            <h5 class="mb-0 fw-bold" style="font-size: 0.95rem; color: var(--lx-text-primary);">First Guarantor</h5>
+                            <small class="text-muted">Primary Guarantee Contact</small>
+                          </div>
+                        </div>
+
+                        <div *ngIf="!isEditing" class="odoo-field-group">
+                          <div class="odoo-field-row">
+                            <span class="odoo-field-label">Name:</span>
+                            <span class="odoo-field-value">{{ client.first_guarantor_name || 'N/A' }}</span>
+                          </div>
+                          <div class="odoo-field-row">
+                            <span class="odoo-field-label">NIC:</span>
+                            <span class="odoo-field-value">{{ client.first_guarantor_nic || 'N/A' }}</span>
+                          </div>
+                          <div class="odoo-field-row">
+                            <span class="odoo-field-label">Phone:</span>
+                            <span class="odoo-field-value">{{ client.first_guarantor_tp || 'N/A' }}</span>
+                          </div>
+                          <div class="odoo-field-row">
+                            <span class="odoo-field-label">Address:</span>
+                            <span class="odoo-field-value">{{ client.first_guarantor_address || 'N/A' }}</span>
+                          </div>
+                        </div>
+
+                        <div *ngIf="isEditing" class="d-flex flex-column gap-2">
+                          <div class="form-group">
+                            <label class="form-label small">Name</label>
+                            <input type="text" [(ngModel)]="editableClient.first_guarantor_name" class="form-control form-control-sm" />
+                          </div>
+                          <div class="form-group">
+                            <label class="form-label small">NIC</label>
+                            <input type="text" [(ngModel)]="editableClient.first_guarantor_nic" class="form-control form-control-sm" />
+                          </div>
+                          <div class="form-group">
+                            <label class="form-label small">Phone</label>
+                            <input type="text" [(ngModel)]="editableClient.first_guarantor_tp" class="form-control form-control-sm" />
+                          </div>
+                          <div class="form-group">
+                            <label class="form-label small">Address</label>
+                            <input type="text" [(ngModel)]="editableClient.first_guarantor_address" class="form-control form-control-sm" />
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+
+                    <!-- Second Guarantor Card -->
+                    <div class="col-12 col-md-6">
+                      <div class="odoo-sub-card p-3">
+                        <div class="d-flex align-items-center gap-2 mb-3 pb-2 border-bottom">
+                          <div class="odoo-guarantor-avatar">2</div>
+                          <div>
+                            <h5 class="mb-0 fw-bold" style="font-size: 0.95rem; color: var(--lx-text-primary);">Second Guarantor</h5>
+                            <small class="text-muted">Secondary Guarantee Contact</small>
+                          </div>
+                        </div>
+
+                        <div *ngIf="!isEditing" class="odoo-field-group">
+                          <div class="odoo-field-row">
+                            <span class="odoo-field-label">Name:</span>
+                            <span class="odoo-field-value">{{ client.second_guarantor_name || 'N/A' }}</span>
+                          </div>
+                          <div class="odoo-field-row">
+                            <span class="odoo-field-label">NIC:</span>
+                            <span class="odoo-field-value">{{ client.second_guarantor_nic || 'N/A' }}</span>
+                          </div>
+                          <div class="odoo-field-row">
+                            <span class="odoo-field-label">Phone:</span>
+                            <span class="odoo-field-value">{{ client.second_guarantor_tp || 'N/A' }}</span>
+                          </div>
+                          <div class="odoo-field-row">
+                            <span class="odoo-field-label">Address:</span>
+                            <span class="odoo-field-value">{{ client.second_guarantor_address || 'N/A' }}</span>
+                          </div>
+                        </div>
+
+                        <div *ngIf="isEditing" class="d-flex flex-column gap-2">
+                          <div class="form-group">
+                            <label class="form-label small">Name</label>
+                            <input type="text" [(ngModel)]="editableClient.second_guarantor_name" class="form-control form-control-sm" />
+                          </div>
+                          <div class="form-group">
+                            <label class="form-label small">NIC</label>
+                            <input type="text" [(ngModel)]="editableClient.second_guarantor_nic" class="form-control form-control-sm" />
+                          </div>
+                          <div class="form-group">
+                            <label class="form-label small">Phone</label>
+                            <input type="text" [(ngModel)]="editableClient.second_guarantor_tp" class="form-control form-control-sm" />
+                          </div>
+                          <div class="form-group">
+                            <label class="form-label small">Address</label>
+                            <input type="text" [(ngModel)]="editableClient.second_guarantor_address" class="form-control form-control-sm" />
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+
+                  </div>
+                </div>
+
+                <!-- Tab 2: Loans History Content -->
+                <div class="odoo-tab-pane py-3" *ngIf="activeTab === 'loans'">
+                  <div *ngIf="loans.length > 0; else noLoans">
+                    <div class="table-responsive odoo-table-wrapper">
+                      <table class="table lx-table mb-0">
+                        <thead>
+                          <tr>
+                            <th>Loan Number</th>
+                            <th>Principal</th>
+                            <th>Schedule</th>
+                            <th>Total Due</th>
+                            <th>Paid Amount</th>
+                            <th>Remaining</th>
+                            <th>Status</th>
+                            <th>End Date</th>
+                          </tr>
+                        </thead>
+                        <tbody>
+                          <tr *ngFor="let loan of loans" [routerLink]="['/single-loan', loan.loan_number]" style="cursor: pointer;">
+                            <td class="fw-bold text-gold font-monospace">
+                              <i class="bi bi-file-earmark-text me-1"></i>
+                              {{ loan.loan_number }}
+                            </td>
+                            <td>Rs. {{ loan.principal_amount | number }}</td>
+                            <td><span class="badge badge-secondary">{{ loan.loan_type | titlecase }}</span></td>
+                            <td>Rs. {{ loan.total_amount_due | number }}</td>
+                            <td class="text-success fw-semibold">Rs. {{ loan.total_paid | number }}</td>
+                            <td class="text-danger fw-semibold">Rs. {{ loan.remaining_amount | number }}</td>
+                            <td>
+                              <span class="badge" [ngClass]="loan.status === 'active' ? 'badge-success' : 'badge-secondary'">
+                                {{ loan.status | titlecase }}
+                              </span>
+                            </td>
+                            <td>{{ loan.end_date }}</td>
+                          </tr>
+                        </tbody>
+                      </table>
+                    </div>
+                  </div>
+
+                  <ng-template #noLoans>
+                    <div class="odoo-empty-loans text-center py-4">
+                      <i class="bi bi-cash-stack text-muted mb-2" style="font-size: 2rem;"></i>
+                      <p class="mb-1 fw-semibold text-muted">No loans issued for this customer yet.</p>
+                      <a routerLink="/add-loan" class="btn btn-lx-primary btn-sm mt-2">
+                        <i class="bi bi-plus-circle me-1"></i>Issue First Loan
+                      </a>
+                    </div>
+                  </ng-template>
+                </div>
+
+              </div>
+
+            </div>
+
+          </div>
         </div>
-      </ng-template>
+      </div>
+
+    </ng-container>
+  </ng-container>
+
+  <ng-template #loadingOrNotFound>
+    <div class="text-center text-muted my-5 py-5">
+      <div class="spinner-border text-warning mb-3" role="status"></div>
+      <p>Loading customer profile...</p>
     </div>
-  </div>
+  </ng-template>
+
 </div>

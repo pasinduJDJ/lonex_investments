@@ -4,14 +4,13 @@ import { LoanManageService, LoanWithClient, Payment } from '../../service/loan-m
 import { CommonModule } from '@angular/common';
 import { Observable, of } from 'rxjs';
 import { map } from 'rxjs/operators';
-import { Router } from '@angular/router';
+import { Router, RouterModule } from '@angular/router';
 import { SupabaseService } from '../../service/supabase.service';
-
 
 @Component({
   selector: 'app-single-loan-screen',
   standalone: true,
-  imports: [CommonModule],
+  imports: [CommonModule, RouterModule],
   templateUrl: './single-loan-screen.component.html',
   styleUrl: './single-loan-screen.component.css'
 })
@@ -20,6 +19,7 @@ export class SingleLoanScreenComponent implements OnInit {
   payments$: Observable<Payment[]> = of([]);
   showCompleteConfirm = false;
   showSuccessMsg = false;
+  activeTab: 'payments' | 'client' = 'payments';
   installmentStats: {
     expected: number;
     paid: number;
@@ -27,6 +27,10 @@ export class SingleLoanScreenComponent implements OnInit {
     totalPaid: number;
     installmentAmount: number;
   } | null = null;
+
+  setActiveTab(tab: 'payments' | 'client'): void {
+    this.activeTab = tab;
+  }
 
   constructor(
     private route: ActivatedRoute,

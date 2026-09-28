@@ -1,47 +1,109 @@
-<div class="loan-container container">
-  <!-- Search Box -->
-  <div class="row justify-content-center my-4">
-    <div class="col-md-8">
-      <div class="search-box input-group">
-        <input type="text" class="form-control py-2" placeholder="Enter Loan Reg Number" aria-label="Loan Reg Number" [formControl]="searchControl">
+<div class="lx-module-page-container">
+  
+  <!-- Odoo-Style Control Panel: Integrated Search Bar -->
+  <div class="lx-control-panel mb-4">
+    <div class="container-fluid px-3 px-md-4">
+      <div class="row justify-content-center">
+        <div class="col-12 col-md-10 col-lg-8">
+          <div class="odoo-search-box">
+            <i class="bi bi-search odoo-search-icon"></i>
+            <input 
+              type="text" 
+              class="odoo-search-input" 
+              placeholder="Search by Loan Registration Number..." 
+              aria-label="Search Loans" 
+              [formControl]="searchControl"
+            />
+            <button 
+              *ngIf="searchControl.value" 
+              type="button" 
+              class="btn btn-sm btn-link text-muted p-0 me-2" 
+              (click)="searchControl.setValue('')"
+              title="Clear search"
+            >
+              <i class="bi bi-x-circle-fill"></i>
+            </button>
+          </div>
+        </div>
       </div>
     </div>
   </div>
 
-  <!-- Header Row -->
-  <div class="row mb-3 align-items-center px-2">
-    <div class="col-6">
-      <h5 class="section-title">Active Loans</h5>
-    </div>
-    <div class="col-6 text-end">
-      <button class="btn add-loan-btn" (click)="navigateToAddLoan()">+ New Loan</button>
+  <!-- Loans List Content -->
+  <div class="container-fluid px-3 px-md-4">
+    <div class="row justify-content-center">
+      <div class="col-12 col-md-10 col-lg-8">
+        
+        <ng-container *ngIf="loans$ | async as loans">
+          <ng-container *ngIf="loans.length > 0; else noLoans">
+            <div class="lx-loans-list d-flex flex-column gap-3">
+              <div 
+                *ngFor="let loan of loans" 
+                class="lx-loan-card" 
+                (click)="viewLoan(loan.loan_number)"
+                tabindex="0"
+                role="button"
+                (keydown.enter)="viewLoan(loan.loan_number)"
+              >
+                <div class="lx-loan-card-body">
+                  <!-- Header: Loan Number & Status Badge -->
+                  <div class="d-flex justify-content-between align-items-center mb-2 flex-wrap gap-2">
+                    <h3 class="lx-loan-title mb-0">
+                      Loan Reg Number: {{ loan.loan_number }}
+                    </h3>
+                    <span 
+                      class="badge" 
+                      [ngClass]="loan.status === 'active' ? 'badge-success' : 'badge-secondary'"
+                      style="font-size: 0.75rem;"
+                    >
+                      {{ loan.status | titlecase }}
+                    </span>
+                  </div>
+
+                  <!-- Details Row -->
+                  <div class="lx-loan-meta d-flex flex-wrap align-items-center gap-3">
+                    <div class="lx-meta-item">
+                      <i class="bi bi-cash-stack me-1 text-gold"></i>
+                      <span class="lx-meta-label">Amount:</span>
+                      <span class="lx-meta-value">Rs. {{ loan.principal_amount | number }}</span>
+                    </div>
+
+                    <div class="lx-meta-item">
+                      <i class="bi bi-calendar3 me-1 text-gold"></i>
+                      <span class="lx-meta-label">Type:</span>
+                      <span class="lx-meta-value">{{ loan.loan_type | titlecase }}</span>
+                    </div>
+
+                    <div class="lx-meta-item" *ngIf="loan.client">
+                      <i class="bi bi-person me-1 text-gold"></i>
+                      <span class="lx-meta-label">Client:</span>
+                      <span class="lx-meta-value">
+                        {{ loan.client.first_name }} {{ loan.client.last_name }} ({{ loan.client.nic_number }})
+                      </span>
+                    </div>
+                  </div>
+                </div>
+
+                <div class="lx-loan-card-arrow">
+                  <i class="bi bi-chevron-right"></i>
+                </div>
+              </div>
+            </div>
+          </ng-container>
+
+          <ng-template #noLoans>
+            <div class="lx-empty-state text-center py-5">
+              <i class="bi bi-cash-coin text-muted mb-3" style="font-size: 2.5rem;"></i>
+              <h5 class="fw-bold" style="color: var(--lx-text-primary);">No Loans Found</h5>
+              <p class="text-muted" style="font-size: 0.875rem;">
+                Try searching for a different loan number or issue a new loan from the top menu.
+              </p>
+            </div>
+          </ng-template>
+        </ng-container>
+
+      </div>
     </div>
   </div>
 
-  <hr class="section-divider mb-5">
-
-  <!-- Loan Cards -->
-  <div class="container px-4">
-    <ng-container *ngIf="loans$ | async as loans">
-      <ng-container *ngIf="loans.length > 0; else noLoans">
-        <div *ngFor="let loan of loans" class="loan-card card my-4" (click)="viewLoan(loan.loan_number )">
-          <div class="card-body">
-            <h5 class="card-title">Loan Reg Number: {{ loan.loan_number }}</h5>
-            <p class="card-text">
-              <strong>Amount:</strong> {{ loan.principal_amount }} |
-              <strong>Type:</strong> {{ loan.loan_type | titlecase }} |
-              <strong>Start:</strong> {{ loan.start_date }} |
-              <strong>End:</strong> {{ loan.end_date }}
-            </p>
-            <p class="card-text">
-              <strong>Client:</strong> {{ loan.client.first_name }} {{ loan.client.last_name }} ({{ loan.client.nic_number }})
-            </p>
-          </div>
-        </div>
-      </ng-container>
-      <ng-template #noLoans>
-        <div class="text-center text-muted my-5">No loans found.</div>
-      </ng-template>
-    </ng-container>
-  </div>
 </div>

@@ -1,63 +1,269 @@
-:root {
-    --primary: #003566;
-    --secondary: #001D3D;
-    --highlight: #FFC300;
-    --dark: #000814;
-    --gray-light: #D9D9D9;
-    --base: #CED4DA;
-    --font: 'Inter', 'Roboto', sans-serif;
-  }
-  
-  .single-member-container {
-    background-color: var(--base);
-    font-family: var(--font);
-  }
-  
-  .member-card {
-    background-color: white;
-    border-radius: 40px;
-    box-shadow: 10px 14px 24px rgba(0, 0, 0, 0.3); 
-    padding: 24px;
-  }
+/**
+ * Lonex Investments - Single Customer View (Odoo-Inspired Sheet Layout)
+ */
 
-  .member-card:hover {
-    box-shadow: 0 14px 32px rgba(0, 0, 0, 0.5);
+.lx-customer-view-container {
+  padding-bottom: 3rem;
+}
+
+/* Odoo-Style Top Control Panel */
+.odoo-control-panel {
+  background-color: var(--lx-bg-card);
+  border-bottom: 1px solid var(--lx-border-subtle);
+  transition: background-color var(--lx-transition-base), border-color var(--lx-transition-base);
+}
+
+.odoo-breadcrumb-trail {
+  font-family: var(--lx-font-links);
+  font-size: 0.875rem;
+  font-weight: 500;
+}
+
+.odoo-crumb-link {
+  color: var(--lx-text-secondary);
+  text-decoration: none;
+  transition: color var(--lx-transition-fast);
+}
+
+.odoo-crumb-link:hover {
+  color: var(--lx-primary-accent);
+}
+
+.odoo-crumb-sep {
+  color: var(--lx-text-muted);
+  margin: 0 0.4rem;
+}
+
+.odoo-crumb-current {
+  color: var(--lx-text-primary);
+  font-weight: 600;
+}
+
+/* Odoo Smart Stat Buttons */
+.odoo-smart-buttons {
+  display: flex;
+  gap: 0.4rem;
+  flex-wrap: wrap;
+}
+
+.odoo-stat-btn {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.35rem 0.75rem;
+  background-color: var(--lx-bg-subtle);
+  border: 1px solid var(--lx-border-subtle);
+  border-radius: var(--lx-radius-md);
+  color: var(--lx-text-primary);
+  cursor: pointer;
+  transition: all var(--lx-transition-fast);
+}
+
+.odoo-stat-btn:hover,
+.odoo-stat-btn.active {
+  border-color: var(--lx-primary-accent);
+  background-color: var(--lx-primary-accent-subtle);
+}
+
+.odoo-stat-icon {
+  font-size: 1.15rem;
+  display: flex;
+  align-items: center;
+}
+
+.odoo-stat-info {
+  display: flex;
+  flex-direction: column;
+  line-height: 1.1;
+  text-align: left;
+}
+
+.odoo-stat-value {
+  font-family: var(--lx-font-titles);
+  font-weight: 700;
+  font-size: 0.875rem;
+  color: var(--lx-text-primary);
+}
+
+.odoo-stat-label {
+  font-family: var(--lx-font-subtitles);
+  font-size: 0.65rem;
+  color: var(--lx-text-secondary);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+/* Main Form Sheet */
+.odoo-form-sheet {
+  background-color: var(--lx-bg-card);
+  border: 1px solid var(--lx-border-subtle);
+  border-radius: var(--lx-radius-lg);
+  padding: 2rem;
+  color: var(--lx-text-primary);
+  transition: background-color var(--lx-transition-base), border-color var(--lx-transition-base);
+}
+
+/* Header & Avatar */
+.odoo-customer-avatar {
+  width: 64px;
+  height: 64px;
+  border-radius: 16px;
+  background: linear-gradient(135deg, #10B981, #059669);
+  color: #FFFFFF;
+  font-family: var(--lx-font-titles);
+  font-weight: 700;
+  font-size: 1.6rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0 4px 12px rgba(16, 185, 129, 0.25);
+  flex-shrink: 0;
+}
+
+.odoo-customer-title {
+  font-family: var(--lx-font-titles);
+  font-weight: 700;
+  font-size: clamp(1.4rem, 1.2rem + 1vw, 1.85rem);
+  color: var(--lx-text-primary);
+  line-height: 1.2;
+}
+
+.odoo-quick-meta {
+  font-family: var(--lx-font-paragraphs);
+  font-size: 0.875rem;
+  color: var(--lx-text-secondary);
+}
+
+.odoo-meta-pill {
+  display: inline-flex;
+  align-items: center;
+  background-color: var(--lx-bg-subtle);
+  padding: 0.25rem 0.65rem;
+  border-radius: var(--lx-radius-sm);
+  border: 1px solid var(--lx-border-subtle);
+  color: var(--lx-text-primary);
+  font-weight: 500;
+}
+
+/* 2-Column Info Grid */
+.odoo-group-title {
+  font-family: var(--lx-font-subtitles);
+  font-size: 1rem;
+  font-weight: 600;
+  color: var(--lx-text-primary);
+  margin-bottom: 1rem;
+  display: flex;
+  align-items: center;
+}
+
+.odoo-field-group {
+  display: flex;
+  flex-direction: column;
+  gap: 0.65rem;
+}
+
+.odoo-field-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  font-family: var(--lx-font-paragraphs);
+  font-size: 0.875rem;
+  border-bottom: 1px dashed var(--lx-border-subtle);
+  padding-bottom: 0.4rem;
+}
+
+.odoo-field-label {
+  color: var(--lx-text-secondary);
+  font-weight: 500;
+  min-width: 120px;
+}
+
+.odoo-field-value {
+  color: var(--lx-text-primary);
+  font-weight: 600;
+  text-align: right;
+  word-break: break-word;
+}
+
+/* Notebook & Tabs */
+.odoo-tabs-header {
+  display: flex;
+  gap: 0.5rem;
+}
+
+.odoo-tab-nav-btn {
+  background: transparent;
+  border: none;
+  border-bottom: 2px solid transparent;
+  color: var(--lx-text-secondary);
+  font-family: var(--lx-font-links);
+  font-size: 0.9rem;
+  font-weight: 600;
+  padding: 0.65rem 1rem;
+  cursor: pointer;
+  transition: all var(--lx-transition-fast);
+  margin-bottom: -1px;
+}
+
+.odoo-tab-nav-btn:hover {
+  color: var(--lx-primary-accent);
+}
+
+.odoo-tab-nav-btn.active {
+  color: var(--lx-primary-accent);
+  border-bottom-color: var(--lx-primary-accent);
+}
+
+/* Sub-Cards for Guarantors */
+.odoo-sub-card {
+  background-color: var(--lx-bg-subtle);
+  border: 1px solid var(--lx-border-subtle);
+  border-radius: var(--lx-radius-md);
+  transition: background-color var(--lx-transition-base), border-color var(--lx-transition-base);
+}
+
+.odoo-guarantor-avatar {
+  width: 28px;
+  height: 28px;
+  border-radius: 50%;
+  background: var(--lx-primary-accent-subtle);
+  color: var(--lx-primary-accent);
+  font-family: var(--lx-font-titles);
+  font-weight: 700;
+  font-size: 0.8rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border: 1px solid var(--lx-primary-accent);
+}
+
+/* Loans Table */
+.odoo-table-wrapper {
+  background-color: var(--lx-bg-card);
+  border: 1px solid var(--lx-border-subtle);
+  border-radius: var(--lx-radius-md);
+}
+
+.text-gold {
+  color: var(--lx-primary-accent) !important;
+}
+
+/* Responsive adjustments */
+@media (max-width: 768px) {
+  .odoo-form-sheet {
+    padding: 1.25rem;
   }
-  
-  .member-info p {
-    font-size: 1rem;
-    margin-bottom: 0.6rem;
-    color: var(--dark);
+  .odoo-customer-avatar {
+    width: 52px;
+    height: 52px;
+    font-size: 1.3rem;
   }
-  
-  .edit-field {
-    display: inline-block;
-    margin: 4px 4px 8px 0;
-    padding: 6px 10px;
-    border: 1px solid #ccc;
-    border-radius: 8px;
-    font-size: 0.95rem;
-    width: auto;
+  .odoo-field-row {
+    flex-direction: column;
+    align-items: flex-start;
   }
-  
-  /* Buttons */
-  .btn-success {
-    background-color: #386641;
-    color: white;
-    border: none;
-    height: 44px;
+  .odoo-field-value {
+    text-align: left;
+    margin-top: 0.15rem;
   }
-  
-  .btn-highlight {
-    background-color: #ffd60a;
-    color: var(--dark);
-    border: none;
-    font-weight: 600;
-    height: 44px;
-    transition: background-color 0.3s ease;
-  }
-  
-  .btn-highlight:hover {
-    background-color: #ffd60a;
-  }
-  
+}

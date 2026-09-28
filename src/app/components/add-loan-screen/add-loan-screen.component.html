@@ -1,204 +1,447 @@
-<div class="container">
-    <div class="row">
-        <div class="col-2"></div>
-        <div class="col-8 ">
-            <h5><strong>Add New Loan</strong></h5>
-            <hr class="mb-3">
-            
-            
+<div class="lx-add-loan-container">
 
-            <!-- Bank Capital Display -->
-            <!-- <div class="row mb-4">
-                <div class="col-md-12">
-                    <div class="card" [ngClass]="{
-                        'border-danger': currentBankCapital < 0,
-                        'border-warning': currentBankCapital >= 0 && currentBankCapital < 10000,
-                        'border-success': currentBankCapital >= 10000
-                    }">
-                        <div class="card-body">
-                            <h6 class="card-title">
-                                <i class="bi bi-bank me-2"></i>
-                                Current Bank Capital
-                            </h6>
-                            <p class="card-text h4" [ngClass]="{
-                                'text-danger': currentBankCapital < 0,
-                                'text-warning': currentBankCapital >= 0 && currentBankCapital < 10000,
-                                'text-success': currentBankCapital >= 10000
-                            }">
-                                Rs. {{ currentBankCapital | number:'1.2-2' }}
-                            </p>
-                            <small class="text-muted">
-                                <i class="bi bi-info-circle me-1"></i>
-                                <span *ngIf="currentBankCapital < 0">⚠️ Negative balance - Add money to capital first</span>
-                                <span *ngIf="currentBankCapital >= 0 && currentBankCapital < 10000">⚠️ Low capital - Consider adding more funds</span>
-                                <span *ngIf="currentBankCapital >= 10000">✅ Sufficient capital available</span>
-                            </small>
-                        </div>
-                    </div>
-                </div>
-            </div> -->
+  <!-- Top Control & Action Bar (Odoo Sub-Header) -->
+  <div class="odoo-control-panel py-2 mb-3">
+    <div class="container-fluid px-3 px-md-4">
+      <div class="d-flex flex-wrap justify-content-between align-items-center gap-3">
+        
+        <!-- Left: Action Buttons & Breadcrumbs -->
+        <div class="d-flex align-items-center gap-3 flex-wrap">
+          <!-- Action Buttons -->
+          <div class="odoo-action-buttons d-flex align-items-center gap-2">
+            <button 
+              type="button" 
+              class="btn btn-lx-primary btn-sm" 
+              (click)="onSubmit()"
+              [disabled]="isLoading || !isFormReadyForSubmit()"
+            >
+              <span *ngIf="isLoading" class="spinner-border spinner-border-sm me-1" role="status"></span>
+              <i *ngIf="!isLoading" class="bi bi-check2-circle me-1"></i>
+              <span>{{ isLoading ? 'Creating...' : 'Submit Loan' }}</span>
+            </button>
 
-            <!-- Search Section -->
-            <div class="row d-flex justify-content-center">
-                <div class="col-6 ">
-                    <div class="input-group"
-                        style="border-radius: 20px; box-shadow: 5px 5px 5px rgba(0, 0, 0, 0.25); overflow: hidden; border: 0.5px solid #000; background-color: #D9D9D9;">
-                        <input type="text" class="form-control py-2" placeholder="Enter Client NIC number to verify client"
-                            aria-label="Loan Number" [(ngModel)]="searchNicNumber" (keyup.enter)="searchClient()">
-                        <button class="btn text-white px-4" style="background-color: #1B4965;" (click)="searchClient()" [disabled]="isSearching">
-                            <span *ngIf="isSearching" class="spinner-border spinner-border-sm me-2" role="status"></span>
-                            {{ isSearching ? 'Searching...' : 'Search' }}
-                        </button>
-                    </div>
-                </div>
-            </div>
+            <button 
+              type="button" 
+              class="btn btn-lx-secondary btn-sm" 
+              (click)="onClear()"
+              [disabled]="isLoading"
+            >
+              <i class="bi bi-arrow-counterclockwise me-1"></i>
+              <span>Discard / Reset</span>
+            </button>
+          </div>
 
-            <!-- Search Error Message -->
-            <div *ngIf="searchError" class="alert alert-warning mt-3" role="alert">
-                <i class="bi bi-exclamation-triangle me-2"></i>
-                {{ searchError }}
-            </div>
-
-            <!-- Client Found Success Message -->
-            <div *ngIf="foundClient" class="alert alert-success mt-3" role="alert">
-                <i class="bi bi-check-circle me-2"></i>
-                Client found! You can now proceed with loan details.
-            </div>
-
-
-            <!-- Alert Messages -->
-            <div *ngIf="errorMessage" class="alert alert-danger alert-dismissible fade show" role="alert">
-                <i class="bi bi-exclamation-triangle me-2"></i>
-                {{ errorMessage }}
-                <button type="button" class="btn-close" (click)="errorMessage = ''"></button>
-            </div>
-            
-            <div *ngIf="successMessage" class="alert alert-success alert-dismissible fade show" role="alert">
-                <i class="bi bi-check-circle me-2"></i>
-                {{ successMessage }}
-                <button type="button" class="btn-close" (click)="successMessage = ''"></button>
-            </div>
-            
-            <!-- Loan Form (only show if client is found) -->
-            <form *ngIf="showLoanForm" (ngSubmit)="onSubmit()" #loanForm="ngForm">
-
-                <div class="row mt-4">
-                    <div class="col-md-6">
-                        <div class="px-4">
-
-                            <label for="clientName" class="form-label">Client Name</label>
-                            <div class="input-group">
-                                <input type="text" id="clientName" class="form-control" name="clientName" 
-                                       [value]="clientName" readonly>
-                            </div>
-
-                            <label for="clientRegNumber" class="form-label">Client Register Number</label>
-                            <div class="input-group">
-                                <input type="text" id="clientRegNumber" class="form-control" name="clientRegNumber" 
-                                       [value]="clientRegisterNumber" readonly>
-                            </div>
-
-                            <label for="location" class="form-label">Location (City)</label>
-                            <div class="input-group">
-                                <input type="text" id="location" class="form-control" name="location" 
-                                       [value]="clientLocation" readonly>
-                            </div>
-
-                            <label for="clientGroup" class="form-label">Group</label>
-                            <div class="input-group">
-                                <input type="text" id="clientGroup" class="form-control" name="clientGroup" 
-                                       [value]="clientGroup" readonly>
-                            </div>
-                            <br>
-                            <br>
-                            
-                        </div>
-                    </div>
-                    <div class="col-5">
-                        <div class="form mt-4">
-                                                         <label for="loanType" class="form-label">Select Loan Type *</label>
-                             <div class="input-group">
-                                 <select 
-                                     id="loanType" 
-                                     class="form-control" 
-                                     name="loanType" 
-                                     [(ngModel)]="loanType" 
-                                     (change)="onLoanTypeChange()"
-                                     required>
-                                     <option value="daily">Daily</option>
-                                     <option value="weekly">Weekly</option>
-                                     <option value="monthly">Monthly</option>
-                                 </select>
-                             </div>
-                             <label for="principalAmount" class="form-label">Enter Loan Amount *</label>
-                             <div class="input-group">
-                                 <input type="number" id="principalAmount" class="form-control" name="principalAmount" 
-                                        [(ngModel)]="principalAmount" (input)="calculateTotal()" step="0.01" min="0" required>
-                             </div>
-                             <label for="documentCharge" class="form-label">Enter Document charges</label>
-                             <div class="input-group">
-                                 <input type="number" id="documentCharge" class="form-control" name="documentCharge" 
-                                        [(ngModel)]="documentCharge" (input)="calculateTotal()" step="0.01" min="0">
-                             </div>
-                                                         <label for="interestRate" class="form-label">Enter Loan Rate (Annual %) *</label>
-                             <div class="input-group">
-                                 <input type="number" 
-                                        id="interestRate" 
-                                        class="form-control" 
-                                        name="interestRate" 
-                                        [(ngModel)]="interestRate" 
-                                        (input)="onInterestRateChange($event)" 
-                                        step="0.01" 
-                                        min="0" 
-                                        max="100"
-                                        placeholder="e.g., 4.32"
-                                        required>
-                                 <span class="input-group-text">%</span>
-                             </div>
-                                                         <label for="calculatedTotal" class="form-label">Total Payment</label>
-                             <div class="input-group">
-                                 <input type="text" id="calculatedTotal" class="form-control" name="calculatedTotal" 
-                                        [value]="calculatedTotal | number:'1.2-2'" readonly>
-                             </div>
-                            <label for="loanNumber" class="form-label">Loan Number</label>
-                            <div class="input-group">
-                                <input type="text" id="loanNumber" class="form-control" name="loanNumber" 
-                                       [(ngModel)]="loanNumber" placeholder="Auto-generated" readonly>
-                            </div>
-                            <label for="startDate" class="form-label">Select Start Date *</label>
-                            <div class="input-group">
-                                <input type="date" id="startDate" class="form-control" name="startDate" 
-                                       [(ngModel)]="startDate" (change)="onStartDateChange()" required>
-                            </div>
-                            <label for="endDate" class="form-label">Select End Date *</label>
-                            <div class="input-group">
-                                <input type="date" id="endDate" class="form-control" name="endDate" 
-                                       [(ngModel)]="endDate" (change)="onEndDateChange()" required>
-                            </div>
-                            <label for="installments" class="form-label">Number of Installments</label>
-                            <div class="input-group">
-                                <input type="number" id="installments" class="form-control" name="installments" 
-                                       [value]="numberOfInstallments" readonly>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-
-                <!-- Submit Button (always show but disabled until all validations pass) -->
-                <div class="row mt-4">
-                    <div class="col-12 text-center">
-                        <div class="d-flex justify-content-around">
-                            <button type="button" class="btn btn-secondary px-5" (click)="onClear()" [disabled]="isLoading">Clear</button>
-                            <button type="submit" class="btn px-5 text-white" style="background-color: #003566;" 
-                                    [disabled]="isLoading || !isFormReadyForSubmit()">
-                                <span *ngIf="isLoading" class="spinner-border spinner-border-sm me-2" role="status"></span>
-                                {{ isLoading ? 'Creating...' : 'Submit Loan' }}
-                            </button>
-                        </div>
-                    </div>
-                </div>
-            </form>
+          <!-- Breadcrumb Trail -->
+          <div class="odoo-breadcrumb-trail d-none d-sm-flex align-items-center">
+            <a routerLink="/loan" class="odoo-crumb-link">Loans</a>
+            <span class="odoo-crumb-sep">/</span>
+            <span class="odoo-crumb-current">Issue New Loan</span>
+          </div>
         </div>
-        <div class="col-2"></div>
+
+        <!-- Right: Bank Capital Indicator -->
+        <div class="odoo-capital-badge d-flex align-items-center gap-2">
+          <div 
+            class="odoo-capital-pill"
+            [ngClass]="{
+              'capital-sufficient': currentBankCapital >= 10000,
+              'capital-low': currentBankCapital >= 0 && currentBankCapital < 10000,
+              'capital-negative': currentBankCapital < 0
+            }"
+            title="Current Available Bank Capital"
+          >
+            <i class="bi bi-bank me-1"></i>
+            <span class="capital-label">Capital:</span>
+            <span class="capital-val">Rs. {{ currentBankCapital | number:'1.2-2' }}</span>
+            <span class="capital-dot">●</span>
+          </div>
+        </div>
+
+      </div>
     </div>
+  </div>
+
+  <!-- Alert Messages -->
+  <div class="container-fluid px-3 px-md-4" *ngIf="errorMessage || successMessage">
+    <div class="row justify-content-center">
+      <div class="col-12 col-xl-10">
+        <div *ngIf="errorMessage" class="alert alert-danger alert-dismissible fade show mb-3" role="alert">
+          <i class="bi bi-exclamation-triangle-fill me-2"></i>
+          <span>{{ errorMessage }}</span>
+          <button type="button" class="btn-close" (click)="errorMessage = ''"></button>
+        </div>
+
+        <div *ngIf="successMessage" class="alert alert-success alert-dismissible fade show mb-3" role="alert">
+          <i class="bi bi-check-circle-fill me-2"></i>
+          <span>{{ successMessage }}</span>
+          <button type="button" class="btn-close" (click)="successMessage = ''"></button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Main Odoo Form Sheet Canvas -->
+  <div class="container-fluid px-3 px-md-4">
+    <div class="row justify-content-center">
+      <div class="col-12 col-xl-10">
+        
+        <div class="odoo-form-sheet shadow-sm">
+          
+          <!-- Sheet Header: Title & Step Status -->
+          <div class="odoo-sheet-header d-flex align-items-start gap-3 flex-wrap pb-3 border-bottom">
+            <div class="odoo-header-avatar">
+              <i class="bi bi-plus-circle-fill"></i>
+            </div>
+            
+            <div class="flex-grow-1">
+              <div class="d-flex align-items-center gap-2 mb-1 flex-wrap">
+                <span class="badge badge-gold" style="font-size: 0.75rem;">
+                  <i class="bi bi-lightning-charge-fill me-1"></i>New Agreement
+                </span>
+                <span *ngIf="loanNumber" class="badge badge-secondary" style="font-size: 0.75rem;">
+                  Ref: {{ loanNumber }}
+                </span>
+              </div>
+              <h1 class="odoo-sheet-title mb-0">
+                Issue Loan Agreement
+              </h1>
+            </div>
+          </div>
+
+          <!-- Step 1: Client Verification Box -->
+          <div class="odoo-section-card my-4 p-3 border rounded">
+            <div class="d-flex justify-content-between align-items-center mb-2 flex-wrap gap-2">
+              <h5 class="odoo-group-title mb-0">
+                <i class="bi bi-person-check-fill me-2 text-gold"></i>
+                <span>Step 1: Customer Verification</span>
+              </h5>
+              <span *ngIf="foundClient" class="badge badge-success small">
+                <i class="bi bi-check-circle-fill me-1"></i>Verified
+              </span>
+            </div>
+
+            <!-- Client Search Input (Shown when client not yet verified) -->
+            <div *ngIf="!foundClient" class="mt-3">
+              <p class="small text-muted mb-2">
+                Enter the customer's National Identity Card (NIC) number to link their profile and auto-generate the loan registration number.
+              </p>
+              
+              <div class="odoo-search-box d-flex align-items-stretch">
+                <i class="bi bi-search odoo-search-icon"></i>
+                <input 
+                  type="text" 
+                  class="odoo-search-input flex-grow-1" 
+                  placeholder="Enter Client NIC number (e.g. 199512345678 or 951234567V)..." 
+                  aria-label="Client NIC Number" 
+                  [(ngModel)]="searchNicNumber" 
+                  (keyup.enter)="searchClient()"
+                />
+                <button 
+                  type="button" 
+                  class="btn btn-lx-primary px-4 rounded-0" 
+                  (click)="searchClient()" 
+                  [disabled]="isSearching"
+                >
+                  <span *ngIf="isSearching" class="spinner-border spinner-border-sm me-1" role="status"></span>
+                  <i *ngIf="!isSearching" class="bi bi-shield-check me-1"></i>
+                  {{ isSearching ? 'Searching...' : 'Verify Client' }}
+                </button>
+              </div>
+
+              <!-- Search Error Alert -->
+              <div *ngIf="searchError" class="alert alert-warning mt-3 mb-0" role="alert">
+                <div class="d-flex justify-content-between align-items-center">
+                  <div class="d-flex align-items-center gap-2">
+                    <i class="bi bi-exclamation-triangle-fill"></i>
+                    <span>{{ searchError }}</span>
+                  </div>
+                  <a routerLink="/add-member" class="btn btn-sm btn-lx-primary">
+                    <i class="bi bi-person-plus me-1"></i>Add New Customer
+                  </a>
+                </div>
+              </div>
+            </div>
+
+            <!-- Verified Client Banner (Shown when client is verified) -->
+            <div *ngIf="foundClient" class="odoo-verified-client-banner mt-3 p-3 rounded">
+              <div class="d-flex justify-content-between align-items-center flex-wrap gap-3">
+                <div class="d-flex align-items-center gap-3">
+                  <div class="odoo-verified-avatar">
+                    {{ clientInitials }}
+                  </div>
+                  <div>
+                    <h5 class="mb-1 fw-bold" style="color: var(--lx-text-primary);">
+                      {{ clientName }}
+                    </h5>
+                    <div class="d-flex flex-wrap gap-2 align-items-center small">
+                      <span class="badge badge-secondary">NIC: {{ foundClient.nic_number }}</span>
+                      <span class="badge badge-secondary">Reg #{{ clientRegisterNumber }}</span>
+                      <span class="badge badge-gold">Location: {{ clientLocation }}</span>
+                      <span class="badge badge-secondary">Group: {{ clientGroup }}</span>
+                    </div>
+                  </div>
+                </div>
+
+                <div class="d-flex align-items-center gap-2">
+                  <a 
+                    [routerLink]="['/single-member', foundClient.register_number]" 
+                    target="_blank"
+                    class="btn btn-sm btn-lx-secondary"
+                    title="View Customer Profile in new tab"
+                  >
+                    <i class="bi bi-box-arrow-up-right me-1"></i>View Profile
+                  </a>
+                  <button 
+                    type="button" 
+                    class="btn btn-sm btn-outline-danger" 
+                    (click)="clearSearch()"
+                    title="Change customer"
+                  >
+                    <i class="bi bi-arrow-repeat me-1"></i>Change
+                  </button>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Step 2: Loan Terms Form (Shown when client is found) -->
+          <div *ngIf="showLoanForm" class="odoo-loan-form-section mt-4">
+            
+            <h5 class="odoo-group-title mb-3">
+              <i class="bi bi-cash-stack me-2 text-gold"></i>
+              <span>Step 2: Loan Financial Terms & Schedule</span>
+            </h5>
+
+            <form (ngSubmit)="onSubmit()" #loanForm="ngForm">
+              
+              <!-- 2-Column Financial Terms Grid -->
+              <div class="odoo-sheet-grid row g-4">
+                
+                <!-- Left Column: Financial Terms -->
+                <div class="col-12 col-md-6">
+                  <div class="odoo-form-group-card p-3 border rounded h-100">
+                    <h6 class="odoo-card-subtitle mb-3 pb-2 border-bottom">
+                      <i class="bi bi-calculator me-1 text-gold"></i>Financial Breakdown
+                    </h6>
+
+                    <div class="mb-3">
+                      <label for="loanType" class="odoo-form-label">Loan Type / Frequency <span class="text-danger">*</span></label>
+                      <select 
+                        id="loanType" 
+                        class="odoo-form-control form-select" 
+                        name="loanType" 
+                        [(ngModel)]="loanType" 
+                        (change)="onLoanTypeChange()"
+                        required
+                      >
+                        <option value="daily">Daily Schedule</option>
+                        <option value="weekly">Weekly Schedule</option>
+                        <option value="monthly">Monthly Schedule</option>
+                      </select>
+                    </div>
+
+                    <div class="mb-3">
+                      <label for="principalAmount" class="odoo-form-label">Principal Amount (Rs.) <span class="text-danger">*</span></label>
+                      <div class="input-group">
+                        <span class="input-group-text odoo-input-addon">Rs.</span>
+                        <input 
+                          type="number" 
+                          id="principalAmount" 
+                          class="odoo-form-control form-control" 
+                          name="principalAmount" 
+                          [(ngModel)]="principalAmount" 
+                          (input)="calculateTotal()" 
+                          step="0.01" 
+                          min="0" 
+                          placeholder="e.g. 50000"
+                          required
+                        />
+                      </div>
+                    </div>
+
+                    <div class="mb-3">
+                      <label for="interestRate" class="odoo-form-label">Annual Interest Rate (%) <span class="text-danger">*</span></label>
+                      <div class="input-group">
+                        <input 
+                          type="number" 
+                          id="interestRate" 
+                          class="odoo-form-control form-control" 
+                          name="interestRate" 
+                          [(ngModel)]="interestRate" 
+                          (input)="onInterestRateChange($event)" 
+                          step="0.01" 
+                          min="0" 
+                          max="100" 
+                          placeholder="e.g. 4.5"
+                          required
+                        />
+                        <span class="input-group-text odoo-input-addon">%</span>
+                      </div>
+                    </div>
+
+                    <div class="mb-3">
+                      <label for="documentCharge" class="odoo-form-label">Document Charges (Rs.)</label>
+                      <div class="input-group">
+                        <span class="input-group-text odoo-input-addon">Rs.</span>
+                        <input 
+                          type="number" 
+                          id="documentCharge" 
+                          class="odoo-form-control form-control" 
+                          name="documentCharge" 
+                          [(ngModel)]="documentCharge" 
+                          (input)="calculateTotal()" 
+                          step="0.01" 
+                          min="0" 
+                          placeholder="0.00"
+                        />
+                      </div>
+                    </div>
+
+                    <div class="mb-0">
+                      <label for="loanNumber" class="odoo-form-label">Auto-Generated Loan Number</label>
+                      <div class="input-group">
+                        <span class="input-group-text odoo-input-addon">
+                          <i class="bi bi-lock-fill"></i>
+                        </span>
+                        <input 
+                          type="text" 
+                          id="loanNumber" 
+                          class="odoo-form-control form-control bg-subtle" 
+                          name="loanNumber" 
+                          [(ngModel)]="loanNumber" 
+                          readonly
+                        />
+                      </div>
+                    </div>
+
+                  </div>
+                </div>
+
+                <!-- Right Column: Schedule & Dates -->
+                <div class="col-12 col-md-6">
+                  <div class="odoo-form-group-card p-3 border rounded h-100">
+                    <h6 class="odoo-card-subtitle mb-3 pb-2 border-bottom">
+                      <i class="bi bi-calendar-range me-1 text-gold"></i>Schedule & Repayments
+                    </h6>
+
+                    <div class="mb-3">
+                      <label for="startDate" class="odoo-form-label">Start Date <span class="text-danger">*</span></label>
+                      <input 
+                        type="date" 
+                        id="startDate" 
+                        class="odoo-form-control form-control" 
+                        name="startDate" 
+                        [(ngModel)]="startDate" 
+                        (change)="onStartDateChange()" 
+                        required
+                      />
+                    </div>
+
+                    <div class="mb-3">
+                      <label for="endDate" class="odoo-form-label">End Date (Settlement) <span class="text-danger">*</span></label>
+                      <input 
+                        type="date" 
+                        id="endDate" 
+                        class="odoo-form-control form-control" 
+                        name="endDate" 
+                        [(ngModel)]="endDate" 
+                        (change)="onEndDateChange()" 
+                        required
+                      />
+                    </div>
+
+                    <div class="mb-3">
+                      <label for="installments" class="odoo-form-label">Calculated Installment Count</label>
+                      <div class="input-group">
+                        <span class="input-group-text odoo-input-addon">
+                          <i class="bi bi-calendar-check"></i>
+                        </span>
+                        <input 
+                          type="number" 
+                          id="installments" 
+                          class="odoo-form-control form-control bg-subtle" 
+                          name="installments" 
+                          [value]="numberOfInstallments" 
+                          readonly
+                        />
+                        <span class="input-group-text odoo-input-addon">installments</span>
+                      </div>
+                    </div>
+
+                    <div class="mb-0">
+                      <label class="odoo-form-label">Estimated Per Installment</label>
+                      <div class="input-group">
+                        <span class="input-group-text odoo-input-addon">Rs.</span>
+                        <input 
+                          type="text" 
+                          class="odoo-form-control form-control bg-subtle" 
+                          [value]="estimatedInstallmentAmount | number:'1.2-2'" 
+                          readonly
+                        />
+                      </div>
+                    </div>
+
+                  </div>
+                </div>
+
+              </div>
+
+              <!-- Live Financial Calculation Preview Strip -->
+              <div class="odoo-calculation-summary my-4 p-3 border rounded">
+                <div class="row align-items-center g-3 text-center text-md-start">
+                  
+                  <div class="col-6 col-md-3">
+                    <span class="summary-label">Principal</span>
+                    <h5 class="summary-val text-gold mb-0">Rs. {{ principalAmount | number }}</h5>
+                  </div>
+
+                  <div class="col-6 col-md-3">
+                    <span class="summary-label">Total Interest ({{ interestRate }}%)</span>
+                    <h5 class="summary-val mb-0">Rs. {{ totalInterestAmount | number:'1.2-2' }}</h5>
+                  </div>
+
+                  <div class="col-6 col-md-3">
+                    <span class="summary-label">Document Charges</span>
+                    <h5 class="summary-val mb-0">Rs. {{ documentCharge || 0 | number }}</h5>
+                  </div>
+
+                  <div class="col-6 col-md-3 text-md-end">
+                    <span class="summary-label">Total Amount Due</span>
+                    <h4 class="summary-val text-gold fw-bold mb-0">Rs. {{ calculatedTotal | number:'1.2-2' }}</h4>
+                  </div>
+
+                </div>
+              </div>
+
+              <!-- Bottom Form Actions -->
+              <div class="d-flex justify-content-end align-items-center gap-2 pt-2 border-top">
+                <button 
+                  type="button" 
+                  class="btn btn-lx-secondary px-4" 
+                  (click)="onClear()" 
+                  [disabled]="isLoading"
+                >
+                  Discard
+                </button>
+                <button 
+                  type="submit" 
+                  class="btn btn-lx-primary px-4" 
+                  [disabled]="isLoading || !isFormReadyForSubmit()"
+                >
+                  <span *ngIf="isLoading" class="spinner-border spinner-border-sm me-1" role="status"></span>
+                  <i *ngIf="!isLoading" class="bi bi-check2-circle me-1"></i>
+                  {{ isLoading ? 'Creating Loan...' : 'Submit Loan Agreement' }}
+                </button>
+              </div>
+
+            </form>
+
+          </div>
+
+        </div>
+
+      </div>
+    </div>
+  </div>
+
 </div>

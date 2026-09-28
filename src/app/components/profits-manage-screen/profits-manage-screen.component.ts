@@ -3,12 +3,13 @@ import { ProfitManageService, PaymentWithLoanNumber, Invest, Expense } from '../
 import { FormBuilder, FormGroup, Validators, ReactiveFormsModule } from '@angular/forms';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
+import { RouterModule } from '@angular/router';
 import { DatePipe } from '@angular/common';
 
 @Component({
   selector: 'app-profits-manage-screen',
   standalone: true,
-  imports: [CommonModule, ReactiveFormsModule, FormsModule],
+  imports: [CommonModule, ReactiveFormsModule, FormsModule, RouterModule],
   providers: [DatePipe],
   templateUrl: './profits-manage-screen.component.html',
   styleUrl: './profits-manage-screen.component.css'
@@ -27,6 +28,8 @@ export class ProfitsManageScreenComponent implements OnInit {
   addCapitalError = '';
   addExpenseSuccess = false;
   addExpenseError = '';
+
+  activeTab: 'actions' | 'expenses' | 'capital' | 'loans' | 'payments' = 'actions';
 
   startDate: string = '';
   endDate: string = '';
@@ -204,5 +207,15 @@ export class ProfitsManageScreenComponent implements OnInit {
     if (this.addCapitalError) {
       this.addCapitalError = '';
     }
+  }
+
+  setActiveTab(tab: 'actions' | 'expenses' | 'capital' | 'loans' | 'payments'): void {
+    this.activeTab = tab;
+  }
+
+  clearDateFilter(): void {
+    this.startDate = '';
+    this.endDate = '';
+    this.onDateRangeChange();
   }
 }

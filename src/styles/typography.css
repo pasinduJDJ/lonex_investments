@@ -1,9 +1,8 @@
 /**
  * LONEX INVESTMENTS - Global Typography System
  * Google Fonts: Poppins (Titles), Manrope (Subtitles), Inter (Paragraphs), DM Sans (Links)
+ * Loaded via <link> in src/index.html
  */
-
-@import url('https://fonts.googleapis.com/css2?family=DM+Sans:ital,opsz,wght@0,9..40,500;0,9..40,600;1,9..40,500;1,9..40,600&family=Inter:wght@400;500;600&family=Manrope:wght@500;600;700&family=Poppins:wght@600;700&display=swap');
 
 :root {
   /* ==========================================================================

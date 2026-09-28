@@ -1,124 +1,418 @@
-<div class="container">
-    <div class="row">
-        <div class="col-2"></div>
-        <div class="col-8 ">
-            <h5><strong>Add New Payment</strong></h5>
-            <hr class="mb-3">
-            <div class="row d-flex justify-content-center">
-                <div class="col-6 ">
-                    <div class="input-group"
-                        style="border-radius: 20px; box-shadow: 5px 5px 5px rgba(0, 0, 0, 0.25); overflow: hidden; border: 0.5px solid #000; background-color: #D9D9D9;">
-                        <input type="text" class="form-control py-2" placeholder="Enter Loan Number to verify loan"
-                            aria-label="Loan Number" [(ngModel)]="loanNumber" (keyup.enter)="searchLoan()">
-                        <button class="btn text-white px-4" style="background-color: #1B4965;" (click)="searchLoan()" [disabled]="isSearching">
-                            <span *ngIf="isSearching" class="spinner-border spinner-border-sm me-2" role="status"></span>
-                            {{ isSearching ? 'Searching...' : 'Search' }}
-                        </button>
-                    </div>
-                </div>
-            </div>
-            
-            <!-- Alert Messages -->
-            <div *ngIf="errorMessage" class="alert alert-danger alert-dismissible fade show mt-3" role="alert">
-                <i class="bi bi-exclamation-triangle me-2"></i>
-                {{ errorMessage }}
-                <button type="button" class="btn-close" (click)="errorMessage = ''"></button>
-            </div>
-            
-            <div *ngIf="successMessage" class="alert alert-success alert-dismissible fade show mt-3" role="alert">
-                <i class="bi bi-check-circle me-2"></i>
-                {{ successMessage }}
-                <button type="button" class="btn-close" (click)="successMessage = ''"></button>
-            </div>
-            
-            <!-- No Loan Found Message -->
-            <div *ngIf="!foundLoan && loanNumber && !isSearching" class="alert alert-warning mt-3">
-                <i class="bi bi-exclamation-triangle me-2"></i>
-                No loan found with the loan number: <strong>{{ loanNumber }}</strong>
-            </div>
-            
-            <!-- Loan Details Card -->
-            <div *ngIf="foundLoan" class="card px-5 py-3 mt-4" style="border-radius: 20px; box-shadow: 5px 5px 5px rgba(0, 0, 0, 0.25);">
-                <div class="row my-2">
-                    <label for="Member Full Name">Client Name : {{ foundLoan.client.first_name }} {{ foundLoan.client.last_name }}</label>
-                </div>
-                <div class="row my-2">
-                    <label for="Member Full Name">Client NIC : {{ foundLoan.client.nic_number }}</label>
-                </div>
-                <div class="row my-2">
-                    <label for="Member Full Name">Loan Register Number : {{ foundLoan.loan_reg_number ? formatLoanRegNumber(foundLoan.loan_reg_number) : 'N/A' }}</label>
-                </div>
-                <div class="row my-2">
-                    <label for="Member Full Name">Total Due : {{ foundLoan.total_amount_due | number:'1.2-2' }}</label>
-                </div>
-                <div class="row my-2">
-                    <label for="Member Full Name">Total Paid : {{ foundLoan.total_paid | number:'1.2-2' }}</label>
-                </div>
-                <div class="row my-2">
-                    <label for="Member Full Name">Remaining Amount : {{ foundLoan.remaining_amount | number:'1.2-2' }}</label>
-                </div>
-                <div class="row my-2">
-                    <label for="Member Full Name">Loan Status : 
-                        <span [class]="foundLoan.status === 'closed' ? 'badge bg-success' : 'badge bg-warning'">
-                            {{ foundLoan.status | titlecase }}
-                        </span>
-                    </label>
-                </div>
-                
-                <!-- Progress Bar -->
-                <div class="row my-3">
-                    <div class="col-12">
-                        <div class="progress" style="height: 25px; border-radius: 15px;">
-                            <div 
-                                class="progress-bar bg-{{ getProgressColor() }}" 
-                                [style.width.%]="getProgressPercentage()"
-                                style="border-radius: 15px;">
-                                {{ getProgressPercentage() | number:'1.0-1' }}%
-                            </div>
-                        </div>
-                    </div>
-                </div>
-                <!-- Installment Stats Section -->
-                <div *ngIf="installmentStats" class="mt-3">
-                  <hr>
-                  <div><strong>Installment Amount:</strong> {{ installmentStats.installmentAmount | number:'1.2-2' }}</div>
-                  <div><strong>Paid Installments:</strong> {{ installmentStats.paid }}</div>
-                  <div><strong>Remaining Installments:</strong> {{ installmentStats.remaining }}</div>
-                </div>
-            </div>
-            
-            <!-- Payment Form -->
-            <div *ngIf="foundLoan" class="col-5">
-                <div class="form mt-4">
-                    <!-- Loan Closed Warning -->
-                    <div *ngIf="foundLoan.status === 'closed'" class="alert alert-success mb-3">
-                        <i class="bi bi-check-circle me-2"></i>
-                        <strong>Loan Closed:</strong> This loan has been fully paid and is now closed.
-                    </div>
-                    
-                    <label for="paidAmount" class="form-label">Paid Amount</label>
-                    <div class="input-group">
-                        <input type="number" id="paidAmount" class="form-control" name="paidAmount" [(ngModel)]="paidAmount" step="0.01" min="0.01" [max]="foundLoan.remaining_amount" required [disabled]="foundLoan.status === 'closed'">
-                    </div>
-                    <div class="form-text">Maximum: {{ foundLoan.remaining_amount | number:'1.2-2' }}</div>
-                    
-                    <label for="paymentDate" class="form-label">Payment Date</label>
-                    <div class="input-group">
-                        <input type="date" id="paymentDate" class="form-control" name="paymentDate" [(ngModel)]="paymentDate" required [disabled]="foundLoan.status === 'closed'">
-                    </div>
-                    
-                    <label for="remark" class="form-label">Remark</label>
-                    <div class="input-group">
-                        <input type="text" id="remark" class="form-control" name="remark" [(ngModel)]="remark" placeholder="Enter payment remark" [disabled]="foundLoan.status === 'closed'">
-                    </div>
-                    
-                    <button class="btn text-white px-4 my-4" style="background-color: #1B4965;" (click)="submitPayment()" [disabled]="isLoading || paidAmount <= 0 || foundLoan.status === 'closed'">
-                        <span *ngIf="isLoading" class="spinner-border spinner-border-sm me-2" role="status"></span>
-                        {{ isLoading ? 'Processing...' : (foundLoan.status === 'closed' ? 'Loan Closed' : 'Save') }}
-                    </button>
-                </div>
-            </div>
+<div class="lx-add-payment-container">
+
+  <!-- Top Control & Action Bar (Odoo Sub-Header) -->
+  <div class="odoo-control-panel py-2 mb-3">
+    <div class="container-fluid px-3 px-md-4">
+      <div class="d-flex flex-wrap justify-content-between align-items-center gap-3">
+        
+        <!-- Left: Actions & Breadcrumbs -->
+        <div class="d-flex align-items-center gap-3 flex-wrap">
+          <!-- Action Buttons -->
+          <div class="odoo-action-buttons d-flex align-items-center gap-2">
+            <button 
+              type="button" 
+              class="btn btn-lx-primary btn-sm" 
+              (click)="submitPayment()"
+              [disabled]="isLoading || !foundLoan || paidAmount <= 0 || (foundLoan && foundLoan.status === 'closed')"
+            >
+              <span *ngIf="isLoading" class="spinner-border spinner-border-sm me-1" role="status"></span>
+              <i *ngIf="!isLoading" class="bi bi-check2-circle me-1"></i>
+              <span>{{ isLoading ? 'Processing...' : (foundLoan && foundLoan.status === 'closed' ? 'Loan Closed' : 'Record Payment') }}</span>
+            </button>
+
+            <button 
+              type="button" 
+              class="btn btn-lx-secondary btn-sm" 
+              (click)="clearSearch()"
+              [disabled]="isLoading"
+            >
+              <i class="bi bi-arrow-counterclockwise me-1"></i>
+              <span>Clear / Reset</span>
+            </button>
+          </div>
+
+          <!-- Breadcrumb Trail -->
+          <div class="odoo-breadcrumb-trail d-none d-sm-flex align-items-center">
+            <a routerLink="/loan" class="odoo-crumb-link">Loans</a>
+            <span class="odoo-crumb-sep">/</span>
+            <span class="odoo-crumb-current">Record Payment</span>
+          </div>
         </div>
-        <div class="col-2"></div>
+
+        <!-- Right: Module Quick Links -->
+        <div class="d-flex align-items-center gap-2">
+          <a routerLink="/loan" class="btn btn-sm btn-lx-secondary">
+            <i class="bi bi-list-ul me-1"></i>All Loans
+          </a>
+        </div>
+
+      </div>
     </div>
+  </div>
+
+  <!-- Alert Messages -->
+  <div class="container-fluid px-3 px-md-4" *ngIf="errorMessage || successMessage">
+    <div class="row justify-content-center">
+      <div class="col-12 col-xl-10">
+        <div *ngIf="errorMessage" class="alert alert-danger alert-dismissible fade show mb-3" role="alert">
+          <i class="bi bi-exclamation-triangle-fill me-2"></i>
+          <span>{{ errorMessage }}</span>
+          <button type="button" class="btn-close" (click)="errorMessage = ''"></button>
+        </div>
+
+        <div *ngIf="successMessage" class="alert alert-success alert-dismissible fade show mb-3" role="alert">
+          <i class="bi bi-check-circle-fill me-2"></i>
+          <span>{{ successMessage }}</span>
+          <button type="button" class="btn-close" (click)="successMessage = ''"></button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Main Odoo Form Sheet Canvas -->
+  <div class="container-fluid px-3 px-md-4">
+    <div class="row justify-content-center">
+      <div class="col-12 col-xl-10">
+        
+        <div class="odoo-form-sheet shadow-sm">
+          
+          <!-- Sheet Header: Title -->
+          <div class="odoo-sheet-header d-flex align-items-start gap-3 flex-wrap pb-3 border-bottom">
+            <div class="odoo-header-avatar">
+              <i class="bi bi-receipt-cutoff"></i>
+            </div>
+            
+            <div class="flex-grow-1">
+              <div class="d-flex align-items-center gap-2 mb-1 flex-wrap">
+                <span class="badge badge-gold" style="font-size: 0.75rem;">
+                  <i class="bi bi-cash-coin me-1"></i>Cash Inflow
+                </span>
+                <span *ngIf="foundLoan" class="badge" [ngClass]="foundLoan.status === 'closed' ? 'badge-secondary' : 'badge-success'" style="font-size: 0.75rem;">
+                  {{ foundLoan.status === 'closed' ? 'Settled' : 'Active Account' }}
+                </span>
+              </div>
+              <h1 class="odoo-sheet-title mb-0">
+                Record Loan Payment
+              </h1>
+            </div>
+          </div>
+
+          <!-- Step 1: Loan Verification Section -->
+          <div class="odoo-section-card my-4 p-3 border rounded">
+            <div class="d-flex justify-content-between align-items-center mb-2 flex-wrap gap-2">
+              <h5 class="odoo-group-title mb-0">
+                <i class="bi bi-search me-2 text-gold"></i>
+                <span>Step 1: Loan Verification</span>
+              </h5>
+              <span *ngIf="foundLoan" class="badge badge-success small">
+                <i class="bi bi-check-circle-fill me-1"></i>Loan Verified
+              </span>
+            </div>
+
+            <!-- Search Input (Shown when loan not yet verified) -->
+            <div *ngIf="!foundLoan" class="mt-3">
+              <p class="small text-muted mb-2">
+                Enter the Loan Registration Number (e.g., <code>12-001-001-001</code>) to retrieve borrower balances and payment history.
+              </p>
+              
+              <div class="odoo-search-box d-flex align-items-stretch">
+                <i class="bi bi-search odoo-search-icon"></i>
+                <input 
+                  type="text" 
+                  class="odoo-search-input flex-grow-1" 
+                  placeholder="Enter Loan Number (e.g. 12-001-001-001)..." 
+                  aria-label="Loan Number" 
+                  [(ngModel)]="loanNumber" 
+                  (keyup.enter)="searchLoan()"
+                />
+                <button 
+                  type="button" 
+                  class="btn btn-lx-primary px-4 rounded-0" 
+                  (click)="searchLoan()" 
+                  [disabled]="isSearching"
+                >
+                  <span *ngIf="isSearching" class="spinner-border spinner-border-sm me-1" role="status"></span>
+                  <i *ngIf="!isSearching" class="bi bi-shield-check me-1"></i>
+                  {{ isSearching ? 'Searching...' : 'Find Loan' }}
+                </button>
+              </div>
+
+              <!-- Warning if searched and not found -->
+              <div *ngIf="!foundLoan && loanNumber && !isSearching && errorMessage" class="alert alert-warning mt-3 mb-0">
+                <i class="bi bi-exclamation-triangle me-2"></i>
+                No loan found matching <strong>{{ loanNumber }}</strong>.
+              </div>
+            </div>
+
+            <!-- Verified Loan & Borrower Banner (Shown when loan is verified) -->
+            <div *ngIf="foundLoan" class="odoo-verified-loan-banner mt-3 p-3 rounded">
+              <div class="d-flex justify-content-between align-items-center flex-wrap gap-3">
+                
+                <div class="d-flex align-items-center gap-3">
+                  <div class="odoo-verified-avatar">
+                    {{ clientInitials }}
+                  </div>
+                  <div>
+                    <div class="d-flex align-items-center gap-2 flex-wrap mb-1">
+                      <h5 class="mb-0 fw-bold" style="color: var(--lx-text-primary);">
+                        Loan {{ foundLoan.loan_number }}
+                      </h5>
+                      <span class="badge" [ngClass]="foundLoan.status === 'closed' ? 'badge-secondary' : 'badge-success'">
+                        {{ foundLoan.status | titlecase }}
+                      </span>
+                    </div>
+                    <div class="d-flex flex-wrap gap-2 align-items-center small text-muted">
+                      <span *ngIf="foundLoan.client">
+                        <i class="bi bi-person-fill text-gold me-1"></i>
+                        <strong style="color: var(--lx-text-primary);">{{ foundLoan.client.first_name }} {{ foundLoan.client.last_name }}</strong>
+                        (NIC: {{ foundLoan.client.nic_number }})
+                      </span>
+                      <span>· Reg #{{ formatLoanRegNumber(foundLoan.loan_reg_number) }}</span>
+                      <span>· Type: {{ foundLoan.loan_type | titlecase }}</span>
+                    </div>
+                  </div>
+                </div>
+
+                <div class="d-flex align-items-center gap-2">
+                  <a 
+                    [routerLink]="['/single-loan', foundLoan.loan_number]" 
+                    target="_blank"
+                    class="btn btn-sm btn-lx-secondary"
+                    title="Open Loan File in new tab"
+                  >
+                    <i class="bi bi-box-arrow-up-right me-1"></i>View Loan File
+                  </a>
+                  <button 
+                    type="button" 
+                    class="btn btn-sm btn-outline-danger" 
+                    (click)="clearSearch()"
+                    title="Search another loan"
+                  >
+                    <i class="bi bi-arrow-repeat me-1"></i>Change
+                  </button>
+                </div>
+
+              </div>
+
+              <!-- Loan Smart Stat Counters -->
+              <div class="row g-2 mt-3 pt-3 border-top">
+                <div class="col-6 col-md-3">
+                  <div class="odoo-stat-box p-2 text-center rounded">
+                    <span class="stat-box-label">Total Due</span>
+                    <h6 class="stat-box-value mb-0 text-gold">Rs. {{ foundLoan.total_amount_due | number:'1.2-2' }}</h6>
+                  </div>
+                </div>
+
+                <div class="col-6 col-md-3">
+                  <div class="odoo-stat-box p-2 text-center rounded">
+                    <span class="stat-box-label">Total Paid</span>
+                    <h6 class="stat-box-value mb-0 text-success">Rs. {{ foundLoan.total_paid | number:'1.2-2' }}</h6>
+                  </div>
+                </div>
+
+                <div class="col-6 col-md-3">
+                  <div class="odoo-stat-box p-2 text-center rounded">
+                    <span class="stat-box-label">Remaining Balance</span>
+                    <h6 class="stat-box-value mb-0 text-danger">Rs. {{ foundLoan.remaining_amount | number:'1.2-2' }}</h6>
+                  </div>
+                </div>
+
+                <div class="col-6 col-md-3">
+                  <div class="odoo-stat-box p-2 text-center rounded">
+                    <span class="stat-box-label">Installments</span>
+                    <h6 class="stat-box-value mb-0">
+                      {{ installmentStats ? (installmentStats.paid + ' / ' + installmentStats.expected) : 'N/A' }}
+                    </h6>
+                  </div>
+                </div>
+              </div>
+
+              <!-- Repayment Progress Bar -->
+              <div class="mt-3">
+                <div class="d-flex justify-content-between align-items-center mb-1 small">
+                  <span class="text-muted">Settlement Progress</span>
+                  <span class="fw-bold" style="color: var(--lx-text-primary);">{{ getProgressPercentage() | number:'1.0-1' }}%</span>
+                </div>
+                <div class="progress" style="height: 7px; background-color: var(--lx-bg-subtle);">
+                  <div 
+                    class="progress-bar" 
+                    role="progressbar" 
+                    [style.width.%]="getProgressPercentage()"
+                    [ngClass]="'bg-' + getProgressColor()"
+                  ></div>
+                </div>
+              </div>
+
+            </div>
+
+          </div>
+
+          <!-- Step 2: Payment Entry (Shown when loan is found) -->
+          <div *ngIf="foundLoan" class="odoo-payment-form-section mt-4">
+            
+            <h5 class="odoo-group-title mb-3">
+              <i class="bi bi-wallet2 me-2 text-gold"></i>
+              <span>Step 2: Payment Details</span>
+            </h5>
+
+            <!-- Notice if Loan is already closed -->
+            <div *ngIf="foundLoan.status === 'closed'" class="alert alert-success d-flex align-items-center gap-2 mb-3">
+              <i class="bi bi-check-circle-fill fs-5"></i>
+              <div>
+                <strong>Loan Fully Settled:</strong> This loan has reached zero remaining balance and is marked as closed. No further payments can be recorded.
+              </div>
+            </div>
+
+            <!-- 2-Column Payment Grid -->
+            <div class="row g-4">
+              
+              <!-- Left Column: Payment Inputs -->
+              <div class="col-12 col-md-7">
+                <div class="odoo-form-group-card p-3 border rounded h-100">
+                  <h6 class="odoo-card-subtitle mb-3 pb-2 border-bottom">
+                    <i class="bi bi-credit-card me-1 text-gold"></i>Transaction Details
+                  </h6>
+
+                  <div class="mb-3">
+                    <label for="paidAmount" class="odoo-form-label">
+                      Payment Amount (Rs.) <span class="text-danger">*</span>
+                    </label>
+                    <div class="input-group">
+                      <span class="input-group-text odoo-input-addon">Rs.</span>
+                      <input 
+                        type="number" 
+                        id="paidAmount" 
+                        class="odoo-form-control form-control" 
+                        name="paidAmount" 
+                        [(ngModel)]="paidAmount" 
+                        step="0.01" 
+                        min="0.01" 
+                        [max]="foundLoan.remaining_amount" 
+                        placeholder="0.00"
+                        required 
+                        [disabled]="foundLoan.status === 'closed'"
+                      />
+                    </div>
+                    <div class="form-text small text-muted">
+                      Maximum allowable: Rs. {{ foundLoan.remaining_amount | number:'1.2-2' }}
+                    </div>
+                  </div>
+
+                  <div class="mb-3">
+                    <label for="paymentDate" class="odoo-form-label">
+                      Payment Date <span class="text-danger">*</span>
+                    </label>
+                    <input 
+                      type="date" 
+                      id="paymentDate" 
+                      class="odoo-form-control form-control" 
+                      name="paymentDate" 
+                      [(ngModel)]="paymentDate" 
+                      required 
+                      [disabled]="foundLoan.status === 'closed'"
+                    />
+                  </div>
+
+                  <div class="mb-0">
+                    <label for="remark" class="odoo-form-label">Remark / Notes</label>
+                    <input 
+                      type="text" 
+                      id="remark" 
+                      class="odoo-form-control form-control" 
+                      name="remark" 
+                      [(ngModel)]="remark" 
+                      placeholder="e.g. Installment paid in cash at counter" 
+                      [disabled]="foundLoan.status === 'closed'"
+                    />
+                  </div>
+
+                </div>
+              </div>
+
+              <!-- Right Column: Quick Amount Presets & Summary -->
+              <div class="col-12 col-md-5">
+                <div class="odoo-form-group-card p-3 border rounded h-100 d-flex flex-column justify-content-between">
+                  <div>
+                    <h6 class="odoo-card-subtitle mb-3 pb-2 border-bottom">
+                      <i class="bi bi-lightning-charge me-1 text-gold"></i>Quick Fill Presets
+                    </h6>
+
+                    <p class="small text-muted mb-3">
+                      Click below to automatically fill standard payment amounts:
+                    </p>
+
+                    <div class="d-flex flex-column gap-2 mb-3">
+                      <button 
+                        *ngIf="installmentStats"
+                        type="button" 
+                        class="btn btn-outline-warning text-start d-flex justify-content-between align-items-center py-2 px-3"
+                        (click)="setPaidAmount(installmentStats.installmentAmount)"
+                        [disabled]="foundLoan.status === 'closed'"
+                      >
+                        <span>
+                          <i class="bi bi-calendar-check me-2"></i>1 Installment
+                        </span>
+                        <strong class="text-gold">Rs. {{ installmentStats.installmentAmount | number:'1.2-2' }}</strong>
+                      </button>
+
+                      <button 
+                        type="button" 
+                        class="btn btn-outline-success text-start d-flex justify-content-between align-items-center py-2 px-3"
+                        (click)="setPaidAmount(foundLoan.remaining_amount)"
+                        [disabled]="foundLoan.status === 'closed'"
+                      >
+                        <span>
+                          <i class="bi bi-check-all me-2"></i>Full Settlement
+                        </span>
+                        <strong class="text-success">Rs. {{ foundLoan.remaining_amount | number:'1.2-2' }}</strong>
+                      </button>
+                    </div>
+                  </div>
+
+                  <!-- Balance After Payment Preview -->
+                  <div class="odoo-balance-preview p-2 border rounded text-center" *ngIf="paidAmount > 0 && foundLoan.status !== 'closed'">
+                    <span class="small text-muted d-block">Estimated Balance After Payment</span>
+                    <h5 class="mb-0 fw-bold" [ngClass]="(foundLoan.remaining_amount - paidAmount) <= 0 ? 'text-success' : 'text-gold'">
+                      Rs. {{ (foundLoan.remaining_amount - paidAmount) | number:'1.2-2' }}
+                    </h5>
+                    <span *ngIf="(foundLoan.remaining_amount - paidAmount) <= 0" class="badge badge-success mt-1">
+                      Loan will be automatically closed
+                    </span>
+                  </div>
+
+                </div>
+              </div>
+
+            </div>
+
+            <!-- Bottom Actions -->
+            <div class="d-flex justify-content-end align-items-center gap-2 pt-3 mt-4 border-top">
+              <button 
+                type="button" 
+                class="btn btn-lx-secondary px-4" 
+                (click)="clearSearch()" 
+                [disabled]="isLoading"
+              >
+                Clear
+              </button>
+              <button 
+                type="button" 
+                class="btn btn-lx-primary px-4" 
+                (click)="submitPayment()"
+                [disabled]="isLoading || paidAmount <= 0 || foundLoan.status === 'closed'"
+              >
+                <span *ngIf="isLoading" class="spinner-border spinner-border-sm me-1" role="status"></span>
+                <i *ngIf="!isLoading" class="bi bi-check2-circle me-1"></i>
+                {{ isLoading ? 'Processing...' : (foundLoan.status === 'closed' ? 'Loan Closed' : 'Save Payment') }}
+              </button>
+            </div>
+
+          </div>
+
+        </div>
+
+      </div>
+    </div>
+  </div>
+
 </div>

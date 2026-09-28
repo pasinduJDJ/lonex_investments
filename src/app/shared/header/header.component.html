@@ -1,21 +1,47 @@
 <header class="lx-global-header" role="banner">
   <div class="lx-header-inner container-fluid">
     
-    <!-- Left Section: Only 9-dots Home Button -->
+    <!-- Left Section: 9-Dots Home Launcher + Module Brand + In-Header Module Tabs -->
     <div class="lx-header-left">
+      <!-- 9-Dots Launcher Button -->
       <a 
         routerLink="/home" 
         class="lx-app-switcher-btn" 
         [class.active]="isHome"
-        title="Home" 
+        title="App Launcher" 
         aria-label="Return to Main Application Launcher"
       >
         <i class="bi bi-grid-3x3-gap-fill"></i>
-        <span class="visually-hidden">Home</span>
+        <span class="visually-hidden">App Launcher</span>
       </a>
+
+      <!-- Module Name & In-Header Action Tabs (When inside a module) -->
+      <ng-container *ngIf="activeModuleTitle && !isHome">
+        <div class="lx-header-divider"></div>
+
+        <!-- Module Badge & Title -->
+        <div class="lx-module-brand d-flex align-items-center gap-2">
+          <div class="lx-module-badge-icon" [ngClass]="activeModuleAccentClass">
+            <i [class]="'bi ' + activeModuleIcon"></i>
+          </div>
+          <span class="lx-module-title-text">{{ activeModuleTitle }}</span>
+        </div>
+
+        <!-- In-Header Action Tabs (e.g. All Customers, Add Customer) -->
+        <div class="lx-header-tabs ms-3 d-none d-sm-flex align-items-center gap-2">
+          <a *ngFor="let tab of activeModuleTabs" 
+             [routerLink]="tab.url"
+             class="lx-header-tab-btn"
+             [class.active]="isTabActive(tab.url)"
+          >
+            <i *ngIf="tab.icon" [class]="'bi ' + tab.icon + ' me-1'"></i>
+            <span>{{ tab.label }}</span>
+          </a>
+        </div>
+      </ng-container>
     </div>
 
-    <!-- Right Section: Theme Toggle, Notifications, and User Profile Dropdown -->
+    <!-- Right Section: Theme Switcher, Notifications, and Profile -->
     <div class="lx-header-right">
       
       <!-- Color Theme Switcher -->
@@ -30,7 +56,7 @@
         <span class="d-none d-sm-inline lx-theme-label">{{ themeService.isDarkMode() ? 'Light' : 'Dark' }}</span>
       </button>
 
-      <!-- Notifications Icon (Right Side, next to Theme Toggle) -->
+      <!-- Notifications Icon -->
       <div class="lx-notifications-wrapper position-relative">
         <button 
           type="button" 

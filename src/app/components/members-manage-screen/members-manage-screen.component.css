@@ -1,78 +1,160 @@
-:root {
-  --primary: #003566;
-  --secondary: #001d3d;
-  --highlight: #ffc300;
-  --light: #d9d9d9;
-  --font: "Inter", "Roboto", sans-serif;
+/**
+ * Lonex Investments - Customers Management Screen (Odoo-Inspired)
+ */
+
+.lx-module-page-container {
+  padding-bottom: 2.5rem;
 }
 
-/* Container Background */
-.member-container {
-  padding-bottom: 40px;
-  font-family: var(--font);
+/* Odoo-Style Control Panel & Search Box */
+.lx-control-panel {
+  padding-top: 0.5rem;
 }
 
-/* Search Box */
-.search-box {
-  border-radius: 20px;
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
-  overflow: hidden;
-  border: 1px solid #aaa;
-  background-color: var(--light);
+.odoo-search-box {
+  display: flex;
+  align-items: center;
+  background-color: var(--lx-input-bg);
+  border: 1px solid var(--lx-border-default);
+  border-radius: 3px; /* Odoo subtle 3px border-radius */
+  padding: 0.35rem 0.85rem;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.08);
+  transition: border-color var(--lx-transition-fast), box-shadow var(--lx-transition-fast), background-color var(--lx-transition-base);
 }
 
-/* Section Title */
-.section-title {
-  font-size: 1.3rem;
-  font-weight: 600;
-  color: var(--primary);
+.odoo-search-box:focus-within {
+  border-color: var(--lx-primary-accent);
+  box-shadow: 0 0 0 2px var(--lx-primary-accent-focus);
 }
 
-/* Divider */
-.section-divider {
-  border-top: 3px solid #000000;
-  width: 90%;
-  margin: auto;
-  border-radius: 2px;
+.odoo-search-icon {
+  font-size: 0.95rem;
+  color: var(--lx-text-muted);
+  margin-right: 0.65rem;
+  flex-shrink: 0;
 }
 
-/* Add Button */
-.add-member-btn {
-  background-color: #003566;
-  color: #fff;
-  font-weight: 600;
-  padding: 8px 16px;
-  border-radius: 10px;
-  transition: background-color 0.3s ease;
+.odoo-search-input {
   border: none;
+  background: transparent;
+  color: var(--lx-text-primary);
+  font-family: var(--lx-font-paragraphs);
+  font-size: 0.9rem;
+  width: 100%;
+  outline: none;
 }
 
-.add-member-btn:hover {
-  background-color:#ffc300 ;
-  color: #000000;
+.odoo-search-input::placeholder {
+  color: var(--lx-text-muted);
 }
 
-/* Member Card */
-.member-card {
-  background-color: var(--light);
-  border-radius: 24px;
-  box-shadow: 0 6px 16px rgba(0, 0, 0, 0.2);
-  transition: transform 0.2s ease;
+/* Member Cards */
+.lx-member-card {
+  background-color: var(--lx-bg-card);
+  border: 1px solid var(--lx-border-subtle);
+  border-radius: var(--lx-radius-lg);
+  padding: 1.15rem 1.35rem;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
   cursor: pointer;
+  box-shadow: var(--lx-shadow-xs);
+  transition: all var(--lx-transition-fast);
+  outline: none;
 }
 
-.member-card:hover {
-  transform: translateY(-4px);
-  box-shadow: 0 8px 20px rgba(0, 0, 0, 0.25);
+.lx-member-card:hover {
+  transform: translateY(-2px);
+  border-color: var(--lx-primary-accent);
+  box-shadow: 0 6px 16px rgba(0, 0, 0, 0.12), 0 0 0 1px var(--lx-primary-accent);
 }
 
-.member-card .card-title {
-  color: var(--primary);
-  font-size: 1.2rem;
-  font-weight: 700;
+.lx-member-card:focus-visible {
+  border-color: var(--lx-primary-accent);
+  box-shadow: 0 0 0 3px var(--lx-primary-accent-focus);
 }
 
-.member-card .card-text {
-  color: #333;
-  font-size: 1rem;
+.lx-member-card-body {
+  flex: 1;
+}
+
+.lx-member-name {
+  font-family: var(--lx-font-titles);
+  font-size: 1.1rem;
+  font-weight: 600;
+  color: var(--lx-text-primary);
+  letter-spacing: -0.01em;
+}
+
+.lx-member-id-badge {
+  background-color: var(--lx-primary-accent-subtle);
+  color: var(--lx-primary-accent);
+  font-family: var(--lx-font-subtitles);
+  font-size: 0.775rem;
+  font-weight: 600;
+  padding: 0.2rem 0.6rem;
+  border-radius: var(--lx-radius-pill);
+  border: 1px solid var(--lx-primary-accent);
+}
+
+/* Meta info */
+.lx-member-meta {
+  font-size: 0.85rem;
+  font-family: var(--lx-font-paragraphs);
+  color: var(--lx-text-secondary);
+}
+
+.lx-meta-item {
+  display: inline-flex;
+  align-items: center;
+}
+
+.lx-meta-label {
+  font-weight: 500;
+  color: var(--lx-text-secondary);
+  margin-right: 0.25rem;
+}
+
+.lx-meta-value {
+  font-weight: 600;
+  color: var(--lx-text-primary);
+}
+
+.text-gold {
+  color: var(--lx-primary-accent) !important;
+}
+
+.lx-member-card-arrow {
+  color: var(--lx-text-muted);
+  font-size: 1.15rem;
+  margin-left: 1rem;
+  transition: transform var(--lx-transition-fast), color var(--lx-transition-fast);
+}
+
+.lx-member-card:hover .lx-member-card-arrow {
+  color: var(--lx-primary-accent);
+  transform: translateX(3px);
+}
+
+/* Empty State */
+.lx-empty-state {
+  background-color: var(--lx-bg-card);
+  border: 1px dashed var(--lx-border-default);
+  border-radius: var(--lx-radius-lg);
+  padding: 3rem 1.5rem;
+}
+
+/* Responsive adjustments */
+@media (max-width: 576px) {
+  .lx-member-card {
+    padding: 1rem;
+  }
+  .lx-member-name {
+    font-size: 1rem;
+  }
+  .lx-member-meta {
+    flex-direction: column;
+    align-items: flex-start !important;
+    gap: 0.35rem !important;
+  }
 }

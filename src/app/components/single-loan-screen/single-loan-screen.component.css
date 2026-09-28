@@ -1,103 +1,298 @@
-:root {
-    --primary: #003566;
-    --secondary: #001D3D;
-    --highlight: #FFC300;
-    --dark: #000814;
-    --gray-light: #D9D9D9;
-    --base: #CED4DA;
-    --font: 'Inter', 'Roboto', sans-serif;
-  }
-  
-  .single-loan-container {
-    font-family: var(--font);
-  }
-  
-  .loan-card {
-    background-color: white;
-    border-radius: 40px;
-    box-shadow: 10px 14px 24px rgba(0, 0, 0, 0.3); 
-    padding: 24px;
-    transition: box-shadow 0.3s ease;
-  }
-  
-  .loan-card:hover {
-    box-shadow: 0 14px 32px rgba(0, 0, 0, 0.5);
-  }
-  
-  .loan-info p {
-    font-size: 1rem;
-    margin-bottom: 0.6rem;
-    color: #000000;
-  }
-  
-  .btn-danger {
-    background-color: #780000;
-    border: none;
-    color: white;
-    height: 44px;
-  }
-  
-  .btn-highlight {
-    background-color: #FFC300;
-    border: none;
-    color: var(--dark);
-    font-weight: 600;
-    height: 44px;
-    transition: background-color 0.3s ease;
-  }
-  
-  .btn-highlight:hover {
-    background-color: #ffd60a;
-  }
-  
-  .confirmation-box {
-    background-color: var(--gray-light);
-    border: 1px solid #ccc;
-    color: var(--dark);
-  }
+/**
+ * Lonex Investments - Single Loan View (Odoo-Inspired Sheet Layout)
+ */
 
-  /* Payment Details Styling */
-  .payment-details {
-    border-top: 2px solid var(--gray-light);
-    padding-top: 1.5rem;
-  }
+.lx-loan-view-container {
+  padding-bottom: 3rem;
+}
 
-  .payment-details h6 {
-    color: var(--primary);
-    font-size: 1.1rem;
-  }
+/* Odoo-Style Top Control Panel */
+.odoo-control-panel {
+  background-color: var(--lx-bg-card);
+  border-bottom: 1px solid var(--lx-border-subtle);
+  transition: background-color var(--lx-transition-base), border-color var(--lx-transition-base);
+}
 
-  .payment-details .table {
-    border-radius: 8px;
-    overflow: hidden;
-    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
-  }
+.odoo-breadcrumb-trail {
+  font-family: var(--lx-font-links);
+  font-size: 0.875rem;
+  font-weight: 500;
+}
 
-  .payment-details .table thead th {
-    background-color: var(--primary);
-    color: white;
-    font-weight: 600;
-    border: none;
-    padding: 12px 16px;
-  }
+.odoo-crumb-link {
+  color: var(--lx-text-secondary);
+  text-decoration: none;
+  transition: color var(--lx-transition-fast);
+}
 
-  .payment-details .table tbody td {
-    padding: 12px 16px;
-    vertical-align: middle;
-    border-bottom: 1px solid #dee2e6;
-  }
+.odoo-crumb-link:hover {
+  color: var(--lx-primary-accent);
+}
 
-  .payment-details .table tbody tr:hover {
-    background-color: #f8f9fa;
-  }
+.odoo-crumb-sep {
+  color: var(--lx-text-muted);
+  margin: 0 0.4rem;
+}
 
-  .payment-details .alert-info {
-    background-color: #e3f2fd;
-    border-color: #90caf9;
-    color: #1565c0;
-  }
+.odoo-crumb-current {
+  color: var(--lx-text-primary);
+  font-weight: 600;
+}
 
-  .text-success {
-    color: #28a745 !important;
+/* Odoo Smart Stat Buttons */
+.odoo-smart-buttons {
+  display: flex;
+  gap: 0.4rem;
+  flex-wrap: wrap;
+}
+
+.odoo-stat-btn {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.35rem 0.75rem;
+  background-color: var(--lx-bg-subtle);
+  border: 1px solid var(--lx-border-subtle);
+  border-radius: var(--lx-radius-md);
+  color: var(--lx-text-primary);
+  cursor: pointer;
+  transition: all var(--lx-transition-fast);
+}
+
+.odoo-stat-btn:hover,
+.odoo-stat-btn.active {
+  border-color: var(--lx-primary-accent);
+  background-color: var(--lx-primary-accent-subtle);
+}
+
+.odoo-stat-icon {
+  font-size: 1.15rem;
+  display: flex;
+  align-items: center;
+}
+
+.odoo-stat-info {
+  display: flex;
+  flex-direction: column;
+  line-height: 1.1;
+  text-align: left;
+}
+
+.odoo-stat-value {
+  font-family: var(--lx-font-titles);
+  font-weight: 700;
+  font-size: 0.875rem;
+  color: var(--lx-text-primary);
+}
+
+.odoo-stat-label {
+  font-family: var(--lx-font-subtitles);
+  font-size: 0.65rem;
+  color: var(--lx-text-secondary);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+/* Confirmation Box */
+.odoo-alert-confirm {
+  background-color: var(--lx-bg-card);
+  border: 1px solid var(--lx-border-subtle);
+  border-left: 4px solid #f59e0b;
+  border-radius: var(--lx-radius-md);
+  color: var(--lx-text-primary);
+}
+
+/* Main Form Sheet */
+.odoo-form-sheet {
+  background-color: var(--lx-bg-card);
+  border: 1px solid var(--lx-border-subtle);
+  border-radius: var(--lx-radius-lg);
+  padding: 2rem;
+  color: var(--lx-text-primary);
+  transition: background-color var(--lx-transition-base), border-color var(--lx-transition-base);
+}
+
+/* Header & Loan Avatar */
+.odoo-loan-avatar {
+  width: 64px;
+  height: 64px;
+  border-radius: 16px;
+  background: linear-gradient(135deg, #F59E0B, #D97706);
+  color: #FFFFFF;
+  font-family: var(--lx-font-titles);
+  font-weight: 700;
+  font-size: 1.6rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0 4px 12px rgba(245, 158, 11, 0.25);
+  flex-shrink: 0;
+}
+
+.odoo-loan-title {
+  font-family: var(--lx-font-titles);
+  font-weight: 700;
+  font-size: clamp(1.4rem, 1.2rem + 1vw, 1.85rem);
+  color: var(--lx-text-primary);
+  line-height: 1.2;
+}
+
+/* Linked Client Pill */
+.odoo-client-pill {
+  display: inline-flex;
+  align-items: center;
+  background-color: var(--lx-bg-subtle);
+  padding: 0.35rem 0.75rem;
+  border-radius: var(--lx-radius-sm);
+  border: 1px solid var(--lx-border-subtle);
+  color: var(--lx-text-primary);
+  font-size: 0.875rem;
+  text-decoration: none;
+  transition: all var(--lx-transition-fast);
+}
+
+.odoo-client-pill:hover {
+  border-color: var(--lx-primary-accent);
+  background-color: var(--lx-primary-accent-subtle);
+  color: var(--lx-primary-accent);
+}
+
+/* Repayment Progress Bar */
+.odoo-progress-bar-card {
+  background-color: var(--lx-bg-subtle);
+  border-color: var(--lx-border-subtle) !important;
+}
+
+/* 2-Column Financial Grid */
+.odoo-group-title {
+  font-family: var(--lx-font-subtitles);
+  font-size: 1rem;
+  font-weight: 600;
+  color: var(--lx-text-primary);
+  margin-bottom: 1rem;
+  display: flex;
+  align-items: center;
+}
+
+.odoo-field-group {
+  display: flex;
+  flex-direction: column;
+  gap: 0.65rem;
+}
+
+.odoo-field-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  font-family: var(--lx-font-paragraphs);
+  font-size: 0.875rem;
+  border-bottom: 1px dashed var(--lx-border-subtle);
+  padding-bottom: 0.4rem;
+}
+
+.odoo-field-label {
+  color: var(--lx-text-secondary);
+  font-weight: 500;
+  min-width: 140px;
+}
+
+.odoo-field-value {
+  color: var(--lx-text-primary);
+  font-weight: 600;
+  text-align: right;
+  word-break: break-word;
+}
+
+/* Notebook & Tabs */
+.odoo-tabs-header {
+  display: flex;
+  gap: 0.5rem;
+}
+
+.odoo-tab-nav-btn {
+  background: transparent;
+  border: none;
+  border-bottom: 2px solid transparent;
+  color: var(--lx-text-secondary);
+  font-family: var(--lx-font-links);
+  font-size: 0.9rem;
+  font-weight: 600;
+  padding: 0.65rem 1rem;
+  cursor: pointer;
+  transition: all var(--lx-transition-fast);
+  margin-bottom: -1px;
+}
+
+.odoo-tab-nav-btn:hover {
+  color: var(--lx-primary-accent);
+}
+
+.odoo-tab-nav-btn.active {
+  color: var(--lx-primary-accent);
+  border-bottom-color: var(--lx-primary-accent);
+}
+
+/* Sub-Cards for Client & Guarantors */
+.odoo-sub-card {
+  background-color: var(--lx-bg-subtle);
+  border: 1px solid var(--lx-border-subtle);
+  border-radius: var(--lx-radius-md);
+  transition: background-color var(--lx-transition-base), border-color var(--lx-transition-base);
+}
+
+.odoo-guarantor-avatar {
+  width: 28px;
+  height: 28px;
+  border-radius: 50%;
+  background: var(--lx-primary-accent-subtle);
+  color: var(--lx-primary-accent);
+  font-family: var(--lx-font-titles);
+  font-weight: 700;
+  font-size: 0.8rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border: 1px solid var(--lx-primary-accent);
+}
+
+/* Payments Table */
+.odoo-table-wrapper {
+  background-color: var(--lx-bg-card);
+  border: 1px solid var(--lx-border-subtle);
+  border-radius: var(--lx-radius-md);
+}
+
+.odoo-empty-state {
+  color: var(--lx-text-secondary);
+}
+
+.text-gold {
+  color: var(--lx-primary-accent) !important;
+}
+
+/* Responsive adjustments */
+@media (max-width: 768px) {
+  .odoo-form-sheet {
+    padding: 1.25rem;
   }
-  
+  .odoo-loan-avatar {
+    width: 52px;
+    height: 52px;
+    font-size: 1.3rem;
+  }
+  .odoo-field-row {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+  .odoo-field-value {
+    text-align: left;
+    margin-top: 0.15rem;
+  }
+  .odoo-smart-buttons {
+    width: 100%;
+  }
+  .odoo-stat-btn {
+    flex: 1;
+    min-width: 130px;
+  }
+}

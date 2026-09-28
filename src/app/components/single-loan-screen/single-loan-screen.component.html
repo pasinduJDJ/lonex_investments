@@ -1,159 +1,447 @@
-<div class="single-loan-container container my-5">
-  <div class="row justify-content-center">
-    <div class="col-md-10 col-lg-8">
-      <ng-container *ngIf="loan$ | async as loan; else loadingOrNotFound">
-        <div class="loan-card p-4 bg-white">
-          <h4 class="text-black mb-3 fw-bold">Loan Details ( {{ loan.loan_number }} )</h4>
-          <hr class="mb-4" />
-
-          <div *ngIf="installmentStats" class="loan-info mb-4">
-            <p>
-              <strong>Client Name:</strong> {{ loan.client.first_name }}
-              {{ loan.client.last_name }}
-            </p>
-            <p>
-              <strong>Client Address:</strong>
-              {{ loan.client.home_number || "" }}
-              {{ loan.client.street_address || "" }}
-              {{ loan.client.town_one || "" }} {{ loan.client.town_two || ""
-              }}<span *ngIf="loan.client.group">
-                | {{ loan.client.group }}</span
+<div class="lx-loan-view-container">
+  
+  <ng-container *ngIf="loan$ | async as loan; else loadingOrNotFound">
+    
+    <!-- Top Control & Action Bar (Odoo Sub-Header) -->
+    <div class="odoo-control-panel py-2 mb-3">
+      <div class="container-fluid px-3 px-md-4">
+        <div class="d-flex flex-wrap justify-content-between align-items-center gap-3">
+          
+          <!-- Left: Actions & Breadcrumbs -->
+          <div class="d-flex align-items-center gap-3 flex-wrap">
+            <!-- Action Buttons -->
+            <div class="odoo-action-buttons d-flex align-items-center gap-2">
+              <button 
+                *ngIf="loan.status === 'active'"
+                type="button" 
+                class="btn btn-lx-primary btn-sm" 
+                (click)="showCompleteConfirm = true"
               >
-            </p>
+                <i class="bi bi-check-circle me-1"></i>
+                <span>Complete Loan</span>
+              </button>
 
-            <p>
-              <strong>Loan Register Number:</strong> {{ loan.loan_reg_number }}
-            </p>
-            <p><strong>Loan Type:</strong> {{ loan.loan_type | titlecase }}</p>
-            <p><strong>Status:</strong> {{ loan.status | titlecase }}</p>
+              <button 
+                type="button" 
+                class="btn btn-lx-secondary btn-sm" 
+                (click)="getDocx(loan, installmentStats)"
+              >
+                <i class="bi bi-file-earmark-word me-1"></i>
+                <span>Download DOCX</span>
+              </button>
 
-            <hr />
+              <button 
+                type="button" 
+                class="btn btn-lx-secondary btn-sm" 
+                (click)="getPrint(loan, installmentStats)"
+              >
+                <i class="bi bi-printer me-1"></i>
+                <span>Print PDF</span>
+              </button>
+            </div>
 
-            <p><strong>Loan Amount:</strong> {{ loan.principal_amount }}</p>
-            <p><strong>Document Charges:</strong> {{ loan.document_charge || 0 }}</p>
-            <p><strong>Interest Rate:</strong> {{ loan.interest_rate }}%</p>
-            <p><strong>Total Due:</strong> {{ loan.total_amount_due }}</p>
-            <p>
-              <strong>Per Installment Amount:</strong>
-              {{ installmentStats.installmentAmount }}
-            </p>
-            <p><strong>Total Paid:</strong> {{ loan.total_paid }}</p>
-            <p>
-              <strong>Remaining Amount:</strong> {{ loan.remaining_amount }}
-            </p>
-
-            <hr />
-
-            <h6 class="fw-bold text-dark">Installment Stats</h6>
-            <p>
-              <strong>Expected Installments:</strong>
-              {{ installmentStats.expected }}
-            </p>
-            <p>
-              <strong>Paid Installments:</strong> {{ installmentStats.paid }}
-            </p>
-            <p>
-              <strong>Remaining Installments:</strong>
-              {{ installmentStats.remaining }}
-            </p>
-
-            <p>
-              <strong>Total Paid (for Installments):</strong>
-              {{ installmentStats.totalPaid }}
-            </p>
-
-            <hr />
-
-            <p><strong>Start Date:</strong> {{ loan.start_date }}</p>
-            <p><strong>End Date:</strong> {{ loan.end_date }}</p>
-            <p><strong>Created Date:</strong> {{ loan.created_at }}</p>
+            <!-- Breadcrumb Context -->
+            <div class="odoo-breadcrumb-trail d-none d-sm-flex align-items-center">
+              <a routerLink="/loan" class="odoo-crumb-link">Loans</a>
+              <span class="odoo-crumb-sep">/</span>
+              <span class="odoo-crumb-current">Loan {{ loan.loan_number }}</span>
+            </div>
           </div>
 
-          <!-- Payment Details Section -->
-          <div class="payment-details mt-2">
-            <h6 class="fw-bold text-dark ">Payment History</h6>
-            <ng-container *ngIf="payments$ | async as payments">
-              <div *ngIf="payments.length > 0; else noPayments">
-                <div class="table-responsive">
-                  <table class="table table-striped table-hover">
-                    <thead class="table-dark">
-                      <tr>
-                        <th>Payment Date</th>
-                        <th>Amount Paid</th>
-                        <th>Remark</th>
-                        <th>Created Date</th>
-                      </tr>
-                    </thead>
-                    <tbody>
-                      <tr *ngFor="let payment of payments">
-                        <td>{{ payment.paid_date | date:'mediumDate' }}</td>
-                        <td class="fw-bold text-success">{{ payment.paid_amount | number:'1.0-0' }}</td>
-                        <td>{{ payment.remark || '-' }}</td>
-                        <td>{{ payment.created_at | date:'mediumDate' }}</td>
-                      </tr>
-                    </tbody>
-                  </table>
+          <!-- Right: Odoo Smart Stat Buttons -->
+          <div class="odoo-smart-buttons d-flex align-items-center gap-2">
+            <button 
+              type="button" 
+              class="odoo-stat-btn"
+              title="Total Due Amount"
+            >
+              <div class="odoo-stat-icon">
+                <i class="bi bi-cash-stack text-gold"></i>
+              </div>
+              <div class="odoo-stat-info">
+                <span class="odoo-stat-value text-truncate" style="max-width: 90px;">
+                  Rs. {{ loan.total_amount_due | number }}
+                </span>
+                <span class="odoo-stat-label">Total Due</span>
+              </div>
+            </button>
+
+            <button 
+              type="button" 
+              class="odoo-stat-btn"
+              title="Total Paid to Date"
+            >
+              <div class="odoo-stat-icon">
+                <i class="bi bi-check2-circle text-success"></i>
+              </div>
+              <div class="odoo-stat-info">
+                <span class="odoo-stat-value text-truncate" style="max-width: 90px;">
+                  Rs. {{ loan.total_paid | number }}
+                </span>
+                <span class="odoo-stat-label">Total Paid</span>
+              </div>
+            </button>
+
+            <button 
+              type="button" 
+              class="odoo-stat-btn"
+              title="Remaining Balance"
+            >
+              <div class="odoo-stat-icon">
+                <i class="bi bi-hourglass-split text-danger"></i>
+              </div>
+              <div class="odoo-stat-info">
+                <span class="odoo-stat-value text-truncate" style="max-width: 90px;">
+                  Rs. {{ loan.remaining_amount | number }}
+                </span>
+                <span class="odoo-stat-label">Remaining</span>
+              </div>
+            </button>
+
+            <button 
+              *ngIf="installmentStats"
+              type="button" 
+              class="odoo-stat-btn"
+              (click)="setActiveTab('payments')"
+              title="Installment Progress"
+            >
+              <div class="odoo-stat-icon">
+                <i class="bi bi-calendar-check text-gold"></i>
+              </div>
+              <div class="odoo-stat-info">
+                <span class="odoo-stat-value">
+                  {{ installmentStats.paid }} / {{ installmentStats.expected }}
+                </span>
+                <span class="odoo-stat-label">Installments</span>
+              </div>
+            </button>
+          </div>
+
+        </div>
+      </div>
+    </div>
+
+    <!-- Alert / Confirmation Dialogs -->
+    <div class="container-fluid px-3 px-md-4" *ngIf="showCompleteConfirm || showSuccessMsg">
+      <div class="row justify-content-center">
+        <div class="col-12 col-xl-10">
+          
+          <div *ngIf="showCompleteConfirm" class="odoo-alert-confirm mb-3 p-3">
+            <div class="d-flex justify-content-between align-items-center flex-wrap gap-2">
+              <div class="d-flex align-items-center gap-2">
+                <i class="bi bi-question-circle-fill text-warning fs-5"></i>
+                <span class="fw-semibold">Are you sure you want to complete and close this loan?</span>
+              </div>
+              <div class="d-flex gap-2">
+                <button class="btn btn-sm btn-danger px-3" (click)="completeLoan(loan)">
+                  Yes, Complete Loan
+                </button>
+                <button class="btn btn-sm btn-secondary px-3" (click)="showCompleteConfirm = false">
+                  Cancel
+                </button>
+              </div>
+            </div>
+          </div>
+
+          <div *ngIf="showSuccessMsg" class="alert alert-success alert-dismissible fade show mb-3" role="alert">
+            <i class="bi bi-check-circle-fill me-2"></i>
+            <span>Loan status updated to Closed successfully!</span>
+            <button type="button" class="btn-close" (click)="showSuccessMsg = false"></button>
+          </div>
+
+        </div>
+      </div>
+    </div>
+
+    <!-- Main Odoo Form Sheet Canvas -->
+    <div class="container-fluid px-3 px-md-4">
+      <div class="row justify-content-center">
+        <div class="col-12 col-xl-10">
+          
+          <div class="odoo-form-sheet shadow-sm">
+            
+            <!-- Sheet Header: Avatar & Main Title -->
+            <div class="odoo-sheet-header d-flex align-items-start gap-3 flex-wrap">
+              <!-- Loan Badge Squircle -->
+              <div class="odoo-loan-avatar">
+                <i class="bi bi-cash-coin"></i>
+              </div>
+
+              <!-- Loan Identity -->
+              <div class="flex-grow-1">
+                <div class="d-flex align-items-center gap-2 mb-1 flex-wrap">
+                  <span class="badge" [ngClass]="loan.status === 'active' ? 'badge-success' : 'badge-secondary'" style="font-size: 0.75rem;">
+                    <i class="bi bi-circle-fill me-1" style="font-size: 0.5rem;"></i>
+                    {{ loan.status === 'active' ? 'Active Loan' : 'Closed Loan' }}
+                  </span>
+                  <span class="badge badge-gold" style="font-size: 0.75rem;">
+                    {{ loan.loan_type | titlecase }} Schedule
+                  </span>
+                  <span class="badge badge-secondary" style="font-size: 0.75rem;">
+                    Reg #{{ loan.loan_reg_number || loan.loan_number }}
+                  </span>
                 </div>
-                <div class="mt-3">
-                  <p class="text-muted">
-                    <strong>Total Payments:</strong> {{ payments.length }} payment(s)
-                  </p>
+
+                <h1 class="odoo-loan-title mb-1">
+                  Loan {{ loan.loan_number }}
+                </h1>
+
+                <!-- Linked Client Pill -->
+                <div class="odoo-client-link-wrapper mt-2">
+                  <a 
+                    *ngIf="loan.client" 
+                    [routerLink]="['/single-member', loan.client.register_number]" 
+                    class="odoo-client-pill"
+                    title="View Customer Profile"
+                  >
+                    <i class="bi bi-person-fill text-gold me-1"></i>
+                    <span class="fw-semibold">{{ loan.client.first_name }} {{ loan.client.last_name }}</span>
+                    <span class="text-muted ms-1">· NIC: {{ loan.client.nic_number }}</span>
+                    <i class="bi bi-box-arrow-up-right ms-2 small opacity-75"></i>
+                  </a>
                 </div>
               </div>
-              <ng-template #noPayments>
-                <div class="alert alert-info">
-                  <i class="bi bi-info-circle me-2"></i>
-                  No payment records found for this loan.
+            </div>
+
+            <!-- Installment Progress Bar -->
+            <div *ngIf="installmentStats" class="odoo-progress-bar-card my-4 p-3 border rounded">
+              <div class="d-flex justify-content-between align-items-center mb-1">
+                <span class="fw-semibold small" style="color: var(--lx-text-primary);">
+                  <i class="bi bi-pie-chart-fill text-gold me-1"></i>Repayment Progress
+                </span>
+                <span class="small text-muted">
+                  {{ installmentStats.paid }} of {{ installmentStats.expected }} installments paid
+                </span>
+              </div>
+              <div class="progress" style="height: 8px; background-color: var(--lx-bg-subtle);">
+                <div 
+                  class="progress-bar" 
+                  role="progressbar" 
+                  [style.width.%]="installmentStats.expected > 0 ? (installmentStats.paid / installmentStats.expected) * 100 : 0"
+                  style="background-color: var(--lx-primary-accent);"
+                  [attr.aria-valuenow]="installmentStats.paid" 
+                  aria-valuemin="0" 
+                  [attr.aria-valuemax]="installmentStats.expected"
+                ></div>
+              </div>
+            </div>
+
+            <!-- Sheet Body: 2-Column Financial Grid -->
+            <div class="odoo-sheet-grid row g-4 my-2 pt-2 border-top">
+              
+              <!-- Left Column: Financial Terms -->
+              <div class="col-12 col-md-6">
+                <h4 class="odoo-group-title">
+                  <i class="bi bi-calculator me-1 text-gold"></i>
+                  <span>Financial Breakdown</span>
+                </h4>
+
+                <div class="odoo-field-group">
+                  <div class="odoo-field-row">
+                    <span class="odoo-field-label">Principal Amount:</span>
+                    <span class="odoo-field-value text-gold">Rs. {{ loan.principal_amount | number }}</span>
+                  </div>
+
+                  <div class="odoo-field-row">
+                    <span class="odoo-field-label">Interest Rate:</span>
+                    <span class="odoo-field-value">{{ loan.interest_rate }}%</span>
+                  </div>
+
+                  <div class="odoo-field-row">
+                    <span class="odoo-field-label">Document Charges:</span>
+                    <span class="odoo-field-value">Rs. {{ loan.document_charge || 0 | number }}</span>
+                  </div>
+
+                  <div class="odoo-field-row">
+                    <span class="odoo-field-label">Total Amount Due:</span>
+                    <span class="odoo-field-value fw-bold">Rs. {{ loan.total_amount_due | number }}</span>
+                  </div>
+
+                  <div class="odoo-field-row" *ngIf="installmentStats">
+                    <span class="odoo-field-label">Per Installment Amount:</span>
+                    <span class="odoo-field-value">Rs. {{ installmentStats.installmentAmount | number }}</span>
+                  </div>
                 </div>
-              </ng-template>
-            </ng-container>
+              </div>
+
+              <!-- Right Column: Schedule & Dates -->
+              <div class="col-12 col-md-6">
+                <h4 class="odoo-group-title">
+                  <i class="bi bi-calendar-range me-1 text-gold"></i>
+                  <span>Schedule & Terms</span>
+                </h4>
+
+                <div class="odoo-field-group">
+                  <div class="odoo-field-row">
+                    <span class="odoo-field-label">Schedule Frequency:</span>
+                    <span class="odoo-field-value">{{ loan.loan_type | titlecase }}</span>
+                  </div>
+
+                  <div class="odoo-field-row" *ngIf="installmentStats">
+                    <span class="odoo-field-label">Expected Installments:</span>
+                    <span class="odoo-field-value">{{ installmentStats.expected }} installments</span>
+                  </div>
+
+                  <div class="odoo-field-row">
+                    <span class="odoo-field-label">Start Date:</span>
+                    <span class="odoo-field-value">{{ loan.start_date }}</span>
+                  </div>
+
+                  <div class="odoo-field-row">
+                    <span class="odoo-field-label">End Date:</span>
+                    <span class="odoo-field-value">{{ loan.end_date }}</span>
+                  </div>
+
+                  <div class="odoo-field-row">
+                    <span class="odoo-field-label">Created Date:</span>
+                    <span class="odoo-field-value">{{ loan.created_at | date:'mediumDate' }}</span>
+                  </div>
+                </div>
+              </div>
+
+            </div>
+
+            <!-- Notebook Tabs: Payment History & Client Snapshot -->
+            <div class="odoo-notebook mt-4">
+              
+              <!-- Tab Headers -->
+              <div class="odoo-tabs-header border-bottom">
+                <button 
+                  type="button" 
+                  class="odoo-tab-nav-btn" 
+                  [class.active]="activeTab === 'payments'"
+                  (click)="setActiveTab('payments')"
+                >
+                  <i class="bi bi-receipt me-1"></i>
+                  <span>Payment History</span>
+                </button>
+
+                <button 
+                  type="button" 
+                  class="odoo-tab-nav-btn" 
+                  [class.active]="activeTab === 'client'"
+                  (click)="setActiveTab('client')"
+                >
+                  <i class="bi bi-people me-1"></i>
+                  <span>Customer & Guarantors</span>
+                </button>
+              </div>
+
+              <!-- Tab 1: Payments Content -->
+              <div class="odoo-tab-pane py-3" *ngIf="activeTab === 'payments'">
+                <ng-container *ngIf="payments$ | async as payments">
+                  <div *ngIf="payments.length > 0; else noPayments">
+                    <div class="table-responsive odoo-table-wrapper">
+                      <table class="table lx-table mb-0">
+                        <thead>
+                          <tr>
+                            <th>Payment Date</th>
+                            <th>Amount Paid</th>
+                            <th>Remark</th>
+                            <th>Recorded On</th>
+                          </tr>
+                        </thead>
+                        <tbody>
+                          <tr *ngFor="let payment of payments">
+                            <td class="fw-semibold">
+                              <i class="bi bi-calendar3 me-1 text-gold"></i>
+                              {{ payment.paid_date | date:'mediumDate' }}
+                            </td>
+                            <td class="text-success fw-bold">Rs. {{ payment.paid_amount | number }}</td>
+                            <td>{{ payment.remark || '-' }}</td>
+                            <td class="text-muted">{{ payment.created_at | date:'mediumDate' }}</td>
+                          </tr>
+                        </tbody>
+                      </table>
+                    </div>
+                    <div class="d-flex justify-content-between align-items-center mt-2 px-1 text-muted small">
+                      <span>Total {{ payments.length }} payment transaction(s)</span>
+                      <span>Total Paid: <strong class="text-success">Rs. {{ loan.total_paid | number }}</strong></span>
+                    </div>
+                  </div>
+
+                  <ng-template #noPayments>
+                    <div class="odoo-empty-state text-center py-4">
+                      <i class="bi bi-wallet2 text-muted mb-2" style="font-size: 2rem;"></i>
+                      <p class="mb-2 fw-semibold text-muted">No payments recorded for this loan yet.</p>
+                      <a routerLink="/add-payments" class="btn btn-lx-primary btn-sm">
+                        <i class="bi bi-cash-stack me-1"></i>Record First Payment
+                      </a>
+                    </div>
+                  </ng-template>
+                </ng-container>
+              </div>
+
+              <!-- Tab 2: Client & Guarantors Snapshot -->
+              <div class="odoo-tab-pane py-3" *ngIf="activeTab === 'client' && loan.client">
+                <div class="row g-3">
+                  
+                  <!-- Client Card -->
+                  <div class="col-12 col-md-4">
+                    <div class="odoo-sub-card p-3 h-100">
+                      <div class="d-flex align-items-center gap-2 mb-2 pb-2 border-bottom">
+                        <i class="bi bi-person-circle text-gold fs-5"></i>
+                        <h6 class="mb-0 fw-bold" style="color: var(--lx-text-primary);">Primary Customer</h6>
+                      </div>
+                      <div class="small" style="line-height: 1.6;">
+                        <p class="mb-1"><strong>Name:</strong> {{ loan.client.first_name }} {{ loan.client.last_name }}</p>
+                        <p class="mb-1"><strong>NIC:</strong> {{ loan.client.nic_number }}</p>
+                        <p class="mb-1"><strong>Phone:</strong> {{ loan.client.mobile_number || '-' }}</p>
+                        <p class="mb-0"><strong>Address:</strong> {{ loan.client.home_number || '' }} {{ loan.client.street_address || '' }} {{ loan.client.town_one || '' }}</p>
+                      </div>
+                    </div>
+                  </div>
+
+                  <!-- 1st Guarantor -->
+                  <div class="col-12 col-md-4">
+                    <div class="odoo-sub-card p-3 h-100">
+                      <div class="d-flex align-items-center gap-2 mb-2 pb-2 border-bottom">
+                        <span class="odoo-guarantor-avatar">1</span>
+                        <h6 class="mb-0 fw-bold" style="color: var(--lx-text-primary);">First Guarantor</h6>
+                      </div>
+                      <div class="small" style="line-height: 1.6;">
+                        <p class="mb-1"><strong>Name:</strong> {{ loan.client.first_guarantor_name || 'N/A' }}</p>
+                        <p class="mb-1"><strong>NIC:</strong> {{ loan.client.first_guarantor_nic || 'N/A' }}</p>
+                        <p class="mb-1"><strong>Phone:</strong> {{ loan.client.first_guarantor_tp || 'N/A' }}</p>
+                        <p class="mb-0"><strong>Address:</strong> {{ loan.client.first_guarantor_address || 'N/A' }}</p>
+                      </div>
+                    </div>
+                  </div>
+
+                  <!-- 2nd Guarantor -->
+                  <div class="col-12 col-md-4">
+                    <div class="odoo-sub-card p-3 h-100">
+                      <div class="d-flex align-items-center gap-2 mb-2 pb-2 border-bottom">
+                        <span class="odoo-guarantor-avatar">2</span>
+                        <h6 class="mb-0 fw-bold" style="color: var(--lx-text-primary);">Second Guarantor</h6>
+                      </div>
+                      <div class="small" style="line-height: 1.6;">
+                        <p class="mb-1"><strong>Name:</strong> {{ loan.client.second_guarantor_name || 'N/A' }}</p>
+                        <p class="mb-1"><strong>NIC:</strong> {{ loan.client.second_guarantor_nic || 'N/A' }}</p>
+                        <p class="mb-1"><strong>Phone:</strong> {{ loan.client.second_guarantor_tp || 'N/A' }}</p>
+                        <p class="mb-0"><strong>Address:</strong> {{ loan.client.second_guarantor_address || 'N/A' }}</p>
+                      </div>
+                    </div>
+                  </div>
+
+                </div>
+              </div>
+
+            </div>
+
           </div>
 
-          <!-- Action Buttons -->
-          <div class="d-flex flex-wrap gap-3 justify-content-center mt-4">
-            <button
-              type="button"
-              class="btn btn-success px-4"
-              (click)="showCompleteConfirm = true"
-            >
-              Complete Loan
-            </button>
-            <button type="button" class="btn btn-primary px-4" (click)="getDocx(loan, installmentStats)">
-              Download DOCX
-            </button>
-            
-          </div>
-
-          <!-- Confirmation -->
-          <div
-            *ngIf="showCompleteConfirm"
-            class="confirmation-box mt-4 p-4 rounded text-center"
-          >
-            <p class="mb-3">Are you sure you want to complete this loan?</p>
-            <button class="btn btn-danger me-2" (click)="completeLoan(loan)">
-              Yes, Complete
-            </button>
-            <button
-              class="btn btn-secondary"
-              (click)="showCompleteConfirm = false"
-            >
-              Cancel
-            </button>
-          </div>
-
-          <!-- Success Message -->
-          <div *ngIf="showSuccessMsg" class="alert alert-success mt-4">
-            Loan marked as completed!
-          </div>
         </div>
-      </ng-container>
-
-      <ng-template #loadingOrNotFound>
-        <div class="text-center text-muted my-5">
-          Loading...<br />
-          <span *ngIf="(loan$ | async) === undefined">Loan not found.</span>
-        </div>
-      </ng-template>
+      </div>
     </div>
-  </div>
+
+  </ng-container>
+
+  <ng-template #loadingOrNotFound>
+    <div class="text-center text-muted my-5 py-5">
+      <div class="spinner-border text-warning mb-3" role="status"></div>
+      <p>Loading loan details...</p>
+    </div>
+  </ng-template>
+
 </div>

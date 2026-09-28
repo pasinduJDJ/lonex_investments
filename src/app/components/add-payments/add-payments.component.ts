@@ -1,7 +1,7 @@
 import { Component } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
-import { Router } from '@angular/router';
+import { Router, RouterModule } from '@angular/router';
 import { LoanManageService, LoanWithClient, Payment } from '../../service/loan-manage.service';
 import { SupabaseService } from '../../service/supabase.service';
 import { ProfitManageService } from '../../service/profit-manage.service';
@@ -9,7 +9,7 @@ import { ProfitManageService } from '../../service/profit-manage.service';
 @Component({
   selector: 'app-add-payments',
   standalone: true,
-  imports: [CommonModule, FormsModule],
+  imports: [CommonModule, FormsModule, RouterModule],
   templateUrl: './add-payments.component.html',
   styleUrl: './add-payments.component.css'
 })
@@ -239,6 +239,17 @@ export class AddPaymentsComponent {
     return regNumber.toString().padStart(6, '0');
   }
 
-  // Remove any getters or code that reference number_of_installments or custom installment calculation.
-  // Only use installmentStats for displaying installment information in the template.
+  get clientInitials(): string {
+    if (!this.foundLoan || !this.foundLoan.client) return 'LX';
+    const first = (this.foundLoan.client.first_name || '').trim()[0] || '';
+    const last = (this.foundLoan.client.last_name || '').trim()[0] || '';
+    return (first + last).toUpperCase() || 'LX';
+  }
+
+  setPaidAmount(amount: number): void {
+    if (this.foundLoan && this.foundLoan.status !== 'closed') {
+      const max = this.foundLoan.remaining_amount;
+      this.paidAmount = Math.min(amount, max);
+    }
+  }
 }
