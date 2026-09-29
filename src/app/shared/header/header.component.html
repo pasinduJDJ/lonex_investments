@@ -156,5 +156,19 @@
 
     </div>
 
+  </div> <!-- Close lx-header-inner -->
+
+  <!-- Mobile Sub-Nav Strip (Directly Below Main Header Row) -->
+  <div *ngIf="activeModuleTabs.length > 0 && !isHome" class="lx-mobile-subnav d-flex d-sm-none align-items-center">
+    <div class="lx-mobile-subnav-scroll d-flex align-items-center gap-2">
+      <a *ngFor="let tab of activeModuleTabs" 
+         [routerLink]="tab.url"
+         class="lx-mobile-subnav-btn"
+         [class.active]="isTabActive(tab.url)"
+      >
+        <span>{{ tab.label }}</span>
+      </a>
+    </div>
   </div>
+
 </header>

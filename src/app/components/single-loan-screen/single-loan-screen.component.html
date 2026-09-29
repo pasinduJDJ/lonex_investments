@@ -5,16 +5,16 @@
     <!-- Top Control & Action Bar (Odoo Sub-Header) -->
     <div class="odoo-control-panel py-2 mb-3">
       <div class="container-fluid px-3 px-md-4">
-        <div class="d-flex flex-wrap justify-content-between align-items-center gap-3">
+        <div class="odoo-control-inner">
           
           <!-- Left: Actions & Breadcrumbs -->
-          <div class="d-flex align-items-center gap-3 flex-wrap">
+          <div class="odoo-left-controls">
             <!-- Action Buttons -->
-            <div class="odoo-action-buttons d-flex align-items-center gap-2">
+            <div class="odoo-action-buttons">
               <button 
                 *ngIf="loan.status === 'active'"
                 type="button" 
-                class="btn btn-lx-primary btn-sm" 
+                class="btn btn-lx-primary btn-sm odoo-complete-btn" 
                 (click)="showCompleteConfirm = true"
               >
                 <i class="bi bi-check-circle me-1"></i>
@@ -23,25 +23,16 @@
 
               <button 
                 type="button" 
-                class="btn btn-lx-secondary btn-sm" 
+                class="btn btn-lx-secondary btn-sm odoo-docx-btn" 
                 (click)="getDocx(loan, installmentStats)"
               >
                 <i class="bi bi-file-earmark-word me-1"></i>
-                <span>Download DOCX</span>
-              </button>
-
-              <button 
-                type="button" 
-                class="btn btn-lx-secondary btn-sm" 
-                (click)="getPrint(loan, installmentStats)"
-              >
-                <i class="bi bi-printer me-1"></i>
-                <span>Print PDF</span>
+                <span>DOCX</span>
               </button>
             </div>
 
             <!-- Breadcrumb Context -->
-            <div class="odoo-breadcrumb-trail d-none d-sm-flex align-items-center">
+            <div class="odoo-breadcrumb-trail d-none d-md-flex align-items-center">
               <a routerLink="/loan" class="odoo-crumb-link">Loans</a>
               <span class="odoo-crumb-sep">/</span>
               <span class="odoo-crumb-current">Loan {{ loan.loan_number }}</span>
@@ -49,14 +40,14 @@
           </div>
 
           <!-- Right: Odoo Smart Stat Buttons -->
-          <div class="odoo-smart-buttons d-flex align-items-center gap-2">
+          <div class="odoo-smart-buttons">
             <button 
               type="button" 
               class="odoo-stat-btn"
               title="Total Due Amount"
             >
-              <div class="odoo-stat-icon">
-                <i class="bi bi-cash-stack text-gold"></i>
+              <div class="odoo-stat-icon-badge badge-amber">
+                <i class="bi bi-cash-stack"></i>
               </div>
               <div class="odoo-stat-info">
                 <span class="odoo-stat-value text-truncate" style="max-width: 90px;">
@@ -71,8 +62,8 @@
               class="odoo-stat-btn"
               title="Total Paid to Date"
             >
-              <div class="odoo-stat-icon">
-                <i class="bi bi-check2-circle text-success"></i>
+              <div class="odoo-stat-icon-badge badge-emerald">
+                <i class="bi bi-check2-circle"></i>
               </div>
               <div class="odoo-stat-info">
                 <span class="odoo-stat-value text-truncate" style="max-width: 90px;">
@@ -87,8 +78,8 @@
               class="odoo-stat-btn"
               title="Remaining Balance"
             >
-              <div class="odoo-stat-icon">
-                <i class="bi bi-hourglass-split text-danger"></i>
+              <div class="odoo-stat-icon-badge badge-rose">
+                <i class="bi bi-hourglass-split"></i>
               </div>
               <div class="odoo-stat-info">
                 <span class="odoo-stat-value text-truncate" style="max-width: 90px;">
@@ -105,8 +96,8 @@
               (click)="setActiveTab('payments')"
               title="Installment Progress"
             >
-              <div class="odoo-stat-icon">
-                <i class="bi bi-calendar-check text-gold"></i>
+              <div class="odoo-stat-icon-badge badge-blue">
+                <i class="bi bi-calendar-check"></i>
               </div>
               <div class="odoo-stat-info">
                 <span class="odoo-stat-value">

@@ -6,20 +6,20 @@
       <!-- Top Control & Action Bar (Odoo Sub-Header) -->
       <div class="odoo-control-panel py-2 mb-3">
         <div class="container-fluid px-3 px-md-4">
-          <div class="d-flex flex-wrap justify-content-between align-items-center gap-3">
+          <div class="odoo-control-inner">
             
             <!-- Left: Actions & Breadcrumbs -->
-            <div class="d-flex align-items-center gap-3 flex-wrap">
+            <div class="odoo-left-controls">
               <!-- Action Buttons -->
-              <div class="odoo-action-buttons d-flex align-items-center gap-2">
+              <div class="odoo-action-buttons">
                 <button 
                   *ngIf="!isEditing" 
                   type="button" 
-                  class="btn btn-lx-primary btn-sm" 
+                  class="btn btn-lx-primary btn-sm odoo-edit-btn" 
                   (click)="enableEdit()"
                 >
                   <i class="bi bi-pencil-square me-1"></i>
-                  <span>Edit</span>
+                  <span>Edit Profile</span>
                 </button>
 
                 <button 
@@ -31,7 +31,7 @@
                 >
                   <span *ngIf="isSaving" class="spinner-border spinner-border-sm me-1" role="status"></span>
                   <i *ngIf="!isSaving" class="bi bi-check2 me-1"></i>
-                  <span>{{ isSaving ? 'Saving...' : 'Save' }}</span>
+                  <span>{{ isSaving ? 'Saving...' : 'Save Changes' }}</span>
                 </button>
 
                 <button 
@@ -46,7 +46,7 @@
               </div>
 
               <!-- Breadcrumb Context -->
-              <div class="odoo-breadcrumb-trail d-none d-sm-flex align-items-center">
+              <div class="odoo-breadcrumb-trail d-none d-md-flex align-items-center">
                 <a routerLink="/member" class="odoo-crumb-link">Customers</a>
                 <span class="odoo-crumb-sep">/</span>
                 <span class="odoo-crumb-current">{{ client.first_name }} {{ client.last_name }}</span>
@@ -54,16 +54,16 @@
             </div>
 
             <!-- Right: Odoo Smart Stat Buttons -->
-            <div class="odoo-smart-buttons d-flex align-items-center gap-2">
+            <div class="odoo-smart-buttons">
               <button 
                 type="button" 
-                class="odoo-stat-btn" 
+                class="odoo-stat-btn odoo-stat-loans" 
                 (click)="setActiveTab('loans')"
                 [class.active]="activeTab === 'loans'"
                 title="View Customer Loans"
               >
-                <div class="odoo-stat-icon">
-                  <i class="bi bi-cash-coin"></i>
+                <div class="odoo-stat-icon-badge badge-blue">
+                  <i class="bi bi-wallet2"></i>
                 </div>
                 <div class="odoo-stat-info">
                   <span class="odoo-stat-value">{{ loans.length }}</span>
@@ -73,15 +73,15 @@
 
               <button 
                 type="button" 
-                class="odoo-stat-btn"
+                class="odoo-stat-btn odoo-stat-remaining"
                 (click)="setActiveTab('loans')"
                 title="Total Remaining Due"
               >
-                <div class="odoo-stat-icon">
-                  <i class="bi bi-hourglass-split text-warning"></i>
+                <div class="odoo-stat-icon-badge badge-amber">
+                  <i class="bi bi-hourglass-split"></i>
                 </div>
                 <div class="odoo-stat-info">
-                  <span class="odoo-stat-value text-truncate" style="max-width: 90px;">
+                  <span class="odoo-stat-value">
                     {{ getTotalRemainingDebt(loans) | number }}
                   </span>
                   <span class="odoo-stat-label">Remaining</span>
@@ -90,13 +90,13 @@
 
               <button 
                 type="button" 
-                class="odoo-stat-btn" 
+                class="odoo-stat-btn odoo-stat-guarantors" 
                 (click)="setActiveTab('guarantors')"
                 [class.active]="activeTab === 'guarantors'"
                 title="Guarantors"
               >
-                <div class="odoo-stat-icon">
-                  <i class="bi bi-shield-check text-success"></i>
+                <div class="odoo-stat-icon-badge badge-emerald">
+                  <i class="bi bi-shield-check"></i>
                 </div>
                 <div class="odoo-stat-info">
                   <span class="odoo-stat-value">2</span>
@@ -125,30 +125,24 @@
 
                 <!-- Customer Identity -->
                 <div class="flex-grow-1">
-                  <div class="d-flex align-items-center gap-2 mb-1 flex-wrap">
-                    <span class="badge badge-secondary" style="font-size: 0.75rem;">
-                      <i class="bi bi-person-fill me-1"></i>Individual Customer
-                    </span>
-                    <span class="badge badge-gold" style="font-size: 0.75rem;">
-                      Member #{{ client.register_number || 'N/A' }}
-                    </span>
-                    <span *ngIf="client.is_member" class="badge badge-success" style="font-size: 0.75rem;">
-                      <i class="bi bi-check-circle-fill me-1"></i>Active Member
-                    </span>
-                  </div>
-
-                  <h1 class="odoo-customer-title mb-1">
+                  <h1 class="odoo-customer-title mb-2">
                     {{ client.first_name }} {{ client.last_name }}
                   </h1>
 
-                  <div class="odoo-quick-meta d-flex flex-wrap align-items-center gap-3 mt-2">
+                  <div class="odoo-quick-meta d-flex flex-wrap align-items-center gap-2 mt-2">
                     <span class="odoo-meta-pill" *ngIf="client.mobile_number">
                       <i class="bi bi-telephone text-gold me-1"></i>
                       <span>{{ client.mobile_number }}</span>
                     </span>
+
                     <span class="odoo-meta-pill" *ngIf="client.nic_number">
                       <i class="bi bi-person-vcard text-gold me-1"></i>
                       <span>NIC: {{ client.nic_number }}</span>
+                    </span>
+
+                    <span class="odoo-meta-pill odoo-member-id-pill" *ngIf="client.register_number">
+                      <i class="bi bi-person-badge text-gold me-1"></i>
+                      <span>Member ID: #{{ client.register_number }}</span>
                     </span>
                   </div>
                 </div>

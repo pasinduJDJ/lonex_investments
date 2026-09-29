@@ -5,17 +5,17 @@
 .odoo-launcher-canvas {
   min-height: calc(100vh - 120px);
   display: flex;
-  align-items: center;
+  align-items: flex-start;
   justify-content: center;
-  padding: 3rem 1.5rem;
+  padding: 4.5rem 1.5rem 3rem 1.5rem;
 }
 
-/* Centered Horizontal Grid */
+/* Horizontal & Responsive Grid */
 .odoo-apps-grid {
   display: flex;
   flex-wrap: wrap;
   justify-content: center;
-  align-items: center;
+  align-items: flex-start;
   gap: 3rem;
   max-width: 900px;
   animation: fadeInApps 0.4s cubic-bezier(0.16, 1, 0.3, 1);
@@ -116,10 +116,13 @@
   }
 }
 
-/* Responsive Grid Rules */
+/* Responsive Grid Rules for Mobile */
 @media (max-width: 768px) {
+  .odoo-launcher-canvas {
+    padding: 3.75rem 1.25rem 2.5rem 1.25rem;
+  }
   .odoo-apps-grid {
-    gap: 2.25rem 2rem;
+    gap: 2.5rem 2rem;
   }
   .odoo-app-icon {
     width: 74px;
@@ -133,13 +136,23 @@
 }
 
 @media (max-width: 480px) {
+  .odoo-launcher-canvas {
+    padding: 3.5rem 1rem 2rem 1rem;
+  }
   .odoo-apps-grid {
-    gap: 2rem 1.75rem;
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 2.5rem 1.75rem;
+    max-width: 290px;
+    justify-items: center;
+  }
+  .odoo-app-item {
+    width: 90px;
   }
   .odoo-app-icon {
-    width: 68px;
-    height: 68px;
-    border-radius: 18px;
-    font-size: 1.95rem;
+    width: 72px;
+    height: 72px;
+    border-radius: 19px;
+    font-size: 2rem;
   }
 }

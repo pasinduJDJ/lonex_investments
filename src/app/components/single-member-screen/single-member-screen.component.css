@@ -13,6 +13,27 @@
   transition: background-color var(--lx-transition-base), border-color var(--lx-transition-base);
 }
 
+.odoo-control-inner {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 1rem;
+  flex-wrap: wrap;
+}
+
+.odoo-left-controls {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  flex-wrap: wrap;
+}
+
+.odoo-action-buttons {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
 .odoo-breadcrumb-trail {
   font-family: var(--lx-font-links);
   font-size: 0.875rem;
@@ -42,47 +63,84 @@
 /* Odoo Smart Stat Buttons */
 .odoo-smart-buttons {
   display: flex;
-  gap: 0.4rem;
+  align-items: center;
+  gap: 0.5rem;
   flex-wrap: wrap;
 }
 
 .odoo-stat-btn {
-  display: flex;
+  display: inline-flex;
   align-items: center;
-  gap: 0.5rem;
-  padding: 0.35rem 0.75rem;
+  gap: 0.65rem;
+  padding: 0.4rem 0.85rem;
   background-color: var(--lx-bg-subtle);
   border: 1px solid var(--lx-border-subtle);
   border-radius: var(--lx-radius-md);
   color: var(--lx-text-primary);
   cursor: pointer;
   transition: all var(--lx-transition-fast);
+  text-decoration: none;
+  min-height: 48px;
 }
 
-.odoo-stat-btn:hover,
+.odoo-stat-btn:hover {
+  border-color: var(--lx-primary-accent);
+  background-color: var(--lx-bg-card);
+  transform: translateY(-1px);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.06);
+}
+
 .odoo-stat-btn.active {
   border-color: var(--lx-primary-accent);
   background-color: var(--lx-primary-accent-subtle);
+  box-shadow: 0 0 0 1px var(--lx-primary-accent);
 }
 
-.odoo-stat-icon {
-  font-size: 1.15rem;
+/* Icon Badges with Color-coding */
+.odoo-stat-icon-badge {
+  width: 32px;
+  height: 32px;
+  border-radius: 8px;
   display: flex;
   align-items: center;
+  justify-content: center;
+  font-size: 1rem;
+  flex-shrink: 0;
+  transition: transform var(--lx-transition-fast);
+}
+
+.odoo-stat-btn:hover .odoo-stat-icon-badge {
+  transform: scale(1.08);
+}
+
+.badge-blue {
+  background-color: rgba(59, 130, 246, 0.15);
+  color: #3b82f6;
+}
+
+.badge-amber {
+  background-color: rgba(245, 158, 11, 0.15);
+  color: #f59e0b;
+}
+
+.badge-emerald {
+  background-color: rgba(16, 185, 129, 0.15);
+  color: #10b981;
 }
 
 .odoo-stat-info {
   display: flex;
   flex-direction: column;
-  line-height: 1.1;
+  line-height: 1.15;
   text-align: left;
 }
 
 .odoo-stat-value {
   font-family: var(--lx-font-titles);
   font-weight: 700;
-  font-size: 0.875rem;
+  font-size: 0.925rem;
   color: var(--lx-text-primary);
+  letter-spacing: -0.01em;
 }
 
 .odoo-stat-label {
@@ -91,6 +149,7 @@
   color: var(--lx-text-secondary);
   text-transform: uppercase;
   letter-spacing: 0.05em;
+  font-weight: 600;
 }
 
 /* Main Form Sheet */
@@ -244,26 +303,129 @@
   border-radius: var(--lx-radius-md);
 }
 
-.text-gold {
-  color: var(--lx-primary-accent) !important;
+.odoo-member-id-pill {
+  border-color: rgba(245, 158, 11, 0.4);
+  background-color: var(--lx-primary-accent-subtle);
+  color: var(--lx-primary-accent);
+  font-weight: 600;
 }
 
 /* Responsive adjustments */
 @media (max-width: 768px) {
+  .odoo-control-inner {
+    flex-direction: column;
+    align-items: stretch;
+    gap: 0.75rem;
+  }
+
+  .odoo-left-controls {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    width: 100%;
+  }
+
+  .odoo-action-buttons {
+    width: 100%;
+    display: flex;
+    gap: 0.5rem;
+  }
+
+  .odoo-action-buttons .btn {
+    flex: 1;
+    justify-content: center;
+  }
+
+  .odoo-smart-buttons {
+    width: 100%;
+    display: grid !important;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 0.5rem;
+  }
+
+  .odoo-stat-btn {
+    padding: 0.5rem 0.35rem;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    text-align: center;
+    gap: 0.25rem;
+    min-height: 68px;
+    border-radius: var(--lx-radius-md);
+    width: 100%;
+  }
+
+  .odoo-stat-icon-badge {
+    width: 28px;
+    height: 28px;
+    font-size: 0.875rem;
+    border-radius: 6px;
+  }
+
+  .odoo-stat-info {
+    align-items: center;
+    text-align: center;
+    width: 100%;
+  }
+
+  .odoo-stat-value {
+    font-size: 0.85rem;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    max-width: 100%;
+  }
+
+  .odoo-stat-label {
+    font-size: 0.6rem;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    max-width: 100%;
+  }
+
   .odoo-form-sheet {
     padding: 1.25rem;
   }
+
   .odoo-customer-avatar {
     width: 52px;
     height: 52px;
     font-size: 1.3rem;
   }
+
   .odoo-field-row {
     flex-direction: column;
     align-items: flex-start;
   }
+
   .odoo-field-value {
     text-align: left;
     margin-top: 0.15rem;
+  }
+}
+
+@media (max-width: 480px) {
+  .odoo-smart-buttons {
+    gap: 0.35rem;
+  }
+
+  .odoo-stat-btn {
+    padding: 0.4rem 0.2rem;
+    min-height: 64px;
+  }
+
+  .odoo-stat-icon-badge {
+    width: 24px;
+    height: 24px;
+    font-size: 0.775rem;
+  }
+
+  .odoo-stat-value {
+    font-size: 0.78rem;
+  }
+
+  .odoo-stat-label {
+    font-size: 0.55rem;
   }
 }
