@@ -6,12 +6,15 @@ import { ProfitManageService } from '../../service/profit-manage.service';
 import { SupabaseService } from '../../service/supabase.service';
 import { ActivatedRoute } from '@angular/router';
 
+import { AccountManageService } from '../../service/account-manage.service';
+
 describe('AddLoanScreenComponent - Guarantor Management & Automatic Loan Numbering', () => {
   let component: AddLoanScreenComponent;
   let fixture: ComponentFixture<AddLoanScreenComponent>;
   let mockLoanService: jasmine.SpyObj<LoanManageService>;
   let mockProfitService: jasmine.SpyObj<ProfitManageService>;
   let mockSupabaseService: jasmine.SpyObj<SupabaseService>;
+  let mockAccountService: jasmine.SpyObj<AccountManageService>;
 
   const mockBorrower: Client = {
     client_id: 'borrower-uuid-1',
@@ -60,6 +63,8 @@ describe('AddLoanScreenComponent - Guarantor Management & Automatic Loan Numberi
       'decreaseBankCapital'
     ]);
     mockSupabaseService = jasmine.createSpyObj('SupabaseService', ['getClient']);
+    mockAccountService = jasmine.createSpyObj('AccountManageService', ['recordDocumentCharge']);
+    mockAccountService.recordDocumentCharge.and.returnValue(Promise.resolve({ success: true, message: 'Recorded' }));
 
     mockProfitService.getBankCapital.and.returnValue(of({
       id: 'bc-1',
@@ -77,6 +82,7 @@ describe('AddLoanScreenComponent - Guarantor Management & Automatic Loan Numberi
         { provide: LoanManageService, useValue: mockLoanService },
         { provide: ProfitManageService, useValue: mockProfitService },
         { provide: SupabaseService, useValue: mockSupabaseService },
+        { provide: AccountManageService, useValue: mockAccountService },
         { provide: ActivatedRoute, useValue: {} }
       ]
     }).compileComponents();

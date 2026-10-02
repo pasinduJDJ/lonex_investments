@@ -1,0 +1,682 @@
+<div class="accounts-page-container">
+  <!-- Odoo ERP Subheader Bar -->
+  <div class="odoo-subheader-bar border-bottom">
+    <div class="container-fluid px-3 px-md-4 py-2">
+      <div class="d-flex flex-wrap justify-content-between align-items-center gap-2">
+        
+        <!-- Breadcrumb & Title Area -->
+        <div>
+          <nav aria-label="breadcrumb" class="mb-1">
+            <ol class="breadcrumb mb-0 small">
+              <li class="breadcrumb-item"><a routerLink="/profit" class="text-decoration-none crumb-link">Finance</a></li>
+              <li class="breadcrumb-item active text-gold fw-medium" aria-current="page">Accounts</li>
+            </ol>
+          </nav>
+          <div class="d-flex align-items-center gap-2">
+            <h1 class="h5 mb-0 fw-bold title-poppins account-heading">Accounts</h1>
+            <span class="badge position-badge small">Financial Positions</span>
+          </div>
+          <span class="subtitle-manrope account-subheading small d-none d-sm-inline">Manage financial accounts and internal fund movements</span>
+        </div>
+
+        <!-- Quick Action Trigger Buttons -->
+        <div class="d-flex align-items-center gap-2">
+          <button type="button" class="btn btn-sm btn-emerald d-flex align-items-center gap-1 shadow-sm" (click)="openCashInModal()">
+            <i class="bi bi-plus-circle"></i>
+            <span>Cash In</span>
+          </button>
+          <button type="button" class="btn btn-sm btn-outline-danger d-flex align-items-center gap-1 shadow-sm" (click)="openCashOutModal()">
+            <i class="bi bi-dash-circle"></i>
+            <span>Cash Out</span>
+          </button>
+          <button type="button" class="btn btn-sm btn-gold d-flex align-items-center gap-1 shadow-sm" (click)="openTransferModal()">
+            <i class="bi bi-arrow-left-right"></i>
+            <span>Transfer</span>
+          </button>
+        </div>
+
+      </div>
+    </div>
+  </div>
+
+  <!-- Main Content Canvas -->
+  <div class="container-fluid px-3 px-md-4 py-3">
+
+    <!-- Alert Notifications -->
+    <div *ngIf="successMessage" class="alert alert-success alert-dismissible fade show d-flex align-items-center shadow-sm mb-3" role="alert">
+      <i class="bi bi-check-circle-fill fs-5 me-2 text-success"></i>
+      <div>{{ successMessage }}</div>
+      <button type="button" class="btn-close ms-auto" (click)="successMessage = ''" aria-label="Close"></button>
+    </div>
+
+    <div *ngIf="errorMessage" class="alert alert-danger alert-dismissible fade show d-flex align-items-center shadow-sm mb-3" role="alert">
+      <i class="bi bi-exclamation-triangle-fill fs-5 me-2 text-danger"></i>
+      <div>{{ errorMessage }}</div>
+      <button type="button" class="btn-close ms-auto" (click)="errorMessage = ''" aria-label="Close"></button>
+    </div>
+
+    <!-- PRIMARY ACCOUNT CARDS -->
+    <div class="row g-3 mb-4">
+      
+      <!-- Card 1: Bank Capital -->
+      <div class="col-12 col-md-6">
+        <div 
+          class="account-card p-3 rounded-3 shadow-sm border"
+          [class.active-card]="selectedAccountFilter === 'BANK_CAPITAL'"
+          (click)="setAccountFilter(selectedAccountFilter === 'BANK_CAPITAL' ? 'ALL' : 'BANK_CAPITAL')"
+        >
+          <div class="d-flex justify-content-between align-items-start mb-2">
+            <div class="d-flex align-items-center gap-2">
+              <div class="account-icon-badge emerald-accent">
+                <i class="bi bi-bank"></i>
+              </div>
+              <div>
+                <h2 class="h6 mb-0 fw-bold account-heading">Bank Capital</h2>
+                <span class="account-muted extra-small">Available bank liquidity</span>
+              </div>
+            </div>
+            <span class="badge badge-active-emerald small">Active</span>
+          </div>
+
+          <div class="mt-2">
+            <span class="extra-small account-muted text-uppercase fw-semibold">Current Balance</span>
+            <div *ngIf="!isLoadingBalances" class="h3 mb-0 fw-bold text-success font-numeric">
+              Rs. {{ (bankCapitalBalance || 0) | number:'1.2-2' }}
+            </div>
+            <div *ngIf="isLoadingBalances" class="py-2">
+              <span class="spinner-border spinner-border-sm text-success" role="status"></span>
+              <span class="small account-muted ms-2">Loading balance...</span>
+            </div>
+          </div>
+
+          <div class="d-flex justify-content-between align-items-center mt-3 pt-2 card-footer-line extra-small account-muted">
+            <span>Primary Operational Account</span>
+            <span class="text-gold fw-medium" *ngIf="selectedAccountFilter === 'BANK_CAPITAL'"><i class="bi bi-check2"></i> Filtered</span>
+            <span *ngIf="selectedAccountFilter !== 'BANK_CAPITAL'">Click to filter activity</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Card 2: Assets / Cash Account -->
+      <div class="col-12 col-md-6">
+        <div 
+          class="account-card p-3 rounded-3 shadow-sm border"
+          [class.active-card]="selectedAccountFilter === 'ASSETS_CASH'"
+          (click)="setAccountFilter(selectedAccountFilter === 'ASSETS_CASH' ? 'ALL' : 'ASSETS_CASH')"
+        >
+          <div class="d-flex justify-content-between align-items-start mb-2">
+            <div class="d-flex align-items-center gap-2">
+              <div class="account-icon-badge gold-accent">
+                <i class="bi bi-safe2"></i>
+              </div>
+              <div>
+                <h2 class="h6 mb-0 fw-bold account-heading">Assets / Cash</h2>
+                <span class="account-muted extra-small">Available cash and documented assets</span>
+              </div>
+            </div>
+            <span class="badge badge-active-gold small">Active</span>
+          </div>
+
+          <div class="mt-2">
+            <span class="extra-small account-muted text-uppercase fw-semibold">Current Balance</span>
+            <div *ngIf="!isLoadingBalances" class="h3 mb-0 fw-bold text-gold font-numeric">
+              Rs. {{ (assetsBalance || 0) | number:'1.2-2' }}
+            </div>
+            <div *ngIf="isLoadingBalances" class="py-2">
+              <span class="spinner-border spinner-border-sm text-gold" role="status"></span>
+              <span class="small account-muted ms-2">Loading balance...</span>
+            </div>
+          </div>
+
+          <div class="d-flex justify-content-between align-items-center mt-3 pt-2 card-footer-line extra-small account-muted">
+            <span>Documented Reserve & Assets</span>
+            <span class="text-gold fw-medium" *ngIf="selectedAccountFilter === 'ASSETS_CASH'"><i class="bi bi-check2"></i> Filtered</span>
+            <span *ngIf="selectedAccountFilter !== 'ASSETS_CASH'">Click to filter activity</span>
+          </div>
+        </div>
+      </div>
+
+    </div>
+
+    <!-- ACCOUNT ACTIVITY SECTION -->
+    <div class="activity-ledger-card border rounded-3 shadow-sm">
+      
+      <!-- Toolbar Header -->
+      <div class="activity-card-header border-bottom py-3 px-3">
+        <div class="d-flex flex-wrap justify-content-between align-items-center gap-3">
+          
+          <!-- Account Tabs -->
+          <div class="btn-group btn-group-sm" role="group">
+            <button 
+              type="button" 
+              class="btn tab-btn"
+              [class.tab-btn-active]="selectedAccountFilter === 'ALL'"
+              (click)="setAccountFilter('ALL')"
+            >
+              All Activity
+            </button>
+            <button 
+              type="button" 
+              class="btn tab-btn"
+              [class.tab-btn-active]="selectedAccountFilter === 'BANK_CAPITAL'"
+              (click)="setAccountFilter('BANK_CAPITAL')"
+            >
+              Bank Capital
+            </button>
+            <button 
+              type="button" 
+              class="btn tab-btn"
+              [class.tab-btn-active]="selectedAccountFilter === 'ASSETS_CASH'"
+              (click)="setAccountFilter('ASSETS_CASH')"
+            >
+              Assets / Cash
+            </button>
+          </div>
+
+          <!-- Date Quick Filter Pills -->
+          <div class="d-flex align-items-center gap-2">
+            <div class="btn-group btn-group-sm" role="group">
+              <button 
+                type="button" 
+                class="btn pill-btn" 
+                [class.pill-btn-active]="selectedDateFilter === 'ALL'"
+                (click)="setDateFilter('ALL')"
+              >
+                All Time
+              </button>
+              <button 
+                type="button" 
+                class="btn pill-btn" 
+                [class.pill-btn-active]="selectedDateFilter === 'TODAY'"
+                (click)="setDateFilter('TODAY')"
+              >
+                Today
+              </button>
+              <button 
+                type="button" 
+                class="btn pill-btn" 
+                [class.pill-btn-active]="selectedDateFilter === 'WEEK'"
+                (click)="setDateFilter('WEEK')"
+              >
+                This Week
+              </button>
+              <button 
+                type="button" 
+                class="btn pill-btn" 
+                [class.pill-btn-active]="selectedDateFilter === 'MONTH'"
+                (click)="setDateFilter('MONTH')"
+              >
+                This Month
+              </button>
+            </div>
+          </div>
+
+          <!-- Global Search -->
+          <div class="search-input-box position-relative">
+            <i class="bi bi-search position-absolute top-50 start-0 translate-middle-y ms-2 account-muted"></i>
+            <input 
+              type="text" 
+              class="form-control form-control-sm form-control-lx ps-4" 
+              placeholder="Search reference, description..." 
+              [(ngModel)]="searchQuery" 
+              (ngModelChange)="onSearchChange()"
+            />
+          </div>
+
+        </div>
+      </div>
+
+      <!-- Ledger Table -->
+      <div class="table-responsive">
+        <table class="table align-middle mb-0 erp-dense-table">
+          <thead class="erp-table-header text-uppercase extra-small">
+            <tr>
+              <th scope="col" style="width: 110px;">Date</th>
+              <th scope="col" style="width: 140px;">Reference</th>
+              <th scope="col" style="width: 150px;">Type</th>
+              <th scope="col">Description</th>
+              <th scope="col" style="width: 160px;">Account / Source</th>
+              <th scope="col" class="text-end" style="width: 130px;">Money In</th>
+              <th scope="col" class="text-end" style="width: 130px;">Money Out</th>
+              <th scope="col" class="text-center" style="width: 100px;">Status</th>
+              <th scope="col" class="text-center" style="width: 80px;">Action</th>
+            </tr>
+          </thead>
+          <tbody>
+            
+            <!-- Loading Skeletons -->
+            <tr *ngIf="isLoadingActivity">
+              <td colspan="9" class="text-center py-4 account-muted">
+                <span class="spinner-border spinner-border-sm text-gold me-2" role="status"></span>
+                <span>Loading account activity...</span>
+              </td>
+            </tr>
+
+            <!-- Empty State -->
+            <tr *ngIf="!isLoadingActivity && filteredActivity.length === 0">
+              <td colspan="9" class="text-center py-5 account-muted">
+                <i class="bi bi-inbox fs-2 account-muted d-block mb-2"></i>
+                <span class="fw-medium">No account transactions found for the selected filters.</span>
+              </td>
+            </tr>
+
+            <!-- Transactions Rows -->
+            <tr *ngFor="let tx of paginatedTransactions">
+              <td class="font-numeric small account-muted">{{ tx.date || '-' }}</td>
+              <td>
+                <span class="fw-semibold font-numeric small account-reference">{{ tx.reference }}</span>
+              </td>
+              <td>
+                <span class="badge" [ngClass]="getBadgeClass(tx.type)">{{ tx.type }}</span>
+              </td>
+              <td>
+                <div class="small fw-medium account-desc text-truncate" style="max-width: 320px;" [title]="tx.description">
+                  {{ tx.description }}
+                </div>
+              </td>
+              <td>
+                <span class="small account-muted">{{ tx.sourceAccount }}</span>
+              </td>
+              <!-- Money In -->
+              <td class="text-end font-numeric fw-semibold text-success small">
+                {{ tx.moneyIn ? ('Rs. ' + (tx.moneyIn | number:'1.2-2')) : '-' }}
+              </td>
+              <!-- Money Out / Transfer -->
+              <td class="text-end font-numeric fw-semibold small" [class.text-danger]="tx.moneyOut" [class.text-gold]="tx.transferAmount">
+                <ng-container *ngIf="tx.moneyOut">
+                  Rs. {{ tx.moneyOut | number:'1.2-2' }}
+                </ng-container>
+                <ng-container *ngIf="tx.transferAmount">
+                  <span class="badge badge-transfer-val font-numeric">
+                    Rs. {{ tx.transferAmount | number:'1.2-2' }}
+                  </span>
+                </ng-container>
+                <ng-container *ngIf="!tx.moneyOut && !tx.transferAmount">
+                  -
+                </ng-container>
+              </td>
+              <td class="text-center">
+                <span class="badge badge-status-neutral extra-small">{{ tx.status }}</span>
+              </td>
+              <td class="text-center">
+                <button 
+                  *ngIf="tx.relatedLoanNumber" 
+                  type="button" 
+                  class="btn btn-xs btn-outline-gold" 
+                  (click)="viewLoan(tx.relatedLoanNumber)"
+                  title="View Loan Details"
+                >
+                  <i class="bi bi-box-arrow-up-right"></i>
+                </button>
+                <span *ngIf="!tx.relatedLoanNumber" class="account-muted extra-small">-</span>
+              </td>
+            </tr>
+
+          </tbody>
+        </table>
+      </div>
+
+      <!-- Pagination Footer -->
+      <div class="activity-card-footer border-top py-2 px-3 d-flex flex-wrap justify-content-between align-items-center gap-2">
+        <div class="extra-small account-muted">
+          Showing 
+          <span class="fw-semibold font-numeric account-heading">{{ filteredActivity.length > 0 ? (currentPage - 1) * pageSize + 1 : 0 }}</span>
+          to 
+          <span class="fw-semibold font-numeric account-heading">{{ ((currentPage * pageSize) < filteredActivity.length) ? (currentPage * pageSize) : filteredActivity.length }}</span>
+          of 
+          <span class="fw-semibold font-numeric account-heading">{{ filteredActivity.length }}</span> 
+          records
+        </div>
+
+        <div class="d-flex align-items-center gap-3">
+          <!-- Page Size Selector -->
+          <div class="d-flex align-items-center gap-1 extra-small account-muted">
+            <span>Per page:</span>
+            <select class="form-select form-select-sm form-control-lx py-0 ps-2 pe-4" style="width: auto;" [ngModel]="pageSize" (ngModelChange)="onPageSizeChange($event)">
+              <option *ngFor="let size of pageSizeOptions" [value]="size">{{ size }}</option>
+            </select>
+          </div>
+
+          <!-- Page Navigation Buttons -->
+          <nav aria-label="Page navigation" *ngIf="totalPages > 1">
+            <ul class="pagination pagination-sm mb-0">
+              <li class="page-item" [class.disabled]="currentPage === 1">
+                <button class="page-link" (click)="setPage(1)" aria-label="First">&laquo;</button>
+              </li>
+              <li class="page-item" [class.disabled]="currentPage === 1">
+                <button class="page-link" (click)="setPage(currentPage - 1)" aria-label="Previous">&lsaquo;</button>
+              </li>
+              <li class="page-item active">
+                <span class="page-link">{{ currentPage }} / {{ totalPages }}</span>
+              </li>
+              <li class="page-item" [class.disabled]="currentPage === totalPages">
+                <button class="page-link" (click)="setPage(currentPage + 1)" aria-label="Next">&rsaquo;</button>
+              </li>
+              <li class="page-item" [class.disabled]="currentPage === totalPages">
+                <button class="page-link" (click)="setPage(totalPages)" aria-label="Last">&raquo;</button>
+              </li>
+            </ul>
+          </nav>
+        </div>
+      </div>
+
+    </div>
+
+  </div>
+</div>
+
+<!-- ========================================================================= -->
+<!-- MODAL 1: CASH IN                                                          -->
+<!-- ========================================================================= -->
+<div class="modal fade show d-block modal-backdrop-custom" *ngIf="showCashInModal" tabindex="-1">
+  <div class="modal-dialog modal-dialog-centered">
+    <div class="modal-content modal-content-lx shadow-lg border">
+      <div class="modal-header border-bottom py-2 px-3">
+        <h5 class="modal-title h6 fw-bold d-flex align-items-center gap-2 account-heading">
+          <i class="bi bi-plus-circle text-emerald"></i>
+          <span>Record Cash In</span>
+        </h5>
+        <button type="button" class="btn-close" (click)="closeAllModals()"></button>
+      </div>
+
+      <form [formGroup]="cashInForm" (ngSubmit)="submitCashIn()">
+        <div class="modal-body p-3">
+          
+          <!-- Destination Account -->
+          <div class="mb-3">
+            <label class="form-label small fw-medium account-subheading">Destination Account *</label>
+            <select class="form-select form-select-sm form-control-lx" formControlName="destinationAccount">
+              <option value="BANK_CAPITAL">Bank Capital (Available: Rs. {{ (bankCapitalBalance || 0) | number:'1.2-2' }})</option>
+              <option value="ASSETS_CASH">Assets / Cash (Available: Rs. {{ (assetsBalance || 0) | number:'1.2-2' }})</option>
+            </select>
+          </div>
+
+          <!-- Amount -->
+          <div class="mb-3">
+            <label class="form-label small fw-medium account-subheading">Amount (Rs.) *</label>
+            <input type="number" step="0.01" class="form-control form-control-sm form-control-lx font-numeric" placeholder="e.g. 25000" formControlName="amount" />
+          </div>
+
+          <!-- Transaction Date -->
+          <div class="mb-3">
+            <label class="form-label small fw-medium account-subheading">Transaction Date *</label>
+            <input type="date" class="form-control form-control-sm form-control-lx font-numeric" formControlName="transactionDate" />
+          </div>
+
+          <!-- Description / Remark -->
+          <div class="mb-3">
+            <label class="form-label small fw-medium account-subheading">Description / Remark *</label>
+            <input type="text" class="form-control form-control-sm form-control-lx" placeholder="Reason for cash in..." formControlName="description" />
+          </div>
+
+          <!-- Optional Reference -->
+          <div class="mb-3">
+            <label class="form-label small fw-medium account-subheading">Reference (Optional)</label>
+            <input type="text" class="form-control form-control-sm form-control-lx font-numeric" placeholder="Receipt / Voucher #" formControlName="reference" />
+          </div>
+
+          <!-- Live Balance Projection Box -->
+          <div class="p-2 rounded projection-box border extra-small font-numeric">
+            <div class="d-flex justify-content-between account-muted mb-1">
+              <span>Current Account Balance:</span>
+              <span>Rs. {{ getAccountBalance(cashInForm.value.destinationAccount) | number:'1.2-2' }}</span>
+            </div>
+            <div class="d-flex justify-content-between text-success fw-medium mb-1">
+              <span>+ Cash In Addition:</span>
+              <span>Rs. {{ (cashInForm.value.amount || 0) | number:'1.2-2' }}</span>
+            </div>
+            <div class="d-flex justify-content-between fw-bold border-top pt-1 account-heading">
+              <span>= Projected Balance:</span>
+              <span>Rs. {{ cashInProjectedBalance | number:'1.2-2' }}</span>
+            </div>
+          </div>
+
+        </div>
+
+        <div class="modal-footer border-top py-2 px-3">
+          <button type="button" class="btn btn-sm btn-outline-secondary" (click)="closeAllModals()">Cancel</button>
+          <button type="submit" class="btn btn-sm btn-emerald" [disabled]="cashInForm.invalid">Continue</button>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>
+
+<!-- ========================================================================= -->
+<!-- MODAL 2: CASH OUT                                                         -->
+<!-- ========================================================================= -->
+<div class="modal fade show d-block modal-backdrop-custom" *ngIf="showCashOutModal" tabindex="-1">
+  <div class="modal-dialog modal-dialog-centered">
+    <div class="modal-content modal-content-lx shadow-lg border">
+      <div class="modal-header border-bottom py-2 px-3">
+        <h5 class="modal-title h6 fw-bold d-flex align-items-center gap-2 account-heading">
+          <i class="bi bi-dash-circle text-danger"></i>
+          <span>Record Cash Out</span>
+        </h5>
+        <button type="button" class="btn-close" (click)="closeAllModals()"></button>
+      </div>
+
+      <form [formGroup]="cashOutForm" (ngSubmit)="submitCashOut()">
+        <div class="modal-body p-3">
+          
+          <!-- Source Account -->
+          <div class="mb-3">
+            <label class="form-label small fw-medium account-subheading">Source Account *</label>
+            <select class="form-select form-select-sm form-control-lx" formControlName="sourceAccount">
+              <option value="BANK_CAPITAL">Bank Capital (Available: Rs. {{ (bankCapitalBalance || 0) | number:'1.2-2' }})</option>
+              <option value="ASSETS_CASH">Assets / Cash (Available: Rs. {{ (assetsBalance || 0) | number:'1.2-2' }})</option>
+            </select>
+          </div>
+
+          <!-- Amount -->
+          <div class="mb-3">
+            <label class="form-label small fw-medium account-subheading">Amount (Rs.) *</label>
+            <input type="number" step="0.01" class="form-control form-control-sm form-control-lx font-numeric" placeholder="e.g. 10000" formControlName="amount" />
+          </div>
+
+          <!-- Transaction Date -->
+          <div class="mb-3">
+            <label class="form-label small fw-medium account-subheading">Transaction Date *</label>
+            <input type="date" class="form-control form-control-sm form-control-lx font-numeric" formControlName="transactionDate" />
+          </div>
+
+          <!-- Description / Remark -->
+          <div class="mb-3">
+            <label class="form-label small fw-medium account-subheading">Description / Remark *</label>
+            <input type="text" class="form-control form-control-sm form-control-lx" placeholder="Reason for withdrawal..." formControlName="description" />
+          </div>
+
+          <!-- Optional Reference -->
+          <div class="mb-3">
+            <label class="form-label small fw-medium account-subheading">Reference (Optional)</label>
+            <input type="text" class="form-control form-control-sm form-control-lx font-numeric" placeholder="Voucher #" formControlName="reference" />
+          </div>
+
+          <!-- Live Balance Projection Box -->
+          <div class="p-2 rounded projection-box border extra-small font-numeric">
+            <div class="d-flex justify-content-between account-muted mb-1">
+              <span>Current Account Balance:</span>
+              <span>Rs. {{ getAccountBalance(cashOutForm.value.sourceAccount) | number:'1.2-2' }}</span>
+            </div>
+            <div class="d-flex justify-content-between text-danger fw-medium mb-1">
+              <span>- Cash Out Deduction:</span>
+              <span>Rs. {{ (cashOutForm.value.amount || 0) | number:'1.2-2' }}</span>
+            </div>
+            <div class="d-flex justify-content-between fw-bold border-top pt-1 account-heading">
+              <span>= Projected Balance:</span>
+              <span [class.text-danger]="cashOutProjectedBalance < 0">
+                Rs. {{ cashOutProjectedBalance | number:'1.2-2' }}
+              </span>
+            </div>
+          </div>
+
+        </div>
+
+        <div class="modal-footer border-top py-2 px-3">
+          <button type="button" class="btn btn-sm btn-outline-secondary" (click)="closeAllModals()">Cancel</button>
+          <button type="submit" class="btn btn-sm btn-danger" [disabled]="cashOutForm.invalid">Continue</button>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>
+
+<!-- ========================================================================= -->
+<!-- MODAL 3: TRANSFER BETWEEN ACCOUNTS                                        -->
+<!-- ========================================================================= -->
+<div class="modal fade show d-block modal-backdrop-custom" *ngIf="showTransferModal" tabindex="-1">
+  <div class="modal-dialog modal-dialog-centered">
+    <div class="modal-content modal-content-lx shadow-lg border">
+      <div class="modal-header border-bottom py-2 px-3">
+        <h5 class="modal-title h6 fw-bold d-flex align-items-center gap-2 account-heading">
+          <i class="bi bi-arrow-left-right text-gold"></i>
+          <span>Transfer Between Accounts</span>
+        </h5>
+        <button type="button" class="btn-close" (click)="closeAllModals()"></button>
+      </div>
+
+      <form [formGroup]="transferForm" (ngSubmit)="submitTransfer()">
+        <div class="modal-body p-3">
+          
+          <div class="row g-2 mb-3">
+            <!-- From Account -->
+            <div class="col-6">
+              <label class="form-label small fw-medium account-subheading">From Account *</label>
+              <select class="form-select form-select-sm form-control-lx" formControlName="fromAccount">
+                <option value="BANK_CAPITAL">Bank Capital</option>
+                <option value="ASSETS_CASH">Assets / Cash</option>
+              </select>
+            </div>
+            <!-- To Account -->
+            <div class="col-6">
+              <label class="form-label small fw-medium account-subheading">To Account *</label>
+              <select class="form-select form-select-sm form-control-lx" formControlName="toAccount">
+                <option value="BANK_CAPITAL">Bank Capital</option>
+                <option value="ASSETS_CASH">Assets / Cash</option>
+              </select>
+            </div>
+          </div>
+
+          <!-- Amount -->
+          <div class="mb-3">
+            <label class="form-label small fw-medium account-subheading">Transfer Amount (Rs.) *</label>
+            <input type="number" step="0.01" class="form-control form-control-sm form-control-lx font-numeric" placeholder="e.g. 20000" formControlName="amount" />
+          </div>
+
+          <!-- Transaction Date -->
+          <div class="mb-3">
+            <label class="form-label small fw-medium account-subheading">Transfer Date *</label>
+            <input type="date" class="form-control form-control-sm form-control-lx font-numeric" formControlName="transactionDate" />
+          </div>
+
+          <!-- Description / Remark -->
+          <div class="mb-3">
+            <label class="form-label small fw-medium account-subheading">Description / Remark *</label>
+            <input type="text" class="form-control form-control-sm form-control-lx" placeholder="Reason for internal transfer..." formControlName="description" />
+          </div>
+
+          <!-- Optional Reference -->
+          <div class="mb-3">
+            <label class="form-label small fw-medium account-subheading">Reference (Optional)</label>
+            <input type="text" class="form-control form-control-sm form-control-lx font-numeric" placeholder="Internal Transfer #" formControlName="reference" />
+          </div>
+
+          <!-- Live Dual Balance Projections -->
+          <div class="p-2 rounded projection-box border extra-small font-numeric">
+            <div class="fw-semibold account-subheading mb-1">Projected Balances After Transfer:</div>
+            <div class="d-flex justify-content-between account-muted mb-1">
+              <span>{{ getAccountLabel(transferForm.value.fromAccount) }} (Source):</span>
+              <span>Rs. {{ transferSourceProjected | number:'1.2-2' }}</span>
+            </div>
+            <div class="d-flex justify-content-between account-muted">
+              <span>{{ getAccountLabel(transferForm.value.toAccount) }} (Destination):</span>
+              <span>Rs. {{ transferDestProjected | number:'1.2-2' }}</span>
+            </div>
+          </div>
+
+        </div>
+
+        <div class="modal-footer border-top py-2 px-3">
+          <button type="button" class="btn btn-sm btn-outline-secondary" (click)="closeAllModals()">Cancel</button>
+          <button type="submit" class="btn btn-sm btn-gold" [disabled]="transferForm.invalid">Continue</button>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>
+
+<!-- ========================================================================= -->
+<!-- MODAL 4: CONFIRMATION DIALOG (MANDATORY BEFORE ANY POSTING)               -->
+<!-- ========================================================================= -->
+<div class="modal fade show d-block modal-backdrop-custom" *ngIf="showConfirmModal && stagedAction" tabindex="-1">
+  <div class="modal-dialog modal-dialog-centered">
+    <div class="modal-content modal-content-lx shadow-lg border">
+      <div class="modal-header border-bottom py-2 px-3">
+        <h5 class="modal-title h6 fw-bold d-flex align-items-center gap-2 account-heading">
+          <i class="bi bi-shield-check text-gold"></i>
+          <span>{{ stagedAction.title }}</span>
+        </h5>
+        <button type="button" class="btn-close" (click)="closeAllModals()" [disabled]="isSubmitting"></button>
+      </div>
+
+      <div class="modal-body p-3">
+        <p class="small account-muted mb-3">
+          Please review the transaction details below. Once posted, this financial record is stored in the central ledger.
+        </p>
+
+        <div class="table-responsive mb-3">
+          <table class="table table-sm border extra-small mb-0 review-table">
+            <tbody>
+              <tr>
+                <th class="review-label" style="width: 40%;">Transaction Type</th>
+                <td class="fw-bold account-heading">{{ stagedAction.type }}</td>
+              </tr>
+              <tr *ngIf="stagedAction.fromAccountName">
+                <th class="review-label">From Account</th>
+                <td class="account-desc">{{ stagedAction.fromAccountName }}</td>
+              </tr>
+              <tr *ngIf="stagedAction.toAccountName">
+                <th class="review-label">To Account</th>
+                <td class="account-desc">{{ stagedAction.toAccountName }}</td>
+              </tr>
+              <tr>
+                <th class="review-label">Amount</th>
+                <td class="fw-bold font-numeric text-success fs-6">Rs. {{ stagedAction.amount | number:'1.2-2' }}</td>
+              </tr>
+              <tr>
+                <th class="review-label">Date</th>
+                <td class="font-numeric account-desc">{{ stagedAction.date }}</td>
+              </tr>
+              <tr>
+                <th class="review-label">Description</th>
+                <td class="account-desc">{{ stagedAction.description }}</td>
+              </tr>
+              <tr *ngIf="stagedAction.reference">
+                <th class="review-label">Reference</th>
+                <td class="font-numeric account-desc">{{ stagedAction.reference }}</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+
+        <!-- Projected Balances Result -->
+        <div class="p-2 rounded projection-box border extra-small font-numeric">
+          <div class="fw-semibold account-subheading mb-1">Projected Account Balances:</div>
+          <div *ngFor="let p of stagedAction.projectedBalances" class="d-flex justify-content-between mb-1">
+            <span class="account-muted">{{ p.accountName }}:</span>
+            <span class="fw-bold account-heading">Rs. {{ p.projected | number:'1.2-2' }}</span>
+          </div>
+        </div>
+
+      </div>
+
+      <div class="modal-footer border-top py-2 px-3">
+        <button type="button" class="btn btn-sm btn-outline-secondary" (click)="closeAllModals()" [disabled]="isSubmitting">Cancel</button>
+        <button type="button" class="btn btn-sm btn-gold d-flex align-items-center gap-1" (click)="executeConfirmedAction()" [disabled]="isSubmitting">
+          <span *ngIf="isSubmitting" class="spinner-border spinner-border-sm me-1" role="status"></span>
+          <span>Confirm & Post Transaction</span>
+        </button>
+      </div>
+    </div>
+  </div>
+</div>

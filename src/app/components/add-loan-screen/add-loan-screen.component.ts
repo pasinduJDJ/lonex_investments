@@ -6,6 +6,7 @@ import { LoanManageService, Client, Loan } from '../../service/loan-manage.servi
 import { SupabaseService } from '../../service/supabase.service';
 import { CITY_CODE_MAP } from '../../constants/city.constants';
 import { ProfitManageService } from '../../service/profit-manage.service';
+import { AccountManageService } from '../../service/account-manage.service';
 import { GuarantorLookupComponent } from '../../shared/guarantor-lookup/guarantor-lookup.component';
 
 export interface CustomerPreviousLoan extends Loan {
@@ -86,7 +87,8 @@ export class AddLoanScreenComponent implements OnInit {
     private loanService: LoanManageService,
     private supabaseService: SupabaseService,
     private router: Router,
-    private profitService: ProfitManageService
+    private profitService: ProfitManageService,
+    private accountService: AccountManageService
   ) { }
 
   ngOnInit(): void {
@@ -558,6 +560,20 @@ export class AddLoanScreenComponent implements OnInit {
           await this.loanService.saveLoanGuarantors(data.id, this.guarantor1.client_id, this.guarantor2.client_id).toPromise();
         } catch (gErr) {
           console.warn('Notice saving loan-level guarantors:', gErr);
+        }
+      }
+
+      // Record Document Charge in Assets / Cash ledger for NEW loans (Client confirmed rule)
+      if (loanData.document_charge > 0) {
+        try {
+          await this.accountService.recordDocumentCharge({
+            loanNumber: loanData.loan_number,
+            customerName: this.clientName || 'Customer',
+            amount: loanData.document_charge,
+            date: loanData.start_date || new Date().toISOString().split('T')[0]
+          });
+        } catch (docErr) {
+          console.warn('Notice recording document charge in ledger:', docErr);
         }
       }
 

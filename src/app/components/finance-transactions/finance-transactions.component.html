@@ -1,0 +1,448 @@
+<div class="lx-transactions-container">
+
+  <!-- Top Odoo Control Panel Header -->
+  <div class="odoo-control-panel py-2 mb-3">
+    <div class="container-fluid px-3 px-md-4">
+      <div class="d-flex flex-wrap justify-content-between align-items-center gap-3">
+        
+        <!-- Left: Breadcrumb Trail -->
+        <div class="d-flex align-items-center gap-3 flex-wrap">
+          <div class="odoo-breadcrumb-trail d-flex align-items-center">
+            <span class="odoo-crumb-link" routerLink="/profit">Finance</span>
+            <span class="odoo-crumb-sep">/</span>
+            <span class="odoo-crumb-current">Transactions</span>
+          </div>
+          <span class="badge badge-gold d-none d-sm-inline-flex align-items-center gap-1">
+            <i class="bi bi-journal-check"></i> General Ledger
+          </span>
+        </div>
+
+        <!-- Right: Actions -->
+        <div class="d-flex align-items-center gap-2">
+          <button 
+            type="button" 
+            class="btn btn-sm btn-outline-secondary d-flex align-items-center gap-2"
+            (click)="refreshData()"
+            [disabled]="isLoading || isRefreshing"
+            title="Refresh Ledger"
+          >
+            <i class="bi bi-arrow-clockwise" [class.spin-animation]="isRefreshing"></i>
+            <span>{{ isRefreshing ? 'Refreshing...' : 'Refresh' }}</span>
+          </button>
+        </div>
+
+      </div>
+    </div>
+  </div>
+
+  <!-- Loading State -->
+  <div class="container-fluid px-3 px-md-4 py-5" *ngIf="isLoading">
+    <div class="text-center py-5">
+      <div class="spinner-border text-gold mb-3" style="width: 3rem; height: 3rem;" role="status">
+        <span class="visually-hidden">Loading financial ledger...</span>
+      </div>
+      <h5 class="text-muted fw-semibold">Loading Central Transactions Ledger...</h5>
+      <p class="small text-muted mb-0">Aggregating loan disbursements, repayments, capital deposits, and expenses</p>
+    </div>
+  </div>
+
+  <!-- Error Alert -->
+  <div class="container-fluid px-3 px-md-4" *ngIf="errorMessage && !isLoading">
+    <div class="alert alert-danger d-flex align-items-center justify-content-between shadow-sm" role="alert">
+      <div class="d-flex align-items-center gap-2">
+        <i class="bi bi-exclamation-triangle-fill fs-5"></i>
+        <span>{{ errorMessage }}</span>
+      </div>
+      <button type="button" class="btn btn-sm btn-outline-danger" (click)="loadTransactions()">
+        <i class="bi bi-arrow-clockwise me-1"></i> Retry
+      </button>
+    </div>
+  </div>
+
+  <!-- Main Ledger Canvas -->
+  <div class="container-fluid px-3 px-md-4" *ngIf="!isLoading">
+    <div class="row justify-content-center">
+      <div class="col-12 col-xl-11">
+
+        <div class="odoo-form-sheet shadow-sm mb-4">
+          
+          <!-- Sheet Header: Title & Overview -->
+          <div class="odoo-sheet-header d-flex align-items-start gap-3 flex-wrap pb-3 border-bottom mb-3">
+            <div class="odoo-header-avatar">
+              <i class="bi bi-journal-text"></i>
+            </div>
+            
+            <div class="flex-grow-1">
+              <div class="d-flex align-items-center gap-2 mb-1 flex-wrap">
+                <span class="badge badge-gold" style="font-size: 0.75rem;">
+                  <i class="bi bi-shield-check me-1"></i>Audit Trail
+                </span>
+                <span class="badge badge-secondary" style="font-size: 0.75rem;">
+                  {{ filteredTransactions.length }} Entries
+                </span>
+              </div>
+              <h1 class="odoo-sheet-title mb-1">
+                Transactions
+              </h1>
+              <p class="small text-muted mb-0">
+                Central financial transaction history
+              </p>
+            </div>
+          </div>
+
+          <!-- Transaction Summary Row (Money In, Money Out, Net Movement) -->
+          <div class="row g-3 mb-3">
+            
+            <!-- Summary 1: Money In -->
+            <div class="col-12 col-md-4">
+              <div class="odoo-summary-card p-3 rounded">
+                <div class="d-flex justify-content-between align-items-center mb-1">
+                  <span class="summary-label">Total Money In</span>
+                  <div class="summary-icon-badge kpi-emerald">
+                    <i class="bi bi-arrow-down-left"></i>
+                  </div>
+                </div>
+                <h4 class="summary-value font-numeric text-success mb-0">
+                  Rs. {{ summary.totalMoneyIn | number:'1.2-2' }}
+                </h4>
+                <span class="small text-muted">Repayments & capital deposits</span>
+              </div>
+            </div>
+
+            <!-- Summary 2: Money Out -->
+            <div class="col-12 col-md-4">
+              <div class="odoo-summary-card p-3 rounded">
+                <div class="d-flex justify-content-between align-items-center mb-1">
+                  <span class="summary-label">Total Money Out</span>
+                  <div class="summary-icon-badge kpi-danger">
+                    <i class="bi bi-arrow-up-right"></i>
+                  </div>
+                </div>
+                <h4 class="summary-value font-numeric text-danger mb-0">
+                  Rs. {{ summary.totalMoneyOut | number:'1.2-2' }}
+                </h4>
+                <span class="small text-muted">Disbursements & operating expenses</span>
+              </div>
+            </div>
+
+            <!-- Summary 3: Net Movement -->
+            <div class="col-12 col-md-4">
+              <div class="odoo-summary-card p-3 rounded">
+                <div class="d-flex justify-content-between align-items-center mb-1">
+                  <span class="summary-label">Net Movement</span>
+                  <div 
+                    class="summary-icon-badge"
+                    [ngClass]="{
+                      'kpi-emerald': summary.netMovement > 0,
+                      'kpi-danger': summary.netMovement < 0,
+                      'kpi-gold': summary.netMovement === 0
+                    }"
+                  >
+                    <i class="bi bi-arrow-left-right"></i>
+                  </div>
+                </div>
+                <h4 
+                  class="summary-value font-numeric mb-0"
+                  [ngClass]="{
+                    'text-success': summary.netMovement > 0,
+                    'text-danger': summary.netMovement < 0,
+                    'text-gold': summary.netMovement === 0
+                  }"
+                >
+                  Rs. {{ summary.netMovement | number:'1.2-2' }}
+                </h4>
+                <span class="small text-muted">Money In less Money Out</span>
+              </div>
+            </div>
+
+          </div>
+
+          <!-- Comprehensive Filter & Search Toolbar -->
+          <div class="odoo-toolbar p-3 rounded mb-3 border">
+            <div class="row g-2 align-items-center">
+              
+              <!-- Search Input -->
+              <div class="col-12 col-lg-4">
+                <div class="odoo-search-box">
+                  <i class="bi bi-search odoo-search-icon"></i>
+                  <input 
+                    type="text" 
+                    class="odoo-search-input" 
+                    placeholder="Search reference, customer, loan or description..." 
+                    [(ngModel)]="searchQuery"
+                    (ngModelChange)="onSearchChange()"
+                  />
+                  <button 
+                    *ngIf="searchQuery" 
+                    type="button" 
+                    class="btn btn-sm btn-link text-muted p-0 me-2" 
+                    (click)="searchQuery = ''; onSearchChange()"
+                  >
+                    <i class="bi bi-x-circle-fill"></i>
+                  </button>
+                </div>
+              </div>
+
+              <!-- Transaction Type Selector -->
+              <div class="col-12 col-sm-6 col-lg-3">
+                <select 
+                  class="form-select form-select-sm odoo-select"
+                  [(ngModel)]="selectedType"
+                  (change)="onTypeChange(selectedType)"
+                  title="Filter by transaction type"
+                >
+                  <option *ngFor="let t of transactionTypes" [value]="t">
+                    {{ t === 'All' ? 'All Types' : t }}
+                  </option>
+                </select>
+              </div>
+
+              <!-- Quick Date Filters -->
+              <div class="col-12 col-sm-6 col-lg-5 d-flex justify-content-lg-end align-items-center gap-1 flex-wrap">
+                <div class="btn-group btn-group-sm" role="group">
+                  <button 
+                    type="button" 
+                    class="btn"
+                    [ngClass]="quickDateFilter === 'all' && !dateFrom && !dateTo ? 'btn-gold' : 'btn-outline-secondary'"
+                    (click)="setQuickDate('all')"
+                  >
+                    All
+                  </button>
+                  <button 
+                    type="button" 
+                    class="btn"
+                    [ngClass]="quickDateFilter === 'today' ? 'btn-gold' : 'btn-outline-secondary'"
+                    (click)="setQuickDate('today')"
+                  >
+                    Today
+                  </button>
+                  <button 
+                    type="button" 
+                    class="btn"
+                    [ngClass]="quickDateFilter === 'this_week' ? 'btn-gold' : 'btn-outline-secondary'"
+                    (click)="setQuickDate('this_week')"
+                  >
+                    This Week
+                  </button>
+                  <button 
+                    type="button" 
+                    class="btn"
+                    [ngClass]="quickDateFilter === 'this_month' ? 'btn-gold' : 'btn-outline-secondary'"
+                    (click)="setQuickDate('this_month')"
+                  >
+                    This Month
+                  </button>
+                </div>
+              </div>
+
+              <!-- Custom Date Range Row -->
+              <div class="col-12 d-flex align-items-center justify-content-between flex-wrap gap-2 pt-2 border-top mt-2">
+                <div class="d-flex align-items-center gap-2 flex-wrap">
+                  <span class="small fw-semibold text-muted">
+                    <i class="bi bi-calendar-event me-1 text-gold"></i>Custom Period:
+                  </span>
+                  
+                  <div class="odoo-date-input-group d-flex align-items-center">
+                    <span class="odoo-date-label">From</span>
+                    <input 
+                      type="date" 
+                      class="odoo-date-input" 
+                      [(ngModel)]="dateFrom" 
+                      (change)="onCustomDateChange()"
+                      title="Date From"
+                    />
+                  </div>
+
+                  <span class="text-muted">→</span>
+
+                  <div class="odoo-date-input-group d-flex align-items-center">
+                    <span class="odoo-date-label">To</span>
+                    <input 
+                      type="date" 
+                      class="odoo-date-input" 
+                      [(ngModel)]="dateTo" 
+                      (change)="onCustomDateChange()"
+                      title="Date To"
+                    />
+                  </div>
+
+                  <button 
+                    *ngIf="dateFrom || dateTo || selectedType !== 'All' || searchQuery" 
+                    type="button" 
+                    class="btn btn-sm btn-outline-danger d-flex align-items-center gap-1"
+                    (click)="resetFilters()"
+                    title="Reset all filters"
+                  >
+                    <i class="bi bi-arrow-counterclockwise"></i>
+                    <span>Reset</span>
+                  </button>
+                </div>
+
+                <!-- Page Size Selector -->
+                <div class="d-flex align-items-center gap-2">
+                  <span class="small text-muted">Show:</span>
+                  <select 
+                    class="form-select form-select-sm odoo-select" 
+                    style="width: 75px;" 
+                    [(ngModel)]="pageSize"
+                    (change)="onPageSizeChange()"
+                  >
+                    <option *ngFor="let s of pageSizeOptions" [value]="s">{{ s }}</option>
+                  </select>
+                </div>
+
+              </div>
+
+            </div>
+          </div>
+
+          <!-- Transactions Table -->
+          <div class="table-responsive odoo-table-wrapper" *ngIf="filteredTransactions.length > 0">
+            <table class="table table-hover align-middle odoo-data-table mb-0">
+              <thead>
+                <tr>
+                  <th scope="col">Date</th>
+                  <th scope="col">Reference</th>
+                  <th scope="col">Type</th>
+                  <th scope="col">Description</th>
+                  <th scope="col">Account / Source</th>
+                  <th scope="col" class="text-end">Money In</th>
+                  <th scope="col" class="text-end">Money Out</th>
+                  <th scope="col" class="text-center">Status</th>
+                  <th scope="col" class="text-end">Action</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr *ngFor="let item of paginatedTransactions" class="odoo-row-hover">
+                  
+                  <!-- Date -->
+                  <td class="font-numeric fw-semibold text-nowrap">
+                    {{ item.date }}
+                  </td>
+
+                  <!-- Reference -->
+                  <td>
+                    <span class="badge badge-reference">{{ item.reference }}</span>
+                  </td>
+
+                  <!-- Type Badge -->
+                  <td>
+                    <span 
+                      class="badge"
+                      [ngClass]="{
+                        'badge-emerald': item.type === 'Loan Repayment' || item.type === 'Cash In',
+                        'badge-gold': item.type === 'Loan Disbursement' || item.type === 'Document Charge',
+                        'badge-deposit': item.type === 'Capital Deposit',
+                        'badge-danger': item.type === 'Expense' || item.type === 'Cash Out',
+                        'badge-secondary': item.type === 'Transfer'
+                      }"
+                    >
+                      {{ item.type }}
+                    </span>
+                  </td>
+
+                  <!-- Description -->
+                  <td class="text-truncate" style="max-width: 320px;" [title]="item.description">
+                    {{ item.description }}
+                  </td>
+
+                  <!-- Account / Source -->
+                  <td>
+                    <span class="badge bg-secondary-subtle text-secondary">
+                      <i class="bi bi-bank me-1"></i>{{ item.sourceAccount }}
+                    </span>
+                  </td>
+
+                  <!-- Money In -->
+                  <td class="text-end font-numeric fw-bold text-success text-nowrap">
+                    <span *ngIf="item.moneyIn !== null && item.moneyIn > 0">
+                      Rs. {{ item.moneyIn | number:'1.2-2' }}
+                    </span>
+                    <span *ngIf="item.moneyIn === null || item.moneyIn === 0" class="text-muted">-</span>
+                  </td>
+
+                  <!-- Money Out -->
+                  <td class="text-end font-numeric fw-bold text-danger text-nowrap">
+                    <span *ngIf="item.moneyOut !== null && item.moneyOut > 0">
+                      Rs. {{ item.moneyOut | number:'1.2-2' }}
+                    </span>
+                    <span *ngIf="item.moneyOut === null || item.moneyOut === 0" class="text-muted">-</span>
+                  </td>
+
+                  <!-- Status -->
+                  <td class="text-center">
+                    <span class="badge badge-status-posted">
+                      {{ item.status }}
+                    </span>
+                  </td>
+
+                  <!-- Action -->
+                  <td class="text-end">
+                    <button 
+                      *ngIf="item.relatedLoanNumber"
+                      type="button" 
+                      class="btn btn-sm btn-outline-primary"
+                      (click)="viewLoan(item.relatedLoanNumber)"
+                      title="View Loan Details"
+                    >
+                      <i class="bi bi-eye me-1"></i> View
+                    </button>
+                    <span *ngIf="!item.relatedLoanNumber" class="text-muted small">-</span>
+                  </td>
+
+                </tr>
+              </tbody>
+            </table>
+          </div>
+
+          <!-- Empty State -->
+          <div class="text-center py-5" *ngIf="filteredTransactions.length === 0">
+            <div class="empty-icon-circle mx-auto mb-3 text-muted">
+              <i class="bi bi-journal-x fs-1"></i>
+            </div>
+            <h5 class="fw-semibold">No financial transactions found</h5>
+            <p class="text-muted small mb-3">No records match the selected filters or search query.</p>
+            <button 
+              type="button" 
+              class="btn btn-sm btn-gold"
+              (click)="resetFilters()"
+            >
+              <i class="bi bi-arrow-counterclockwise me-1"></i> Reset Filters
+            </button>
+          </div>
+
+          <!-- Pagination Bar -->
+          <div class="d-flex justify-content-between align-items-center mt-3 pt-2 border-top flex-wrap gap-2" *ngIf="filteredTransactions.length > 0">
+            <span class="small text-muted">
+              Showing {{ (currentPage - 1) * pageSize + 1 }} to {{ currentPage * pageSize > filteredTransactions.length ? filteredTransactions.length : currentPage * pageSize }} of {{ filteredTransactions.length }} entries
+            </span>
+            <div class="btn-group btn-group-sm" *ngIf="totalPages > 1">
+              <button 
+                type="button" 
+                class="btn btn-outline-secondary" 
+                [disabled]="currentPage === 1"
+                (click)="setPage(currentPage - 1)"
+              >
+                Previous
+              </button>
+              <button type="button" class="btn btn-outline-secondary disabled">
+                Page {{ currentPage }} of {{ totalPages }}
+              </button>
+              <button 
+                type="button" 
+                class="btn btn-outline-secondary" 
+                [disabled]="currentPage === totalPages"
+                (click)="setPage(currentPage + 1)"
+              >
+                Next
+              </button>
+            </div>
+          </div>
+
+        </div>
+
+      </div>
+    </div>
+  </div>
+
+</div>

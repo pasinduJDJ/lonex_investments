@@ -93,16 +93,23 @@ export class ModuleNavComponent implements OnInit, OnDestroy {
       } else if (url.startsWith('/add-payments')) {
         this.breadcrumbs.push({ label: 'Record Repayment', active: true });
       }
-    } else if (url.startsWith('/profit')) {
+    } else if (url.startsWith('/profit') || url.startsWith('/transactions') || url.startsWith('/accounts')) {
       this.moduleTitle = 'Finance';
       this.moduleIcon = 'bi-wallet2';
       this.navTabs = [
-        { label: 'Profits & Capital', url: '/profit', icon: 'bi-graph-up-arrow' }
+        { label: 'Overview', url: '/profit', icon: 'bi-grid-1x2-fill' },
+        { label: 'Transactions', url: '/transactions', icon: 'bi-journal-text' },
+        { label: 'Accounts', url: '/accounts', icon: 'bi-bank2' }
       ];
       this.breadcrumbs = [
         { label: 'Home', url: '/home' },
-        { label: 'Finance', active: true }
+        { label: 'Finance', url: url === '/profit' ? undefined : '/profit', active: url === '/profit' }
       ];
+      if (url.startsWith('/transactions')) {
+        this.breadcrumbs.push({ label: 'Transactions', active: true });
+      } else if (url.startsWith('/accounts')) {
+        this.breadcrumbs.push({ label: 'Accounts', active: true });
+      }
     } else if (url.startsWith('/profile')) {
       this.moduleTitle = 'Settings';
       this.moduleIcon = 'bi-gear-fill';

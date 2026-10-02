@@ -138,18 +138,37 @@
 }
 
 .kpi-emerald {
-  background-color: rgba(16, 185, 129, 0.15);
-  color: #10B981;
+  background-color: rgba(21, 154, 116, 0.15);
+  color: #159A74;
 }
 
 .kpi-gold {
-  background-color: rgba(245, 158, 11, 0.15);
-  color: #F59E0B;
+  background-color: rgba(212, 164, 55, 0.15);
+  color: #D4A437;
+}
+
+.kpi-danger {
+  background-color: rgba(217, 83, 79, 0.15);
+  color: #D9534F;
 }
 
 .kpi-blue {
   background-color: rgba(59, 130, 246, 0.15);
   color: #3B82F6;
+}
+
+.odoo-group-title {
+  font-family: var(--lx-font-subtitles);
+  font-size: 0.8125rem;
+  font-weight: 700;
+  color: var(--lx-text-secondary);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+.font-numeric {
+  font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+  font-feature-settings: 'tnum' 1;
 }
 
 /* Notebook & Tabs */

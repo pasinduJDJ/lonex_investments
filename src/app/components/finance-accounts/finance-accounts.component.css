@@ -1,0 +1,511 @@
+/* ==========================================================================
+   LONEX INVESTMENTS — FINANCE / ACCOUNTS
+   Universal Theme System (Adaptive Light & Dark Modes)
+   ========================================================================== */
+
+:host {
+  display: block;
+  width: 100%;
+}
+
+.accounts-page-container {
+  min-height: calc(100vh - 120px);
+  background-color: var(--lx-bg-main, #F8F9FB);
+  color: var(--lx-text-primary, #17191D);
+  transition: background-color var(--lx-transition-base, 0.2s ease), color var(--lx-transition-base, 0.2s ease);
+}
+
+/* Odoo ERP Subheader Bar */
+.odoo-subheader-bar {
+  background-color: var(--lx-bg-card, #FFFFFF);
+  border-color: var(--lx-border-subtle, #E5E7EB) !important;
+  transition: background-color var(--lx-transition-base, 0.2s ease), border-color var(--lx-transition-base, 0.2s ease);
+}
+
+.crumb-link {
+  color: var(--lx-text-secondary, #667085);
+  transition: color 0.15s ease;
+}
+
+.crumb-link:hover {
+  color: var(--lx-primary-accent, #D4A437);
+}
+
+.title-poppins {
+  font-family: var(--lx-font-titles, 'Poppins', sans-serif);
+}
+
+.subtitle-manrope {
+  font-family: var(--lx-font-subtitles, 'Manrope', sans-serif);
+}
+
+.font-numeric {
+  font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+  font-feature-settings: 'tnum' 1, 'lnum' 1;
+}
+
+.extra-small {
+  font-size: 0.75rem;
+}
+
+/* Dynamic Typography Helpers */
+.account-heading {
+  color: var(--lx-text-primary, #17191D) !important;
+}
+
+.account-subheading {
+  color: var(--lx-text-secondary, #667085) !important;
+}
+
+.account-muted {
+  color: var(--lx-text-muted, #98A2B3) !important;
+}
+
+.account-reference {
+  color: var(--lx-text-primary, #17191D) !important;
+}
+
+.account-desc {
+  color: var(--lx-text-primary, #17191D) !important;
+}
+
+.position-badge {
+  background-color: var(--lx-bg-subtle, #F2F4F7);
+  color: var(--lx-text-secondary, #667085);
+  border: 1px solid var(--lx-border-subtle, #E5E7EB);
+}
+
+/* Primary Account Cards */
+.account-card {
+  background-color: var(--lx-bg-card, #FFFFFF);
+  border-color: var(--lx-border-subtle, #E5E7EB) !important;
+  cursor: pointer;
+  transition: all 0.2s ease-in-out;
+}
+
+.account-card:hover {
+  transform: translateY(-2px);
+  border-color: var(--lx-primary-accent, #D4A437) !important;
+  box-shadow: var(--lx-shadow-card, 0 4px 12px rgba(0, 0, 0, 0.08));
+}
+
+.account-card.active-card {
+  border-color: var(--lx-primary-accent, #D4A437) !important;
+  box-shadow: 0 0 0 2px rgba(212, 164, 55, 0.25);
+}
+
+.account-icon-badge {
+  width: 42px;
+  height: 42px;
+  border-radius: 10px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.3rem;
+  flex-shrink: 0;
+}
+
+.emerald-accent {
+  background-color: var(--lx-status-success-bg, rgba(21, 154, 116, 0.15));
+  color: var(--lx-status-success-color, #159A74);
+  border: 1px solid var(--lx-status-success-border, rgba(21, 154, 116, 0.25));
+}
+
+.gold-accent {
+  background-color: var(--lx-status-pending-bg, rgba(212, 164, 55, 0.15));
+  color: var(--lx-primary-accent, #D4A437);
+  border: 1px solid var(--lx-status-pending-border, rgba(212, 164, 55, 0.3));
+}
+
+.card-footer-line {
+  border-top: 1px solid var(--lx-border-subtle, #E5E7EB) !important;
+}
+
+.badge-active-emerald {
+  background-color: var(--lx-status-success-bg, rgba(21, 154, 116, 0.15));
+  color: var(--lx-status-success-color, #159A74);
+  border: 1px solid var(--lx-status-success-border, rgba(21, 154, 116, 0.3));
+}
+
+.badge-active-gold {
+  background-color: var(--lx-status-pending-bg, rgba(212, 164, 55, 0.15));
+  color: var(--lx-primary-accent, #D4A437);
+  border: 1px solid var(--lx-status-pending-border, rgba(212, 164, 55, 0.3));
+}
+
+/* Activity Ledger Card */
+.activity-ledger-card {
+  background-color: var(--lx-bg-card, #FFFFFF);
+  border-color: var(--lx-border-subtle, #E5E7EB) !important;
+  overflow: hidden;
+}
+
+.activity-card-header {
+  background-color: var(--lx-bg-card, #FFFFFF);
+  border-color: var(--lx-border-subtle, #E5E7EB) !important;
+}
+
+.activity-card-footer {
+  background-color: var(--lx-bg-card, #FFFFFF);
+  border-color: var(--lx-border-subtle, #E5E7EB) !important;
+}
+
+/* Tab Navigation Buttons */
+.tab-btn {
+  background-color: var(--lx-bg-subtle, #F2F4F7);
+  border: 1px solid var(--lx-border-subtle, #E5E7EB);
+  color: var(--lx-text-secondary, #667085);
+  font-weight: 500;
+  transition: all 0.15s ease;
+}
+
+.tab-btn:hover {
+  color: var(--lx-text-primary, #17191D);
+  background-color: var(--lx-bg-hover, #E5E7EB);
+}
+
+.tab-btn.tab-btn-active {
+  background-color: #D4A437 !important;
+  border-color: #D4A437 !important;
+  color: #17191D !important;
+  font-weight: 600;
+}
+
+/* Date Pill Buttons */
+.pill-btn {
+  background-color: var(--lx-bg-subtle, #F2F4F7);
+  border: 1px solid var(--lx-border-subtle, #E5E7EB);
+  color: var(--lx-text-secondary, #667085);
+  font-size: 0.78rem;
+  transition: all 0.15s ease;
+}
+
+.pill-btn:hover {
+  color: var(--lx-text-primary, #17191D);
+  background-color: var(--lx-bg-hover, #E5E7EB);
+}
+
+.pill-btn.pill-btn-active {
+  background-color: var(--lx-text-secondary, #475467) !important;
+  border-color: var(--lx-text-secondary, #475467) !important;
+  color: #FFFFFF !important;
+  font-weight: 600;
+}
+
+/* Action Buttons */
+.btn-emerald {
+  background-color: #159A74;
+  border-color: #159A74;
+  color: #FFFFFF;
+  font-weight: 500;
+}
+
+.btn-emerald:hover {
+  background-color: #128262;
+  border-color: #128262;
+  color: #FFFFFF;
+}
+
+.btn-gold {
+  background-color: #D4A437;
+  border-color: #D4A437;
+  color: #17191D;
+  font-weight: 600;
+}
+
+.btn-gold:hover {
+  background-color: #F5C45E;
+  border-color: #F5C45E;
+  color: #17191D;
+}
+
+.btn-outline-gold {
+  color: var(--lx-primary-accent, #D4A437);
+  border-color: var(--lx-primary-accent, #D4A437);
+}
+
+.btn-outline-gold:hover {
+  background-color: var(--lx-primary-accent, #D4A437);
+  color: #17191D;
+}
+
+.text-gold {
+  color: var(--lx-primary-accent, #D4A437) !important;
+}
+
+.text-emerald {
+  color: var(--lx-status-success-color, #159A74) !important;
+}
+
+/* Dense ERP Table */
+.erp-dense-table {
+  width: 100%;
+  border-collapse: collapse;
+  background-color: var(--lx-table-bg, #FFFFFF);
+  color: var(--lx-text-primary, #17191D);
+}
+
+.erp-table-header th {
+  background-color: var(--lx-table-header-bg, #F9FAFB) !important;
+  color: var(--lx-table-header-text, #475467) !important;
+  border-bottom: 1px solid var(--lx-table-border, #E5E7EB) !important;
+  padding: 0.6rem 0.75rem;
+  font-weight: 600;
+  letter-spacing: 0.03em;
+}
+
+.erp-dense-table td {
+  padding: 0.55rem 0.75rem;
+  border-bottom: 1px solid var(--lx-table-border, #F1F3F5) !important;
+  background-color: transparent;
+  color: inherit;
+}
+
+.erp-dense-table tbody tr:hover td {
+  background-color: var(--lx-table-row-hover, rgba(212, 164, 55, 0.05)) !important;
+}
+
+/* Semantic Badges */
+.badge-emerald {
+  background-color: var(--lx-status-success-bg, rgba(21, 154, 116, 0.15)) !important;
+  color: var(--lx-status-success-color, #159A74) !important;
+  border: 1px solid var(--lx-status-success-border, rgba(21, 154, 116, 0.3)) !important;
+  font-weight: 600;
+  font-size: 0.72rem;
+}
+
+.badge-gold {
+  background-color: var(--lx-status-pending-bg, rgba(212, 164, 55, 0.15)) !important;
+  color: var(--lx-primary-accent, #D4A437) !important;
+  border: 1px solid var(--lx-status-pending-border, rgba(212, 164, 55, 0.3)) !important;
+  font-weight: 600;
+  font-size: 0.72rem;
+}
+
+.badge-red {
+  background-color: var(--lx-status-error-bg, rgba(217, 83, 79, 0.15)) !important;
+  color: var(--lx-status-error-color, #D9534F) !important;
+  border: 1px solid var(--lx-status-error-border, rgba(217, 83, 79, 0.3)) !important;
+  font-weight: 600;
+  font-size: 0.72rem;
+}
+
+.badge-slate {
+  background-color: rgba(102, 112, 133, 0.15) !important;
+  color: var(--lx-text-secondary, #667085) !important;
+  border: 1px solid var(--lx-border-subtle, rgba(102, 112, 133, 0.3)) !important;
+  font-weight: 600;
+  font-size: 0.72rem;
+}
+
+.badge-status-neutral {
+  background-color: var(--lx-bg-subtle, #F2F4F7) !important;
+  color: var(--lx-text-secondary, #475467) !important;
+  border: 1px solid var(--lx-border-subtle, #E5E7EB) !important;
+  font-weight: 500;
+  font-size: 0.72rem;
+}
+
+.badge-transfer-val {
+  background-color: var(--lx-status-pending-bg, rgba(212, 164, 55, 0.15)) !important;
+  color: var(--lx-primary-accent, #D4A437) !important;
+  border: 1px solid var(--lx-status-pending-border, rgba(212, 164, 55, 0.3)) !important;
+}
+
+.btn-xs {
+  padding: 0.15rem 0.35rem;
+  font-size: 0.7rem;
+  line-height: 1.2;
+  border-radius: 4px;
+}
+
+/* Modals & Forms */
+.modal-backdrop-custom {
+  background-color: rgba(0, 0, 0, 0.7);
+  backdrop-filter: blur(2px);
+}
+
+.modal-content-lx {
+  background-color: var(--lx-bg-surface-elevated, var(--lx-bg-card, #FFFFFF)) !important;
+  border-color: var(--lx-border-subtle, #E5E7EB) !important;
+  color: var(--lx-text-primary, #17191D) !important;
+}
+
+.form-control-lx {
+  background-color: var(--lx-input-bg, #FFFFFF) !important;
+  border-color: var(--lx-input-border, #D0D5DD) !important;
+  color: var(--lx-input-text, #17191D) !important;
+}
+
+.form-control-lx:focus {
+  background-color: var(--lx-input-bg, #FFFFFF) !important;
+  border-color: var(--lx-primary-accent, #D4A437) !important;
+  box-shadow: 0 0 0 2px rgba(212, 164, 55, 0.25) !important;
+  color: var(--lx-input-text, #17191D) !important;
+}
+
+.form-control-lx::placeholder {
+  color: var(--lx-input-placeholder, #98A2B3) !important;
+}
+
+.projection-box {
+  background-color: var(--lx-bg-subtle, #F9FAFB) !important;
+  border-color: var(--lx-border-subtle, #E5E7EB) !important;
+}
+
+.review-table th.review-label {
+  background-color: var(--lx-bg-subtle, #F2F4F7) !important;
+  color: var(--lx-text-secondary, #667085) !important;
+  border-color: var(--lx-border-subtle, #E5E7EB) !important;
+}
+
+.review-table td {
+  border-color: var(--lx-border-subtle, #E5E7EB) !important;
+  background-color: transparent !important;
+}
+
+/* ==========================================================================
+   HOST CONTEXT EXPLICIT DARK THEME OVERRIDES (Full Angular Encapsulation Safety)
+   ========================================================================== */
+
+:host-context([data-theme='dark']) .accounts-page-container,
+:host-context([data-bs-theme='dark']) .accounts-page-container,
+:host-context(.theme-dark) .accounts-page-container {
+  background-color: #101114 !important;
+  color: #FFFFFF !important;
+}
+
+:host-context([data-theme='dark']) .odoo-subheader-bar,
+:host-context([data-bs-theme='dark']) .odoo-subheader-bar,
+:host-context(.theme-dark) .odoo-subheader-bar {
+  background-color: #24262B !important;
+  border-color: #383B40 !important;
+}
+
+:host-context([data-theme='dark']) .account-card,
+:host-context([data-bs-theme='dark']) .account-card,
+:host-context(.theme-dark) .account-card {
+  background-color: #24262B !important;
+  border-color: #383B40 !important;
+}
+
+:host-context([data-theme='dark']) .activity-ledger-card,
+:host-context([data-bs-theme='dark']) .activity-ledger-card,
+:host-context(.theme-dark) .activity-ledger-card {
+  background-color: #24262B !important;
+  border-color: #383B40 !important;
+}
+
+:host-context([data-theme='dark']) .activity-card-header,
+:host-context([data-bs-theme='dark']) .activity-card-header,
+:host-context(.theme-dark) .activity-card-header,
+:host-context([data-theme='dark']) .activity-card-footer,
+:host-context([data-bs-theme='dark']) .activity-card-footer,
+:host-context(.theme-dark) .activity-card-footer {
+  background-color: #24262B !important;
+  border-color: #383B40 !important;
+}
+
+:host-context([data-theme='dark']) .erp-dense-table,
+:host-context([data-bs-theme='dark']) .erp-dense-table,
+:host-context(.theme-dark) .erp-dense-table {
+  background-color: #24262B !important;
+  color: #FFFFFF !important;
+}
+
+:host-context([data-theme='dark']) .erp-table-header th,
+:host-context([data-bs-theme='dark']) .erp-table-header th,
+:host-context(.theme-dark) .erp-table-header th {
+  background-color: #1B1D22 !important;
+  color: #CBD5E1 !important;
+  border-color: #383B40 !important;
+}
+
+:host-context([data-theme='dark']) .erp-dense-table td,
+:host-context([data-bs-theme='dark']) .erp-dense-table td,
+:host-context(.theme-dark) .erp-dense-table td {
+  border-color: #383B40 !important;
+}
+
+:host-context([data-theme='dark']) .account-heading,
+:host-context([data-bs-theme='dark']) .account-heading,
+:host-context(.theme-dark) .account-heading,
+:host-context([data-theme='dark']) .account-reference,
+:host-context([data-bs-theme='dark']) .account-reference,
+:host-context(.theme-dark) .account-reference,
+:host-context([data-theme='dark']) .account-desc,
+:host-context([data-bs-theme='dark']) .account-desc,
+:host-context(.theme-dark) .account-desc {
+  color: #FFFFFF !important;
+}
+
+:host-context([data-theme='dark']) .account-subheading,
+:host-context([data-bs-theme='dark']) .account-subheading,
+:host-context(.theme-dark) .account-subheading {
+  color: #98A2B3 !important;
+}
+
+:host-context([data-theme='dark']) .account-muted,
+:host-context([data-bs-theme='dark']) .account-muted,
+:host-context(.theme-dark) .account-muted {
+  color: #667085 !important;
+}
+
+:host-context([data-theme='dark']) .tab-btn,
+:host-context([data-bs-theme='dark']) .tab-btn,
+:host-context(.theme-dark) .tab-btn {
+  background-color: #1B1D22;
+  border-color: #383B40;
+  color: #98A2B3;
+}
+
+:host-context([data-theme='dark']) .tab-btn:hover,
+:host-context([data-bs-theme='dark']) .tab-btn:hover,
+:host-context(.theme-dark) .tab-btn:hover {
+  background-color: #2C2F36;
+  color: #FFFFFF;
+}
+
+:host-context([data-theme='dark']) .pill-btn,
+:host-context([data-bs-theme='dark']) .pill-btn,
+:host-context(.theme-dark) .pill-btn {
+  background-color: #1B1D22;
+  border-color: #383B40;
+  color: #98A2B3;
+}
+
+:host-context([data-theme='dark']) .pill-btn:hover,
+:host-context([data-bs-theme='dark']) .pill-btn:hover,
+:host-context(.theme-dark) .pill-btn:hover {
+  background-color: #2C2F36;
+  color: #FFFFFF;
+}
+
+:host-context([data-theme='dark']) .form-control-lx,
+:host-context([data-bs-theme='dark']) .form-control-lx,
+:host-context(.theme-dark) .form-control-lx {
+  background-color: #1B1D22 !important;
+  border-color: #383B40 !important;
+  color: #FFFFFF !important;
+}
+
+:host-context([data-theme='dark']) .projection-box,
+:host-context([data-bs-theme='dark']) .projection-box,
+:host-context(.theme-dark) .projection-box {
+  background-color: #1B1D22 !important;
+  border-color: #383B40 !important;
+}
+
+:host-context([data-theme='dark']) .modal-content-lx,
+:host-context([data-bs-theme='dark']) .modal-content-lx,
+:host-context(.theme-dark) .modal-content-lx {
+  background-color: #24262B !important;
+  border-color: #383B40 !important;
+  color: #FFFFFF !important;
+}
+
+:host-context([data-theme='dark']) .btn-close,
+:host-context([data-bs-theme='dark']) .btn-close,
+:host-context(.theme-dark) .btn-close {
+  filter: invert(1) grayscale(100%) brightness(200%);
+}

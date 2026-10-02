@@ -95,12 +95,14 @@ export class HeaderComponent implements OnInit, OnDestroy {
         { label: 'Issue Loan', url: '/add-loan', icon: 'bi-plus-circle' },
         { label: 'Add Payment', url: '/add-payments', icon: 'bi-cash-stack' }
       ];
-    } else if (url.startsWith('/profit')) {
+    } else if (url.startsWith('/profit') || url.startsWith('/transactions') || url.startsWith('/accounts')) {
       this.activeModuleTitle = 'Finance';
       this.activeModuleIcon = 'bi-wallet2';
       this.activeModuleAccentClass = 'odoo-badge-finance';
       this.activeModuleTabs = [
-        { label: 'Profits & Capital', url: '/profit', icon: 'bi-graph-up-arrow' }
+        { label: 'Overview', url: '/profit', icon: 'bi-grid-1x2-fill' },
+        { label: 'Transactions', url: '/transactions', icon: 'bi-journal-text' },
+        { label: 'Accounts', url: '/accounts', icon: 'bi-bank2' }
       ];
     } else if (url.startsWith('/analysis')) {
       this.activeModuleTitle = 'Analysis';

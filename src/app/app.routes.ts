@@ -10,6 +10,8 @@ import { SingleMemberScreenComponent } from './components/single-member-screen/s
 import { SingleLoanScreenComponent } from './components/single-loan-screen/single-loan-screen.component';
 import { AddPaymentsComponent } from './components/add-payments/add-payments.component';
 import { AnalysisComponent } from './components/analysis/analysis.component';
+import { FinanceTransactionsComponent } from './components/finance-transactions/finance-transactions.component';
+import { FinanceAccountsComponent } from './components/finance-accounts/finance-accounts.component';
 import { LoginComponent } from './components/login/login.component';
 import { AuthGuard } from './service/auth.guard';
 
@@ -20,6 +22,8 @@ export const routes: Routes = [
     { path: 'member', component: MembersManageScreenComponent, canActivate: [AuthGuard] },
     { path: 'loan', component: LoanManageScreenComponent, canActivate: [AuthGuard] },
     { path: 'profit', component: ProfitsManageScreenComponent, canActivate: [AuthGuard] },
+    { path: 'transactions', component: FinanceTransactionsComponent, canActivate: [AuthGuard] },
+    { path: 'accounts', component: FinanceAccountsComponent, canActivate: [AuthGuard] },
     { path: 'analysis', component: AnalysisComponent, canActivate: [AuthGuard] },
     { path: 'profile', component: ProfileManageScreenComponent, canActivate: [AuthGuard] },
     { path: 'add-member', component: AddMemberScreenComponent, canActivate: [AuthGuard] },

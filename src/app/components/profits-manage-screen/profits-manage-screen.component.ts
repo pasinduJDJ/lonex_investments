@@ -29,6 +29,14 @@ export class ProfitsManageScreenComponent implements OnInit {
   addExpenseSuccess = false;
   addExpenseError = '';
 
+  // Loading States for smooth rendering
+  isLoadingCapital: boolean = true;
+  isLoadingPayments: boolean = true;
+  isLoadingProfit: boolean = true;
+  isLoadingExpenses: boolean = true;
+  isLoadingLoans: boolean = true;
+  isLoadingAssets: boolean = true;
+
   activeTab: 'actions' | 'expenses' | 'capital' | 'loans' | 'payments' = 'actions';
 
   startDate: string = '';
@@ -56,13 +64,61 @@ export class ProfitsManageScreenComponent implements OnInit {
     this.loadAll();
   }
 
+  get totalExpenses(): number {
+    return (this.expenses || []).reduce((sum, e) => sum + (e.amount || 0), 0);
+  }
+
+  get totalIncome(): number {
+    return (this.payments || []).reduce((sum, p) => sum + (p.paid_amount || 0), 0);
+  }
+
+  get currentPeriodLoanProfit(): number {
+    if (this.startDate && this.endDate && this.loans.length > 0) {
+      const closedLoans = this.loans.filter(l => l.status === 'closed');
+      return closedLoans.reduce((sum, loan) => sum + (loan.total_paid - (loan.principal_amount + loan.document_charge)), 0);
+    }
+    return this.totalProfit !== null ? this.totalProfit : 0;
+  }
+
+  get netProfit(): number {
+    return this.currentPeriodLoanProfit - this.totalExpenses;
+  }
+
+  get isNetProfitPositive(): boolean {
+    return this.netProfit > 0;
+  }
+
+  get isNetProfitNegative(): boolean {
+    return this.netProfit < 0;
+  }
+
   loadAll() {
-    this.profitService.getBankCapital().subscribe((c: any) => this.capital = c.current_balance);
+    this.isLoadingCapital = true;
+    this.profitService.getBankCapital().subscribe({
+      next: (c: any) => {
+        this.capital = c ? c.current_balance : 0;
+        this.isLoadingCapital = false;
+      },
+      error: () => {
+        this.isLoadingCapital = false;
+      }
+    });
+
     this.loadPayments();
     this.loadLoans();
     this.loadInvestHistory();
     this.loadExpenses();
-    this.profitService.getTotalProfit().subscribe((p: number) => this.totalProfit = p);
+
+    this.isLoadingProfit = true;
+    this.profitService.getTotalProfit().subscribe({
+      next: (p: number) => {
+        this.totalProfit = p;
+        this.isLoadingProfit = false;
+      },
+      error: () => {
+        this.isLoadingProfit = false;
+      }
+    });
     
     // Debug: Check table structure
     this.profitService.debugTables().subscribe({
@@ -76,18 +132,47 @@ export class ProfitsManageScreenComponent implements OnInit {
   }
 
   loadPayments() {
+    this.isLoadingPayments = true;
     // Load all data by default, or filtered data if dates are selected
     const startDate = this.startDate && this.endDate ? this.startDate : undefined;
     const endDate = this.startDate && this.endDate ? this.endDate : undefined;
-    this.profitService.getLatestPaymentsWithLoanNumber(startDate, endDate).subscribe((p: PaymentWithLoanNumber[]) => this.payments = p);
+    this.profitService.getLatestPaymentsWithLoanNumber(startDate, endDate).subscribe({
+      next: (p: PaymentWithLoanNumber[]) => {
+        this.payments = p;
+        this.isLoadingPayments = false;
+      },
+      error: () => {
+        this.isLoadingPayments = false;
+      }
+    });
   }
 
   loadLoans() {
+    this.isLoadingLoans = true;
+    this.isLoadingAssets = true;
     // Load all data by default, or filtered data if dates are selected
     const startDate = this.startDate && this.endDate ? this.startDate : undefined;
     const endDate = this.startDate && this.endDate ? this.endDate : undefined;
-    this.profitService.getLoansWithClientByDateRange(startDate, endDate).subscribe((l: any[]) => this.loans = l);
-    this.profitService.getTotalDocumentCharges(startDate, endDate).subscribe((total: number) => this.totalDocumentCharges = total);
+    this.profitService.getLoansWithClientByDateRange(startDate, endDate).subscribe({
+      next: (l: any[]) => {
+        this.loans = l;
+        this.isLoadingLoans = false;
+      },
+      error: () => {
+        this.isLoadingLoans = false;
+      }
+    });
+
+    // Assets Account reflects documented assets reserve
+    this.profitService.getTotalDocumentCharges().subscribe({
+      next: (total: number) => {
+        this.totalDocumentCharges = total;
+        this.isLoadingAssets = false;
+      },
+      error: () => {
+        this.isLoadingAssets = false;
+      }
+    });
   }
 
   loadInvestHistory() {
@@ -108,6 +193,7 @@ export class ProfitsManageScreenComponent implements OnInit {
   }
 
   loadExpenses() {
+    this.isLoadingExpenses = true;
     // Load all data by default, or filtered data if dates are selected
     const startDate = this.startDate && this.endDate ? this.startDate : undefined;
     const endDate = this.startDate && this.endDate ? this.endDate : undefined;
@@ -116,10 +202,12 @@ export class ProfitsManageScreenComponent implements OnInit {
       next: (expenses: Expense[]) => {
         console.log('Loaded expenses:', expenses);
         this.expenses = expenses;
+        this.isLoadingExpenses = false;
       },
       error: (error) => {
         console.error('Error loading expenses:', error);
         this.expenses = [];
+        this.isLoadingExpenses = false;
       }
     });
   }
