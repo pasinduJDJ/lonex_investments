@@ -1,0 +1,75 @@
+.odoo-guarantor-card {
+  background-color: var(--lx-card-bg);
+  border-color: var(--lx-border-subtle) !important;
+  transition: box-shadow 0.2s ease, border-color 0.2s ease;
+}
+
+.odoo-guarantor-card:hover {
+  border-color: rgba(212, 164, 55, 0.4) !important;
+}
+
+.odoo-guarantor-badge-num {
+  width: 24px;
+  height: 24px;
+  border-radius: 50%;
+  background: var(--lx-primary-gradient, linear-gradient(135deg, #D4A437 0%, #B8860B 100%));
+  color: #17191D;
+  font-weight: 700;
+  font-size: 0.8rem;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.guarantor-card-title {
+  color: var(--lx-text-primary);
+  font-size: 0.95rem;
+}
+
+.odoo-guarantor-avatar {
+  width: 44px;
+  height: 44px;
+  border-radius: 50%;
+  background: var(--lx-bg-subtle);
+  border: 2px solid var(--lx-gold-primary, #D4A437);
+  color: var(--lx-gold-primary, #D4A437);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: 700;
+  font-size: 1rem;
+  flex-shrink: 0;
+}
+
+.badge-emerald {
+  background-color: rgba(21, 154, 116, 0.15);
+  color: #159A74;
+  border: 1px solid rgba(21, 154, 116, 0.3);
+  font-weight: 600;
+  font-size: 0.78rem;
+  padding: 0.35rem 0.6rem;
+  border-radius: 4px;
+}
+
+.info-micro-label {
+  display: block;
+  font-size: 0.68rem;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: var(--lx-text-secondary);
+  font-weight: 600;
+  margin-bottom: 2px;
+}
+
+.info-micro-val {
+  font-size: 0.85rem;
+  font-weight: 600;
+  color: var(--lx-text-primary);
+  word-break: break-all;
+}
+
+.btn-xs {
+  font-size: 0.72rem;
+  padding: 0.2rem 0.5rem;
+  border-radius: 4px;
+}

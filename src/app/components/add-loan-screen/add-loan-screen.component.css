@@ -268,6 +268,89 @@
   color: var(--lx-primary-accent) !important;
 }
 
+/* Customer History & Summary Styles */
+.odoo-customer-summary-card {
+  background-color: var(--lx-bg-subtle);
+  border-color: var(--lx-border-subtle) !important;
+  transition: background-color var(--lx-transition-base), border-color var(--lx-transition-base);
+}
+
+.summary-micro-label {
+  display: block;
+  font-family: var(--lx-font-subtitles);
+  font-size: 0.68rem;
+  font-weight: 600;
+  color: var(--lx-text-secondary);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  margin-bottom: 0.2rem;
+}
+
+.summary-main-val {
+  display: block;
+  font-family: var(--lx-font-titles);
+  font-size: 0.95rem;
+  font-weight: 700;
+  color: var(--lx-text-primary);
+  line-height: 1.2;
+}
+
+/* Previous Loan History Cards */
+.odoo-history-card {
+  background-color: var(--lx-bg-card);
+  border: 1px solid var(--lx-border-subtle);
+  border-radius: var(--lx-radius-lg);
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.04);
+  transition: border-color var(--lx-transition-fast), box-shadow var(--lx-transition-fast);
+}
+
+.odoo-history-card:hover {
+  border-color: var(--lx-primary-accent);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+}
+
+.odoo-history-icon {
+  width: 32px;
+  height: 32px;
+  border-radius: 8px;
+  background-color: var(--lx-primary-accent-subtle);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1rem;
+  flex-shrink: 0;
+}
+
+.odoo-metric-item {
+  display: flex;
+  flex-direction: column;
+}
+
+.metric-label {
+  font-family: var(--lx-font-subtitles);
+  font-size: 0.72rem;
+  color: var(--lx-text-secondary);
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  margin-bottom: 0.15rem;
+}
+
+.metric-val {
+  font-family: var(--lx-font-titles);
+  font-size: 0.925rem;
+  font-weight: 600;
+  color: var(--lx-text-primary);
+  line-height: 1.2;
+}
+
+.odoo-repayment-progress-section {
+  border-color: var(--lx-border-subtle) !important;
+}
+
+.odoo-history-actions {
+  border-color: var(--lx-border-subtle) !important;
+}
+
 /* Responsive adjustments */
 @media (max-width: 768px) {
   .odoo-form-sheet {
@@ -282,4 +365,19 @@
     width: 100%;
     justify-content: center;
   }
+  .odoo-history-card {
+    padding: 1rem !important;
+  }
+  .odoo-history-actions button {
+    width: 100%;
+    justify-content: center;
+  }
 }
+
+.badge-emerald {
+  background-color: rgba(21, 154, 116, 0.15);
+  color: #159A74;
+  border: 1px solid rgba(21, 154, 116, 0.3);
+  font-weight: 600;
+}
+

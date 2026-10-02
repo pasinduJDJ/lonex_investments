@@ -1,25 +1,37 @@
 import { Component, OnInit } from '@angular/core';
 import { ActivatedRoute } from '@angular/router';
-import { LoanManageService, LoanWithClient, Payment } from '../../service/loan-manage.service';
+import { LoanManageService, LoanWithClient, Payment, LoanGuarantor, LoanRescheduleHistory } from '../../service/loan-manage.service';
 import { CommonModule } from '@angular/common';
+import { FormsModule } from '@angular/forms';
 import { Observable, of } from 'rxjs';
 import { map } from 'rxjs/operators';
 import { Router, RouterModule } from '@angular/router';
 import { SupabaseService } from '../../service/supabase.service';
 
+export interface ScheduleRow {
+  installmentNumber: number;
+  dueDate: string;
+  amount: number;
+  status: 'Paid' | 'Upcoming';
+  paidDate?: string;
+  isAdjusted?: boolean;
+}
+
 @Component({
   selector: 'app-single-loan-screen',
   standalone: true,
-  imports: [CommonModule, RouterModule],
+  imports: [CommonModule, RouterModule, FormsModule],
   templateUrl: './single-loan-screen.component.html',
   styleUrl: './single-loan-screen.component.css'
 })
 export class SingleLoanScreenComponent implements OnInit {
   loan$: Observable<LoanWithClient | undefined> = of(undefined);
   payments$: Observable<Payment[]> = of([]);
+  loanGuarantors: LoanGuarantor[] = [];
+  rescheduleHistory: LoanRescheduleHistory[] = [];
   showCompleteConfirm = false;
   showSuccessMsg = false;
-  activeTab: 'payments' | 'client' = 'payments';
+  activeTab: 'payments' | 'client' | 'schedule' | 'reschedule_history' = 'payments';
   installmentStats: {
     expected: number;
     paid: number;
@@ -28,8 +40,43 @@ export class SingleLoanScreenComponent implements OnInit {
     installmentAmount: number;
   } | null = null;
 
-  setActiveTab(tab: 'payments' | 'client'): void {
+  // Early Settlement Modal State
+  showSettlementModal: boolean = false;
+  isSubmittingSettlement: boolean = false;
+  settlementSuccessMessage: string = '';
+  settlementErrorMessage: string = '';
+
+  // Current values at open time
+  currentLoan: LoanWithClient | null = null;
+  currentRemainingBalance: number = 0;
+  currentInstallmentAmount: number = 0;
+  currentPaidInstallments: number = 0;
+  currentRemainingInstallments: number = 0;
+  currentExpectedEndDate: string = '';
+
+  // New editable values
+  newRemainingPeriod: number = 1;
+  newInstallmentAmount: number = 0;
+  settlementNotes: string = '';
+
+  // Preview values
+  previewFutureSchedule: ScheduleRow[] = [];
+  previewNewEndDate: string = '';
+  finalInstallmentAmount: number = 0;
+  isFinalInstallmentAdjusted: boolean = false;
+  reconciliationDiff: number = 0;
+
+  setActiveTab(tab: 'payments' | 'client' | 'schedule' | 'reschedule_history'): void {
     this.activeTab = tab;
+  }
+
+  getGuarantorByOrder(order: number): LoanGuarantor | undefined {
+    return this.loanGuarantors.find(g => g.guarantor_order === order);
+  }
+
+  formatMemberId(regNumber?: number): string {
+    if (regNumber === undefined || regNumber === null) return '#0000';
+    return `#${regNumber.toString().padStart(4, '0')}`;
   }
 
   constructor(
@@ -41,25 +88,263 @@ export class SingleLoanScreenComponent implements OnInit {
 
   ngOnInit() {
     const loan_number = this.route.snapshot.paramMap.get('loan_number')!;
+    this.reloadLoanData(loan_number);
+  }
+
+  reloadLoanData(loan_number: string): void {
     this.loan$ = this.loanService.getLoanByNumber(loan_number).pipe(
       map((loan) => loan ? loan : undefined)
     );
     this.loan$.subscribe(async (loan) => {
       if (loan) {
         this.installmentStats = await this.loanService.getInstallmentStats(loan);
-        // Fetch payments for this loan
         this.payments$ = this.loanService.getPaymentsForLoan(loan.id);
+        this.loadLoanGuarantors(loan.id);
+        this.loadRescheduleHistory(loan.id);
       } else {
         this.installmentStats = null;
         this.payments$ = of([]);
+        this.loanGuarantors = [];
+        this.rescheduleHistory = [];
       }
     });
+  }
+
+  loadLoanGuarantors(loanId: string): void {
+    this.loanService.getLoanGuarantors(loanId).subscribe({
+      next: (guarantors) => {
+        this.loanGuarantors = guarantors || [];
+      },
+      error: (err) => {
+        console.warn('Error loading loan-level guarantors:', err);
+        this.loanGuarantors = [];
+      }
+    });
+  }
+
+  loadRescheduleHistory(loanId: string): void {
+    this.loanService.getLoanRescheduleHistory(loanId).subscribe({
+      next: (history) => {
+        this.rescheduleHistory = history || [];
+      },
+      error: (err) => {
+        console.warn('Error loading reschedule history:', err);
+        this.rescheduleHistory = [];
+      }
+    });
+  }
+
+  isEligibleForEarlySettlement(loan: LoanWithClient): boolean {
+    return loan.status === 'active' && loan.remaining_amount > 0;
+  }
+
+  openEarlySettlementModal(loan: LoanWithClient): void {
+    this.currentLoan = loan;
+    this.currentRemainingBalance = loan.remaining_amount;
+    this.currentInstallmentAmount = this.installmentStats?.installmentAmount || 0;
+    this.currentPaidInstallments = this.installmentStats?.paid || 0;
+    this.currentRemainingInstallments = this.installmentStats?.remaining || 1;
+    this.currentExpectedEndDate = loan.end_date;
+
+    this.newRemainingPeriod = Math.max(1, this.currentRemainingInstallments);
+    this.newInstallmentAmount = Math.max(1, Math.round(this.currentRemainingBalance / this.newRemainingPeriod));
+    this.settlementNotes = '';
+    this.settlementErrorMessage = '';
+    this.settlementSuccessMessage = '';
+
+    this.recalculatePreview();
+    this.showSettlementModal = true;
+  }
+
+  closeEarlySettlementModal(): void {
+    this.showSettlementModal = false;
+    this.settlementErrorMessage = '';
+  }
+
+  onPeriodChange(): void {
+    if (this.newRemainingPeriod && this.newRemainingPeriod > 0) {
+      this.newInstallmentAmount = Math.max(1, Math.round(this.currentRemainingBalance / this.newRemainingPeriod));
+    }
+    this.recalculatePreview();
+  }
+
+  onAmountChange(): void {
+    this.recalculatePreview();
+  }
+
+  autoCalculateAmount(): void {
+    if (this.newRemainingPeriod && this.newRemainingPeriod > 0) {
+      this.newInstallmentAmount = Math.max(1, Math.round(this.currentRemainingBalance / this.newRemainingPeriod));
+      this.recalculatePreview();
+    }
+  }
+
+  recalculatePreview(): void {
+    this.settlementErrorMessage = '';
+    this.previewFutureSchedule = [];
+
+    if (!this.newRemainingPeriod || this.newRemainingPeriod < 1) {
+      this.settlementErrorMessage = 'New remaining period must be at least 1 installment.';
+      return;
+    }
+
+    if (!this.newInstallmentAmount || this.newInstallmentAmount <= 0) {
+      this.settlementErrorMessage = 'New installment amount must be greater than zero.';
+      return;
+    }
+
+    if (this.newInstallmentAmount > this.currentRemainingBalance) {
+      this.settlementErrorMessage = `Installment amount cannot exceed total remaining balance (Rs. ${this.currentRemainingBalance.toLocaleString()}).`;
+      return;
+    }
+
+    const standardCount = this.newRemainingPeriod - 1;
+    const standardTotal = standardCount * this.newInstallmentAmount;
+    this.finalInstallmentAmount = this.currentRemainingBalance - standardTotal;
+
+    if (this.finalInstallmentAmount <= 0) {
+      this.settlementErrorMessage = 'Installment amount is too high for the chosen period. Final installment would be zero or negative.';
+      return;
+    }
+
+    this.isFinalInstallmentAdjusted = this.finalInstallmentAmount !== this.newInstallmentAmount;
+    this.reconciliationDiff = (standardTotal + this.finalInstallmentAmount) - this.currentRemainingBalance;
+
+    const loanType = this.currentLoan?.loan_type || 'monthly';
+    const schedule: ScheduleRow[] = [];
+
+    const startDate = this.currentLoan?.start_date ? new Date(this.currentLoan.start_date) : new Date();
+    let baseDate = new Date(startDate);
+
+    if (loanType === 'daily') {
+      baseDate.setDate(baseDate.getDate() + this.currentPaidInstallments + 1);
+    } else if (loanType === 'weekly') {
+      baseDate.setDate(baseDate.getDate() + (this.currentPaidInstallments + 1) * 7);
+    } else if (loanType === 'monthly') {
+      baseDate.setMonth(baseDate.getMonth() + this.currentPaidInstallments + 1);
+    }
+
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+    if (baseDate < today) {
+      baseDate = new Date(today);
+      if (loanType === 'daily') baseDate.setDate(baseDate.getDate() + 1);
+      else if (loanType === 'weekly') baseDate.setDate(baseDate.getDate() + 7);
+      else if (loanType === 'monthly') baseDate.setMonth(baseDate.getMonth() + 1);
+    }
+
+    for (let i = 1; i <= this.newRemainingPeriod; i++) {
+      const instNum = this.currentPaidInstallments + i;
+      const dueDate = new Date(baseDate);
+
+      if (loanType === 'daily') {
+        dueDate.setDate(dueDate.getDate() + (i - 1));
+      } else if (loanType === 'weekly') {
+        dueDate.setDate(dueDate.getDate() + (i - 1) * 7);
+      } else if (loanType === 'monthly') {
+        dueDate.setMonth(dueDate.getMonth() + (i - 1));
+      }
+
+      const isLast = i === this.newRemainingPeriod;
+      const amount = isLast ? this.finalInstallmentAmount : this.newInstallmentAmount;
+
+      schedule.push({
+        installmentNumber: instNum,
+        dueDate: dueDate.toISOString().split('T')[0],
+        amount: amount,
+        status: 'Upcoming',
+        isAdjusted: isLast && this.isFinalInstallmentAdjusted
+      });
+    }
+
+    this.previewFutureSchedule = schedule;
+    if (schedule.length > 0) {
+      this.previewNewEndDate = schedule[schedule.length - 1].dueDate;
+    }
+  }
+
+  isRescheduleValid(): boolean {
+    return !this.settlementErrorMessage &&
+           this.newRemainingPeriod > 0 &&
+           this.newInstallmentAmount > 0 &&
+           this.finalInstallmentAmount > 0 &&
+           this.previewFutureSchedule.length > 0;
+  }
+
+  confirmEarlySettlement(): void {
+    if (!this.isRescheduleValid() || !this.currentLoan) return;
+
+    this.isSubmittingSettlement = true;
+    this.settlementErrorMessage = '';
+
+    const newTotalInstallments = this.currentPaidInstallments + this.newRemainingPeriod;
+    const userName = localStorage.getItem('userName') || 'Admin';
+
+    this.loanService.rescheduleLoan(this.currentLoan.id, {
+      newEndDate: this.previewNewEndDate,
+      newTotalInstallments: newTotalInstallments,
+      oldInstallmentAmount: this.currentInstallmentAmount,
+      newInstallmentAmount: this.newInstallmentAmount,
+      oldRemainingInstallments: this.currentRemainingInstallments,
+      newRemainingInstallments: this.newRemainingPeriod,
+      oldEndDate: this.currentExpectedEndDate,
+      remainingBalance: this.currentRemainingBalance,
+      changedBy: userName,
+      notes: this.settlementNotes.trim() || undefined
+    }).subscribe({
+      next: (res) => {
+        this.isSubmittingSettlement = false;
+        if (res.success) {
+          const loanNum = this.currentLoan!.loan_number;
+          this.closeEarlySettlementModal();
+          this.showSuccessMsg = true;
+          this.settlementSuccessMessage = 'Loan repayment schedule updated successfully.';
+          this.reloadLoanData(loanNum);
+          this.activeTab = 'schedule';
+        } else {
+          this.settlementErrorMessage = res.error?.message || (typeof res.error === 'string' ? res.error : 'Failed to update schedule. Please try again.');
+        }
+      },
+      error: (err) => {
+        this.isSubmittingSettlement = false;
+        this.settlementErrorMessage = err.message || 'An unexpected error occurred during rescheduling.';
+      }
+    });
+  }
+
+  getFullScheduleRows(loan: LoanWithClient, stats: any, payments: Payment[]): ScheduleRow[] {
+    if (!stats) return [];
+    const rows: ScheduleRow[] = [];
+    const total = stats.expected || 1;
+    const paid = stats.paid || 0;
+    const startDate = loan.start_date ? new Date(loan.start_date) : new Date();
+    const loanType = loan.loan_type || 'monthly';
+
+    for (let i = 1; i <= total; i++) {
+      const dueDate = new Date(startDate);
+      if (loanType === 'daily') dueDate.setDate(dueDate.getDate() + (i - 1));
+      else if (loanType === 'weekly') dueDate.setDate(dueDate.getDate() + (i - 1) * 7);
+      else if (loanType === 'monthly') dueDate.setMonth(dueDate.getMonth() + (i - 1));
+
+      const isPaid = i <= paid;
+      const payment = isPaid && payments && payments[i - 1] ? payments[i - 1] : undefined;
+
+      rows.push({
+        installmentNumber: i,
+        dueDate: dueDate.toISOString().split('T')[0],
+        amount: stats.installmentAmount || Math.round(loan.total_amount_due / total),
+        status: isPaid ? 'Paid' : 'Upcoming',
+        paidDate: payment?.paid_date
+      });
+    }
+    return rows;
   }
 
   completeLoan(loan: LoanWithClient) {
     this.loanService.updateLoanStatus(loan.id, 'closed').subscribe(() => {
       this.showCompleteConfirm = false;
       this.showSuccessMsg = true;
+      this.settlementSuccessMessage = 'Loan status updated to Closed successfully!';
     });
   }
 

@@ -41,6 +41,13 @@ export class HomeComponent {
       accentClass: 'odoo-app-loans'
     },
     {
+      id: 'analysis',
+      name: 'Analysis',
+      route: '/analysis',
+      icon: 'bi-bar-chart-line-fill',
+      accentClass: 'odoo-app-analysis'
+    },
+    {
       id: 'settings',
       name: 'Settings',
       route: '/profile',

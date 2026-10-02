@@ -81,7 +81,13 @@
   color: #17191D !important;
 }
 
-/* 4. Settings (Modern Slate / Indigo) */
+/* 4. Analysis (Analytics Sky / Electric Cyan) */
+.odoo-app-analysis {
+  background: linear-gradient(145deg, #0EA5E9 0%, #0284C7 100%);
+  color: #FFFFFF !important;
+}
+
+/* 5. Settings (Modern Slate / Indigo) */
 .odoo-app-settings {
   background: linear-gradient(145deg, #6366F1 0%, #4338CA 100%);
 }

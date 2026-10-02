@@ -237,10 +237,6 @@ export class AddMemberScreenComponent implements OnInit {
       this.errorMessage = 'Home number is required';
       return false;
     }
-    if (!/^\d{10}$/.test(this.homeNumber.trim())) {
-      this.errorMessage = 'Please enter a valid 10-digit home number';
-      return false;
-    }
 
     // Street address validation (required)
     if (!this.streetAddress.trim()) {

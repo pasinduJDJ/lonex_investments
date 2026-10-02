@@ -3,6 +3,7 @@
     <div 
       *ngFor="let mod of modules" 
       class="odoo-app-item"
+      (click)="navigateTo(mod.route)"
       [routerLink]="mod.route"
       tabindex="0"
       role="button"

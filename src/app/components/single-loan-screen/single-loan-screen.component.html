@@ -22,6 +22,17 @@
               </button>
 
               <button 
+                *ngIf="isEligibleForEarlySettlement(loan)"
+                type="button" 
+                class="btn btn-lx-secondary btn-sm odoo-settlement-btn" 
+                (click)="openEarlySettlementModal(loan)"
+                title="Early Loan Settlement / Future Instalment Rescheduling"
+              >
+                <i class="bi bi-arrow-repeat text-gold me-1"></i>
+                <span>Early Settlement</span>
+              </button>
+
+              <button 
                 type="button" 
                 class="btn btn-lx-secondary btn-sm odoo-docx-btn" 
                 (click)="getDocx(loan, installmentStats)"
@@ -136,7 +147,7 @@
 
           <div *ngIf="showSuccessMsg" class="alert alert-success alert-dismissible fade show mb-3" role="alert">
             <i class="bi bi-check-circle-fill me-2"></i>
-            <span>Loan status updated to Closed successfully!</span>
+            <span>{{ settlementSuccessMessage || 'Loan status updated to Closed successfully!' }}</span>
             <button type="button" class="btn-close" (click)="showSuccessMsg = false"></button>
           </div>
 
@@ -304,7 +315,27 @@
                   (click)="setActiveTab('payments')"
                 >
                   <i class="bi bi-receipt me-1"></i>
-                  <span>Payment History</span>
+                  <span>Payment History ({{ (payments$ | async)?.length || 0 }})</span>
+                </button>
+
+                <button 
+                  type="button" 
+                  class="odoo-tab-nav-btn" 
+                  [class.active]="activeTab === 'schedule'"
+                  (click)="setActiveTab('schedule')"
+                >
+                  <i class="bi bi-calendar3 me-1"></i>
+                  <span>Repayment Schedule</span>
+                </button>
+
+                <button 
+                  type="button" 
+                  class="odoo-tab-nav-btn" 
+                  [class.active]="activeTab === 'reschedule_history'"
+                  (click)="setActiveTab('reschedule_history')"
+                >
+                  <i class="bi bi-clock-history me-1"></i>
+                  <span>Settlement History ({{ rescheduleHistory.length }})</span>
                 </button>
 
                 <button 
@@ -386,45 +417,540 @@
                   <!-- 1st Guarantor -->
                   <div class="col-12 col-md-4">
                     <div class="odoo-sub-card p-3 h-100">
-                      <div class="d-flex align-items-center gap-2 mb-2 pb-2 border-bottom">
-                        <span class="odoo-guarantor-avatar">1</span>
-                        <h6 class="mb-0 fw-bold" style="color: var(--lx-text-primary);">First Guarantor</h6>
+                      <div class="d-flex align-items-center justify-content-between mb-2 pb-2 border-bottom">
+                        <div class="d-flex align-items-center gap-2">
+                          <span class="odoo-guarantor-avatar">1</span>
+                          <h6 class="mb-0 fw-bold" style="color: var(--lx-text-primary);">First Guarantor</h6>
+                        </div>
+                        <span *ngIf="getGuarantorByOrder(1)" class="badge badge-emerald small">
+                          <i class="bi bi-patch-check-fill me-1"></i>Member
+                        </span>
                       </div>
-                      <div class="small" style="line-height: 1.6;">
-                        <p class="mb-1"><strong>Name:</strong> {{ loan.client.first_guarantor_name || 'N/A' }}</p>
-                        <p class="mb-1"><strong>NIC:</strong> {{ loan.client.first_guarantor_nic || 'N/A' }}</p>
-                        <p class="mb-1"><strong>Phone:</strong> {{ loan.client.first_guarantor_tp || 'N/A' }}</p>
-                        <p class="mb-0"><strong>Address:</strong> {{ loan.client.first_guarantor_address || 'N/A' }}</p>
-                      </div>
+
+                      <!-- Loan-Level Registered Guarantor -->
+                      <ng-container *ngIf="getGuarantorByOrder(1) as g1">
+                        <div class="small" style="line-height: 1.6;">
+                          <p class="mb-1">
+                            <strong>Name:</strong> 
+                            {{ g1.guarantor ? (g1.guarantor.first_name + ' ' + g1.guarantor.last_name) : 'Registered Member' }}
+                          </p>
+                          <p class="mb-1">
+                            <strong>NIC:</strong> 
+                            <span class="font-monospace">{{ g1.guarantor?.nic_number || 'N/A' }}</span>
+                          </p>
+                          <p class="mb-1">
+                            <strong>Phone:</strong> 
+                            {{ g1.guarantor?.mobile_number || g1.guarantor?.home_number || 'N/A' }}
+                          </p>
+                          <p class="mb-2">
+                            <strong>Member ID:</strong> 
+                            <span class="text-gold font-monospace">{{ formatMemberId(g1.guarantor?.register_number) }}</span>
+                          </p>
+                          <div *ngIf="g1.guarantor?.register_number" class="pt-2 border-top">
+                            <a 
+                              [routerLink]="['/single-member', g1.guarantor?.register_number]" 
+                              target="_blank" 
+                              class="btn btn-xs btn-lx-secondary w-100 text-center"
+                            >
+                              <i class="bi bi-box-arrow-up-right me-1"></i>View Member Profile
+                            </a>
+                          </div>
+                        </div>
+                      </ng-container>
+
+                      <!-- Historical Fallback (when loan has no loan_guarantors entries) -->
+                      <ng-container *ngIf="!getGuarantorByOrder(1)">
+                        <div class="small" style="line-height: 1.6;">
+                          <p class="mb-1"><strong>Name:</strong> {{ loan.client.first_guarantor_name || 'N/A' }}</p>
+                          <p class="mb-1"><strong>NIC:</strong> {{ loan.client.first_guarantor_nic || 'N/A' }}</p>
+                          <p class="mb-1"><strong>Phone:</strong> {{ loan.client.first_guarantor_tp || 'N/A' }}</p>
+                          <p class="mb-0"><strong>Address:</strong> {{ loan.client.first_guarantor_address || 'N/A' }}</p>
+                        </div>
+                      </ng-container>
                     </div>
                   </div>
 
                   <!-- 2nd Guarantor -->
                   <div class="col-12 col-md-4">
                     <div class="odoo-sub-card p-3 h-100">
-                      <div class="d-flex align-items-center gap-2 mb-2 pb-2 border-bottom">
-                        <span class="odoo-guarantor-avatar">2</span>
-                        <h6 class="mb-0 fw-bold" style="color: var(--lx-text-primary);">Second Guarantor</h6>
+                      <div class="d-flex align-items-center justify-content-between mb-2 pb-2 border-bottom">
+                        <div class="d-flex align-items-center gap-2">
+                          <span class="odoo-guarantor-avatar">2</span>
+                          <h6 class="mb-0 fw-bold" style="color: var(--lx-text-primary);">Second Guarantor</h6>
+                        </div>
+                        <span *ngIf="getGuarantorByOrder(2)" class="badge badge-emerald small">
+                          <i class="bi bi-patch-check-fill me-1"></i>Member
+                        </span>
                       </div>
-                      <div class="small" style="line-height: 1.6;">
-                        <p class="mb-1"><strong>Name:</strong> {{ loan.client.second_guarantor_name || 'N/A' }}</p>
-                        <p class="mb-1"><strong>NIC:</strong> {{ loan.client.second_guarantor_nic || 'N/A' }}</p>
-                        <p class="mb-1"><strong>Phone:</strong> {{ loan.client.second_guarantor_tp || 'N/A' }}</p>
-                        <p class="mb-0"><strong>Address:</strong> {{ loan.client.second_guarantor_address || 'N/A' }}</p>
-                      </div>
-                    </div>
-                  </div>
 
+                      <!-- Loan-Level Registered Guarantor -->
+                      <ng-container *ngIf="getGuarantorByOrder(2) as g2">
+                        <div class="small" style="line-height: 1.6;">
+                          <p class="mb-1">
+                            <strong>Name:</strong> 
+                            {{ g2.guarantor ? (g2.guarantor.first_name + ' ' + g2.guarantor.last_name) : 'Registered Member' }}
+                          </p>
+                          <p class="mb-1">
+                            <strong>NIC:</strong> 
+                            <span class="font-monospace">{{ g2.guarantor?.nic_number || 'N/A' }}</span>
+                          </p>
+                          <p class="mb-1">
+                            <strong>Phone:</strong> 
+                            {{ g2.guarantor?.mobile_number || g2.guarantor?.home_number || 'N/A' }}
+                          </p>
+                          <p class="mb-2">
+                            <strong>Member ID:</strong> 
+                            <span class="text-gold font-monospace">{{ formatMemberId(g2.guarantor?.register_number) }}</span>
+                          </p>
+                          <div *ngIf="g2.guarantor?.register_number" class="pt-2 border-top">
+                            <a 
+                              [routerLink]="['/single-member', g2.guarantor?.register_number]" 
+                              target="_blank" 
+                              class="btn btn-xs btn-lx-secondary w-100 text-center"
+                            >
+                              <i class="bi bi-box-arrow-up-right me-1"></i>View Member Profile
+                            </a>
+                          </div>
+                        </div>
+                      </ng-container>
+
+                      <!-- Historical Fallback (when loan has no loan_guarantors entries) -->
+                      <ng-container *ngIf="!getGuarantorByOrder(2)">
+                        <div class="small" style="line-height: 1.6;">
+                          <p class="mb-1"><strong>Name:</strong> {{ loan.client.second_guarantor_name || 'N/A' }}</p>
+                          <p class="mb-1"><strong>NIC:</strong> {{ loan.client.second_guarantor_nic || 'N/A' }}</p>
+                          <p class="mb-1"><strong>Phone:</strong> {{ loan.client.second_guarantor_tp || 'N/A' }}</p>
+                          <p class="mb-0"><strong>Address:</strong> {{ loan.client.second_guarantor_address || 'N/A' }}</p>
+                        </div>
+                      </ng-container>
+                    </div> <!-- .odoo-sub-card -->
+                  </div> <!-- .col-12.col-md-4 -->
+
+                </div> <!-- .row.g-3 -->
+              </div> <!-- .odoo-tab-pane for client -->
+
+              <!-- Tab 3: Full Repayment Schedule (Paid vs Upcoming) -->
+              <div class="odoo-tab-pane py-3" *ngIf="activeTab === 'schedule'">
+                <div class="d-flex justify-content-between align-items-center mb-3 flex-wrap gap-2">
+                  <div>
+                    <h6 class="odoo-group-subtitle mb-0 fw-bold">
+                      <i class="bi bi-calendar3 me-1 text-gold"></i>Loan Repayment Schedule
+                    </h6>
+                    <small class="text-secondary">Shows complete schedule of historical paid instalments and active future instalments.</small>
+                  </div>
+                  <div class="d-flex align-items-center gap-2" *ngIf="installmentStats">
+                    <span class="badge badge-emerald small">
+                      <i class="bi bi-check-circle-fill me-1"></i>{{ installmentStats.paid }} Paid
+                    </span>
+                    <span class="badge badge-amber small">
+                      <i class="bi bi-hourglass-split me-1"></i>{{ installmentStats.remaining }} Remaining
+                    </span>
+                  </div>
                 </div>
+
+                <ng-container *ngIf="payments$ | async as payments">
+                  <div *ngIf="getFullScheduleRows(loan, installmentStats, payments) as scheduleRows">
+                    <div class="table-responsive odoo-table-wrapper" *ngIf="scheduleRows.length > 0; else noSchedule">
+                      <table class="table lx-table mb-0">
+                        <thead>
+                          <tr>
+                            <th>Instalment #</th>
+                            <th>Expected Due Date</th>
+                            <th>Instalment Amount</th>
+                            <th>Status</th>
+                            <th>Payment Record</th>
+                          </tr>
+                        </thead>
+                        <tbody>
+                          <tr *ngFor="let row of scheduleRows" [class.table-light-tint]="row.status === 'Paid'">
+                            <td class="fw-bold">
+                              <span class="odoo-guarantor-avatar" style="width: 24px; height: 24px; font-size: 0.72rem; display: inline-flex;">
+                                {{ row.installmentNumber }}
+                              </span>
+                            </td>
+                            <td class="fw-semibold">
+                              <i class="bi bi-calendar-event me-1 text-gold"></i>
+                              {{ row.dueDate | date:'mediumDate' }}
+                            </td>
+                            <td class="fw-bold">Rs. {{ row.amount | number }}</td>
+                            <td>
+                              <span 
+                                class="badge" 
+                                [ngClass]="row.status === 'Paid' ? 'badge-emerald' : 'badge-amber'"
+                              >
+                                <i class="bi" [ngClass]="row.status === 'Paid' ? 'bi-check-circle-fill me-1' : 'bi-clock me-1'"></i>
+                                {{ row.status }}
+                              </span>
+                            </td>
+                            <td class="text-muted small">
+                              <span *ngIf="row.paidDate">
+                                <i class="bi bi-receipt me-1 text-success"></i>Paid on {{ row.paidDate | date:'mediumDate' }}
+                              </span>
+                              <span *ngIf="!row.paidDate" class="text-secondary fst-italic">
+                                Upcoming future term
+                              </span>
+                            </td>
+                          </tr>
+                        </tbody>
+                      </table>
+                    </div>
+
+                    <ng-template #noSchedule>
+                      <div class="odoo-empty-state text-center py-4">
+                        <i class="bi bi-calendar-x text-muted mb-2" style="font-size: 2rem;"></i>
+                        <p class="mb-0 text-muted">No schedule items calculated.</p>
+                      </div>
+                    </ng-template>
+                  </div>
+                </ng-container>
               </div>
 
+              <!-- Tab 4: Settlement / Reschedule Audit History -->
+              <div class="odoo-tab-pane py-3" *ngIf="activeTab === 'reschedule_history'">
+                <div class="d-flex justify-content-between align-items-center mb-3 flex-wrap gap-2">
+                  <div>
+                    <h6 class="odoo-group-subtitle mb-0 fw-bold">
+                      <i class="bi bi-clock-history me-1 text-gold"></i>Settlement & Reschedule Audit History
+                    </h6>
+                    <small class="text-secondary">Immutable log of all future repayment schedule revisions performed on this loan.</small>
+                  </div>
+                </div>
+
+                <div *ngIf="rescheduleHistory.length > 0; else noHistory">
+                  <div class="table-responsive odoo-table-wrapper">
+                    <table class="table lx-table mb-0">
+                      <thead>
+                        <tr>
+                          <th>Reschedule Date</th>
+                          <th>Instalment Revision</th>
+                          <th>Remaining Period</th>
+                          <th>End Date Revision</th>
+                          <th>Remaining Balance</th>
+                          <th>Changed By</th>
+                          <th>Notes</th>
+                        </tr>
+                      </thead>
+                      <tbody>
+                        <tr *ngFor="let h of rescheduleHistory">
+                          <td class="fw-semibold">
+                            <i class="bi bi-clock me-1 text-gold"></i>
+                            {{ h.reschedule_date | date:'medium' }}
+                          </td>
+                          <td>
+                            <div class="small">
+                              <span class="text-muted text-decoration-line-through">Rs. {{ h.old_installment_amount | number }}</span>
+                              <i class="bi bi-arrow-right mx-1 text-gold"></i>
+                              <strong class="text-gold">Rs. {{ h.new_installment_amount | number }}</strong>
+                            </div>
+                          </td>
+                          <td>
+                            <div class="small">
+                              <span class="text-muted text-decoration-line-through">{{ h.old_remaining_installments }}</span>
+                              <i class="bi bi-arrow-right mx-1 text-gold"></i>
+                              <strong>{{ h.new_remaining_installments }} inst</strong>
+                            </div>
+                          </td>
+                          <td>
+                            <div class="small">
+                              <span class="text-muted text-decoration-line-through">{{ h.old_end_date || '-' }}</span>
+                              <i class="bi bi-arrow-right mx-1 text-gold"></i>
+                              <strong>{{ h.new_end_date }}</strong>
+                            </div>
+                          </td>
+                          <td class="fw-bold">Rs. {{ h.remaining_balance | number }}</td>
+                          <td>
+                            <span class="badge badge-secondary">{{ h.changed_by || 'Admin' }}</span>
+                          </td>
+                          <td class="text-muted small">{{ h.notes || '-' }}</td>
+                        </tr>
+                      </tbody>
+                    </table>
+                  </div>
+                </div>
+
+                <ng-template #noHistory>
+                  <div class="odoo-empty-state text-center py-4">
+                    <i class="bi bi-journal-check text-muted mb-2" style="font-size: 2rem;"></i>
+                    <p class="mb-0 fw-semibold text-muted">No early settlements or schedule revisions recorded for this loan.</p>
+                    <small class="text-secondary">Original repayment schedule remains active.</small>
+                  </div>
+                </ng-template>
+              </div>
+
+            </div> <!-- tab-content -->
+
+          </div> <!-- .odoo-notebook-container -->
+        </div> <!-- .odoo-form-sheet -->
+      </div> <!-- .col-12 col-xl-10 -->
+    </div> <!-- .row and .container-fluid closed properly -->
+
+    <!-- Early Settlement / Future Repayment Rescheduling Modal -->
+    <div *ngIf="showSettlementModal" class="odoo-modal-backdrop" (click)="closeEarlySettlementModal()">
+      <div class="odoo-modal-dialog" (click)="$event.stopPropagation()">
+        <div class="odoo-modal-content">
+        
+        <!-- Modal Header -->
+        <div class="odoo-modal-header d-flex justify-content-between align-items-center p-3 border-bottom">
+          <div class="d-flex align-items-center gap-2">
+            <div class="odoo-modal-icon-badge">
+              <i class="bi bi-arrow-repeat text-gold fs-5"></i>
+            </div>
+            <div>
+              <h5 class="mb-0 fw-bold odoo-modal-title">Early Loan Settlement / Future Instalment Rescheduling</h5>
+              <small class="text-secondary">Revise remaining future repayment schedule for Loan {{ currentLoan?.loan_number }}</small>
+            </div>
+          </div>
+          <button type="button" class="btn-close odoo-modal-close-btn" (click)="closeEarlySettlementModal()"></button>
+        </div>
+
+        <!-- Modal Body -->
+        <div class="odoo-modal-body p-3 p-md-4">
+          
+          <!-- Error Alert inside modal -->
+          <div *ngIf="settlementErrorMessage" class="alert alert-warning mb-3 p-2 small" role="alert">
+            <i class="bi bi-exclamation-triangle-fill me-2"></i>
+            <span>{{ settlementErrorMessage }}</span>
+          </div>
+
+          <!-- Section 1: Current Loan Summary (Read-Only) -->
+          <div class="odoo-settlement-card mb-3 p-3 border rounded">
+            <h6 class="odoo-card-subtitle mb-2 pb-2 border-bottom">
+              <i class="bi bi-info-circle me-1 text-gold"></i>Current Repayment Status (Read-Only)
+            </h6>
+
+            <div class="row g-2 small">
+              <div class="col-6 col-sm-4">
+                <span class="settle-label">Customer</span>
+                <span class="settle-val fw-semibold text-truncate d-block">
+                  {{ currentLoan?.client?.first_name }} {{ currentLoan?.client?.last_name }}
+                </span>
+              </div>
+              <div class="col-6 col-sm-4">
+                <span class="settle-label">Outstanding Balance</span>
+                <span class="settle-val text-danger fw-bold">Rs. {{ currentRemainingBalance | number }}</span>
+              </div>
+              <div class="col-6 col-sm-4">
+                <span class="settle-label">Current Instalment</span>
+                <span class="settle-val">Rs. {{ currentInstallmentAmount | number }}</span>
+              </div>
+              <div class="col-6 col-sm-4">
+                <span class="settle-label">Paid Instalments</span>
+                <span class="settle-val text-success fw-semibold">{{ currentPaidInstallments }} paid</span>
+              </div>
+              <div class="col-6 col-sm-4">
+                <span class="settle-label">Remaining Instalments</span>
+                <span class="settle-val fw-semibold">{{ currentRemainingInstallments }} remaining</span>
+              </div>
+              <div class="col-6 col-sm-4">
+                <span class="settle-label">Current Expected End Date</span>
+                <span class="settle-val">{{ currentExpectedEndDate || '-' }}</span>
+              </div>
+            </div>
+          </div>
+
+          <!-- Section 2: New Repayment Terms (Editable) -->
+          <div class="odoo-settlement-card mb-3 p-3 border rounded">
+            <div class="d-flex justify-content-between align-items-center mb-2 pb-2 border-bottom flex-wrap gap-2">
+              <h6 class="odoo-card-subtitle mb-0">
+                <i class="bi bi-pencil-square me-1 text-gold"></i>New Repayment Terms (Future Schedule Only)
+              </h6>
+              <button 
+                type="button" 
+                class="btn btn-xs btn-outline-warning" 
+                (click)="autoCalculateAmount()"
+                title="Automatically calculate installment amount to match remaining balance"
+              >
+                <i class="bi bi-calculator me-1"></i>Auto-Balance Amount
+              </button>
+            </div>
+
+            <div class="row g-3">
+              <!-- New Remaining Period -->
+              <div class="col-12 col-sm-6">
+                <label class="odoo-form-label mb-1" for="newPeriodInput">
+                  New Remaining Instalment Count <span class="text-danger">*</span>
+                </label>
+                <div class="input-group">
+                  <span class="input-group-text odoo-input-addon"><i class="bi bi-calendar-event"></i></span>
+                  <input 
+                    type="number" 
+                    id="newPeriodInput"
+                    class="form-control odoo-form-control" 
+                    [(ngModel)]="newRemainingPeriod" 
+                    (input)="onPeriodChange()"
+                    min="1" 
+                    step="1"
+                    placeholder="e.g. 10"
+                    required
+                  />
+                  <span class="input-group-text odoo-input-addon">installments</span>
+                </div>
+                <small class="text-muted">Total installments will become {{ currentPaidInstallments + (newRemainingPeriod || 0) }}</small>
+              </div>
+
+              <!-- New Installment Amount -->
+              <div class="col-12 col-sm-6">
+                <label class="odoo-form-label mb-1" for="newAmountInput">
+                  New Instalment Amount (Rs.) <span class="text-danger">*</span>
+                </label>
+                <div class="input-group">
+                  <span class="input-group-text odoo-input-addon">Rs.</span>
+                  <input 
+                    type="number" 
+                    id="newAmountInput"
+                    class="form-control odoo-form-control" 
+                    [(ngModel)]="newInstallmentAmount" 
+                    (input)="onAmountChange()"
+                    min="1" 
+                    step="1"
+                    placeholder="e.g. 2500"
+                    required
+                  />
+                </div>
+                <small class="text-muted">Target amount per future installment</small>
+              </div>
+
+              <!-- Optional Notes -->
+              <div class="col-12">
+                <label class="odoo-form-label mb-1" for="rescheduleNotes">
+                  Settlement Reason / Notes (Optional)
+                </label>
+                <input 
+                  type="text" 
+                  id="rescheduleNotes"
+                  class="form-control odoo-form-control" 
+                  [(ngModel)]="settlementNotes" 
+                  placeholder="e.g. Customer requested shorter duration / increased repayment capacity"
+                />
+              </div>
+            </div>
+          </div>
+
+          <!-- Section 3: Financial Reconciliation & Consistency Check -->
+          <div class="odoo-settlement-card mb-3 p-3 border rounded">
+            <h6 class="odoo-card-subtitle mb-2 pb-2 border-bottom">
+              <i class="bi bi-shield-check me-1 text-gold"></i>Financial Consistency Check
+            </h6>
+
+            <div class="d-flex justify-content-between align-items-center flex-wrap gap-2 small">
+              <div>
+                <span class="text-muted">Remaining Balance:</span>
+                <strong class="ms-1">Rs. {{ currentRemainingBalance | number }}</strong>
+              </div>
+              <div>
+                <span class="text-muted">Scheduled Future Total:</span>
+                <strong class="ms-1 text-gold">Rs. {{ (newRemainingPeriod - 1) * newInstallmentAmount + finalInstallmentAmount | number }}</strong>
+              </div>
+              <div>
+                <span 
+                  class="badge" 
+                  [ngClass]="isFinalInstallmentAdjusted ? 'badge-amber' : 'badge-emerald'"
+                >
+                  <i class="bi" [ngClass]="isFinalInstallmentAdjusted ? 'bi-info-circle me-1' : 'bi-check-circle-fill me-1'"></i>
+                  {{ isFinalInstallmentAdjusted ? 'Final Installment Adjusted' : '100% Balanced' }}
+                </span>
+              </div>
+            </div>
+
+            <div *ngIf="isFinalInstallmentAdjusted" class="mt-2 p-2 rounded small border" style="background-color: var(--lx-bg-subtle);">
+              <i class="bi bi-info-circle text-gold me-1"></i>
+              <span>
+                {{ newRemainingPeriod - 1 }} installments of <strong>Rs. {{ newInstallmentAmount | number }}</strong> + 
+                final installment #{{ currentPaidInstallments + newRemainingPeriod }} of <strong>Rs. {{ finalInstallmentAmount | number }}</strong> 
+                = <strong>Rs. {{ currentRemainingBalance | number }}</strong>.
+              </span>
+            </div>
+          </div>
+
+          <!-- Section 4: Preview Revised Schedule (Table) -->
+          <div class="odoo-settlement-card mb-3 p-3 border rounded">
+            
+            <div class="d-flex justify-content-between align-items-center mb-2 pb-2 border-bottom flex-wrap gap-2">
+              <h6 class="odoo-card-subtitle mb-0">
+                <i class="bi bi-table me-1 text-gold"></i>Revised Future Schedule Preview
+              </h6>
+              <div class="small">
+                <span class="badge badge-secondary">New Expected End Date: {{ previewNewEndDate }}</span>
+              </div>
+            </div>
+
+            <!-- Side-by-side comparison -->
+            <div class="row g-2 mb-3 text-center small p-2 rounded" style="background-color: var(--lx-bg-subtle);">
+              <div class="col-6 border-end">
+                <span class="d-block text-muted">CURRENT</span>
+                <span class="fw-semibold">Rs. {{ currentInstallmentAmount | number }} · {{ currentRemainingInstallments }} inst · Ends {{ currentExpectedEndDate }}</span>
+              </div>
+              <div class="col-6">
+                <span class="d-block text-gold fw-bold">REVISED</span>
+                <span class="fw-semibold text-gold">Rs. {{ newInstallmentAmount | number }} · {{ newRemainingPeriod }} inst · Ends {{ previewNewEndDate }}</span>
+              </div>
+            </div>
+
+            <!-- Future installments scroll table -->
+            <div class="table-responsive" style="max-height: 200px; overflow-y: auto;">
+              <table class="table lx-table table-sm mb-0">
+                <thead>
+                  <tr>
+                    <th>#</th>
+                    <th>Expected Due Date</th>
+                    <th>Amount</th>
+                    <th>Status</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <tr *ngFor="let row of previewFutureSchedule">
+                    <td class="fw-bold">#{{ row.installmentNumber }}</td>
+                    <td>{{ row.dueDate }}</td>
+                    <td class="fw-semibold">
+                      Rs. {{ row.amount | number }}
+                      <span *ngIf="row.isAdjusted" class="badge badge-gold ms-1 small" style="font-size: 0.65rem;">Final Adjustment</span>
+                    </td>
+                    <td>
+                      <span class="badge badge-blue small">Upcoming</span>
+                    </td>
+                  </tr>
+                </tbody>
+              </table>
             </div>
 
           </div>
 
+          <!-- Section 5: Confirmation Notice -->
+          <div class="alert alert-info py-2 px-3 small mb-0 d-flex align-items-center gap-2" role="alert">
+            <i class="bi bi-shield-lock-fill text-primary fs-5"></i>
+            <span>
+              <strong>Guaranteed Historical Protection:</strong> This action will update only future unpaid installments. Previous {{ currentPaidInstallments }} paid installments and payment records will remain completely unchanged.
+            </span>
+          </div>
+
         </div>
-      </div>
-    </div>
+
+        <!-- Modal Footer -->
+        <div class="odoo-modal-footer d-flex justify-content-end align-items-center gap-2 p-3 border-top">
+          <button 
+            type="button" 
+            class="btn btn-lx-secondary px-3" 
+            (click)="closeEarlySettlementModal()"
+            [disabled]="isSubmittingSettlement"
+          >
+            Cancel
+          </button>
+          
+          <button 
+            type="button" 
+            class="btn btn-lx-primary px-4" 
+            (click)="confirmEarlySettlement()"
+            [disabled]="!isRescheduleValid() || isSubmittingSettlement"
+          >
+            <span *ngIf="isSubmittingSettlement" class="spinner-border spinner-border-sm me-1" role="status"></span>
+            <i *ngIf="!isSubmittingSettlement" class="bi bi-check2-circle me-1"></i>
+            {{ isSubmittingSettlement ? 'Updating Schedule...' : 'Confirm Early Settlement' }}
+          </button>
+        </div>
+
+      </div> <!-- .odoo-modal-content -->
+    </div> <!-- .odoo-modal-dialog -->
+  </div> <!-- .odoo-modal-backdrop -->
 
   </ng-container>
 

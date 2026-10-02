@@ -95,6 +95,10 @@
   background: linear-gradient(145deg, #E5B242, #B88722);
   color: #17191D !important;
 }
+.odoo-badge-analysis {
+  background: linear-gradient(145deg, #0EA5E9, #0284C7);
+  color: #FFFFFF !important;
+}
 .odoo-badge-settings {
   background: linear-gradient(145deg, #6366F1, #4338CA);
 }

@@ -1,7 +1,7 @@
-import { Component } from '@angular/core';
+import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
-import { Router, RouterModule } from '@angular/router';
+import { Router, RouterModule, ActivatedRoute } from '@angular/router';
 import { LoanManageService, LoanWithClient, Payment } from '../../service/loan-manage.service';
 import { SupabaseService } from '../../service/supabase.service';
 import { ProfitManageService } from '../../service/profit-manage.service';
@@ -13,7 +13,7 @@ import { ProfitManageService } from '../../service/profit-manage.service';
   templateUrl: './add-payments.component.html',
   styleUrl: './add-payments.component.css'
 })
-export class AddPaymentsComponent {
+export class AddPaymentsComponent implements OnInit {
   loanNumber: string = '';
   foundLoan: LoanWithClient | null = null;
   paidAmount: number = 0;
@@ -35,9 +35,19 @@ export class AddPaymentsComponent {
     private loanService: LoanManageService,
     private supabaseService: SupabaseService,
     private router: Router,
-    private profitService: ProfitManageService
+    private profitService: ProfitManageService,
+    private route: ActivatedRoute
   ) {
     this.setDefaultPaymentDate();
+  }
+
+  ngOnInit(): void {
+    this.route.queryParams.subscribe(params => {
+      if (params['loan_number']) {
+        this.loanNumber = params['loan_number'];
+        this.searchLoan();
+      }
+    });
   }
 
   setDefaultPaymentDate(): void {

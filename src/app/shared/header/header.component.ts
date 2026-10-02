@@ -102,6 +102,13 @@ export class HeaderComponent implements OnInit, OnDestroy {
       this.activeModuleTabs = [
         { label: 'Profits & Capital', url: '/profit', icon: 'bi-graph-up-arrow' }
       ];
+    } else if (url.startsWith('/analysis')) {
+      this.activeModuleTitle = 'Analysis';
+      this.activeModuleIcon = 'bi-bar-chart-line-fill';
+      this.activeModuleAccentClass = 'odoo-badge-analysis';
+      this.activeModuleTabs = [
+        { label: 'Operational Overview', url: '/analysis', icon: 'bi-speedometer2' }
+      ];
     } else if (url.startsWith('/profile')) {
       this.activeModuleTitle = 'Settings';
       this.activeModuleIcon = 'bi-gear-fill';

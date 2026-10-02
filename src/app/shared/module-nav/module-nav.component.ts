@@ -113,6 +113,16 @@ export class ModuleNavComponent implements OnInit, OnDestroy {
         { label: 'Home', url: '/home' },
         { label: 'Settings', active: true }
       ];
+    } else if (url.startsWith('/analysis')) {
+      this.moduleTitle = 'Analysis';
+      this.moduleIcon = 'bi-bar-chart-line-fill';
+      this.navTabs = [
+        { label: 'Operational Overview', url: '/analysis', icon: 'bi-grid-1x2-fill' }
+      ];
+      this.breadcrumbs = [
+        { label: 'Home', url: '/home' },
+        { label: 'Analysis', active: true }
+      ];
     } else {
       this.moduleTitle = '';
       this.moduleIcon = '';

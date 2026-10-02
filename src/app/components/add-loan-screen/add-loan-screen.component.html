@@ -98,8 +98,8 @@
                 <span class="badge badge-gold" style="font-size: 0.75rem;">
                   <i class="bi bi-lightning-charge-fill me-1"></i>New Agreement
                 </span>
-                <span *ngIf="loanNumber" class="badge badge-secondary" style="font-size: 0.75rem;">
-                  Ref: {{ loanNumber }}
+                <span class="badge badge-secondary" style="font-size: 0.75rem;">
+                  <i class="bi bi-hash me-1"></i>{{ loanNumber ? 'Ref: ' + loanNumber : 'Ref: Auto (12-YY-NNNN)' }}
                 </span>
               </div>
               <h1 class="odoo-sheet-title mb-0">
@@ -123,7 +123,7 @@
             <!-- Client Search Input (Shown when client not yet verified) -->
             <div *ngIf="!foundClient" class="mt-3">
               <p class="small text-muted mb-2">
-                Enter the customer's National Identity Card (NIC) number to link their profile and auto-generate the loan registration number.
+                Enter the customer's National Identity Card (NIC) number or Member ID to verify their profile and check loan history.
               </p>
               
               <div class="odoo-search-box d-flex align-items-stretch">
@@ -131,8 +131,8 @@
                 <input 
                   type="text" 
                   class="odoo-search-input flex-grow-1" 
-                  placeholder="Enter Client NIC number (e.g. 199512345678 or 951234567V)..." 
-                  aria-label="Client NIC Number" 
+                  placeholder="Enter Customer NIC or Member ID (e.g. 199512345678, 951234567V, or #14)..." 
+                  aria-label="Customer NIC or Member ID" 
                   [(ngModel)]="searchNicNumber" 
                   (keyup.enter)="searchClient()"
                 />
@@ -144,13 +144,13 @@
                 >
                   <span *ngIf="isSearching" class="spinner-border spinner-border-sm me-1" role="status"></span>
                   <i *ngIf="!isSearching" class="bi bi-shield-check me-1"></i>
-                  {{ isSearching ? 'Searching...' : 'Verify Client' }}
+                  {{ isSearching ? 'Searching...' : 'Verify Customer' }}
                 </button>
               </div>
 
               <!-- Search Error Alert -->
               <div *ngIf="searchError" class="alert alert-warning mt-3 mb-0" role="alert">
-                <div class="d-flex justify-content-between align-items-center">
+                <div class="d-flex justify-content-between align-items-center flex-wrap gap-2">
                   <div class="d-flex align-items-center gap-2">
                     <i class="bi bi-exclamation-triangle-fill"></i>
                     <span>{{ searchError }}</span>
@@ -178,11 +178,24 @@
                       <span class="badge badge-secondary">Reg #{{ clientRegisterNumber }}</span>
                       <span class="badge badge-gold">Location: {{ clientLocation }}</span>
                       <span class="badge badge-secondary">Group: {{ clientGroup }}</span>
+                      <span *ngIf="customerLoans.length > 0" class="badge badge-secondary">
+                        <i class="bi bi-clock-history me-1 text-gold"></i>{{ customerLoans.length }} Previous Loan{{ customerLoans.length > 1 ? 's' : '' }}
+                      </span>
                     </div>
                   </div>
                 </div>
 
                 <div class="d-flex align-items-center gap-2">
+                  <button 
+                    *ngIf="showLoanForm && customerLoans.length > 0"
+                    type="button" 
+                    class="btn btn-sm btn-lx-secondary"
+                    (click)="reviewCustomerHistory()"
+                    title="Review Customer History"
+                  >
+                    <i class="bi bi-clock-history me-1 text-gold"></i>Review History
+                  </button>
+
                   <a 
                     [routerLink]="['/single-member', foundClient.register_number]" 
                     target="_blank"
@@ -191,6 +204,7 @@
                   >
                     <i class="bi bi-box-arrow-up-right me-1"></i>View Profile
                   </a>
+
                   <button 
                     type="button" 
                     class="btn btn-sm btn-outline-danger" 
@@ -202,6 +216,186 @@
                 </div>
               </div>
             </div>
+          </div>
+
+          <!-- Customer Previous Loan History Step (Shown when previous loans exist) -->
+          <div *ngIf="showCustomerHistory && customerLoans.length > 0" class="odoo-customer-history-section mt-4">
+            
+            <div class="d-flex justify-content-between align-items-center mb-3 flex-wrap gap-2">
+              <h5 class="odoo-group-title mb-0">
+                <i class="bi bi-clock-history me-2 text-gold"></i>
+                <span>Customer History Verification</span>
+              </h5>
+              <span class="badge badge-secondary">
+                {{ customerLoans.length }} Previous Loan{{ customerLoans.length > 1 ? 's' : '' }} Found
+              </span>
+            </div>
+
+            <!-- Compact Read-Only Customer Summary -->
+            <div class="odoo-customer-summary-card mb-4 p-3 border rounded">
+              <div class="row g-3 align-items-center text-center text-sm-start">
+                
+                <div class="col-6 col-sm-4 col-md-3">
+                  <span class="summary-micro-label">Customer</span>
+                  <span class="summary-main-val text-truncate" [title]="clientName">{{ clientName }}</span>
+                </div>
+
+                <div class="col-6 col-sm-4 col-md-2">
+                  <span class="summary-micro-label">Member ID</span>
+                  <span class="summary-main-val text-gold font-monospace">#{{ clientRegisterNumber }}</span>
+                </div>
+
+                <div class="col-4 col-sm-4 col-md-2">
+                  <span class="summary-micro-label">Previous Loans</span>
+                  <span class="summary-main-val">{{ customerLoans.length }}</span>
+                </div>
+
+                <div class="col-4 col-sm-6 col-md-2">
+                  <span class="summary-micro-label">Active Loans</span>
+                  <span class="summary-main-val text-warning">{{ activeLoansCount }}</span>
+                </div>
+
+                <div class="col-4 col-sm-6 col-md-3">
+                  <span class="summary-micro-label">Completed Loans</span>
+                  <span class="summary-main-val text-success">{{ completedLoansCount }}</span>
+                </div>
+
+              </div>
+            </div>
+
+            <!-- Vertical List of Previous Loan Cards (Newest First) -->
+            <div class="odoo-history-cards-list d-flex flex-column gap-3">
+              
+              <div *ngFor="let loan of customerLoans" class="odoo-history-card p-3 p-md-4 border rounded">
+                
+                <!-- Card Header: Loan Number + Status -->
+                <div class="d-flex justify-content-between align-items-center flex-wrap gap-2 mb-3 pb-2 border-bottom">
+                  <div class="d-flex align-items-center gap-2">
+                    <div class="odoo-history-icon">
+                      <i class="bi bi-file-earmark-text text-gold"></i>
+                    </div>
+                    <div>
+                      <h5 class="mb-0 fw-bold font-monospace" style="color: var(--lx-text-primary); font-size: 1rem;">
+                        Loan {{ loan.loan_number }}
+                      </h5>
+                    </div>
+                    <span class="badge badge-secondary small ms-1">{{ loan.loan_type | titlecase }}</span>
+                  </div>
+
+                  <!-- Semantic Status Badge -->
+                  <div>
+                    <span *ngIf="loan.status === 'closed'" class="badge badge-success">
+                      <i class="bi bi-check-circle-fill me-1"></i>Completed
+                    </span>
+                    <span *ngIf="loan.status === 'active' && loan.isOverdue" class="badge badge-danger">
+                      <i class="bi bi-exclamation-circle-fill me-1"></i>Overdue
+                    </span>
+                    <span *ngIf="loan.status === 'active' && !loan.isOverdue" class="badge badge-gold">
+                      <i class="bi bi-clock-fill me-1"></i>Active
+                    </span>
+                  </div>
+                </div>
+
+                <!-- Financial & Instalment Metrics Grid -->
+                <div class="odoo-history-grid row g-3">
+                  
+                  <!-- Col 1: Original Amount & Total Due -->
+                  <div class="col-12 col-sm-6 col-lg-3">
+                    <div class="odoo-metric-item">
+                      <span class="metric-label">Original Amount</span>
+                      <span class="metric-val">Rs. {{ loan.principal_amount | number }}</span>
+                    </div>
+                    <div class="odoo-metric-item mt-2">
+                      <span class="metric-label">Total Due</span>
+                      <span class="metric-val fw-bold">Rs. {{ loan.total_amount_due | number }}</span>
+                    </div>
+                  </div>
+
+                  <!-- Col 2: Paid & Remaining -->
+                  <div class="col-12 col-sm-6 col-lg-3">
+                    <div class="odoo-metric-item">
+                      <span class="metric-label">Paid Amount</span>
+                      <span class="metric-val text-success fw-semibold">Rs. {{ loan.total_paid | number }}</span>
+                    </div>
+                    <div class="odoo-metric-item mt-2">
+                      <span class="metric-label">Remaining Balance</span>
+                      <span class="metric-val" [ngClass]="loan.remaining_amount > 0 ? 'text-danger fw-bold' : 'text-muted'">
+                        Rs. {{ loan.remaining_amount | number }}
+                      </span>
+                    </div>
+                  </div>
+
+                  <!-- Col 3: Instalments -->
+                  <div class="col-12 col-sm-6 col-lg-3">
+                    <div class="odoo-metric-item">
+                      <span class="metric-label">Total Instalments</span>
+                      <span class="metric-val">
+                        {{ loan.installmentStats?.paid || 0 }} / {{ loan.installmentStats?.expected || 0 }}
+                      </span>
+                    </div>
+                    <div class="odoo-metric-item mt-2">
+                      <span class="metric-label">Remaining Instalments</span>
+                      <span class="metric-val fw-semibold">
+                        {{ loan.installmentStats?.remaining || 0 }}
+                      </span>
+                    </div>
+                  </div>
+
+                  <!-- Col 4: Dates -->
+                  <div class="col-12 col-sm-6 col-lg-3">
+                    <div class="odoo-metric-item">
+                      <span class="metric-label">Start Date</span>
+                      <span class="metric-val">{{ loan.start_date || '-' }}</span>
+                    </div>
+                    <div class="odoo-metric-item mt-2">
+                      <span class="metric-label">End / Settlement Date</span>
+                      <span class="metric-val">{{ loan.end_date || '-' }}</span>
+                    </div>
+                  </div>
+
+                </div>
+
+                <!-- Repayment Progress Bar -->
+                <div class="odoo-repayment-progress-section mt-3 pt-3 border-top">
+                  <div class="d-flex justify-content-between align-items-center mb-1 small flex-wrap gap-1">
+                    <span class="text-secondary fw-semibold">
+                      <i class="bi bi-pie-chart-fill text-gold me-1"></i>Repayment Progress
+                    </span>
+                    <span class="text-secondary">
+                      {{ loan.installmentStats?.paid || 0 }} of {{ loan.installmentStats?.expected || 0 }} instalments paid 
+                      ({{ loan.installmentStats?.progressPercent || 0 }}% Paid)
+                    </span>
+                  </div>
+                  <div class="progress" style="height: 7px; background-color: var(--lx-bg-subtle);">
+                    <div 
+                      class="progress-bar" 
+                      role="progressbar" 
+                      [style.width.%]="loan.installmentStats?.progressPercent || 0"
+                      [ngClass]="loan.status === 'closed' ? 'bg-success' : 'bg-warning'"
+                      style="background-color: var(--lx-primary-accent);"
+                      [attr.aria-valuenow]="loan.installmentStats?.progressPercent || 0" 
+                      aria-valuemin="0" 
+                      aria-valuemax="100"
+                    ></div>
+                  </div>
+                </div>
+
+              </div>
+
+            </div>
+
+            <!-- Continue to New Loan Action -->
+            <div class="odoo-history-actions d-flex justify-content-end align-items-center gap-2 mt-4 pt-3 border-top">
+              <button 
+                type="button" 
+                class="btn btn-lx-primary px-4 py-2" 
+                (click)="continueToNewLoan()"
+              >
+                <span>Continue to New Loan</span>
+                <i class="bi bi-arrow-right ms-2"></i>
+              </button>
+            </div>
+
           </div>
 
           <!-- Step 2: Loan Terms Form (Shown when client is found) -->
@@ -308,10 +502,12 @@
                           id="loanNumber" 
                           class="odoo-form-control form-control bg-subtle" 
                           name="loanNumber" 
-                          [(ngModel)]="loanNumber" 
+                          [value]="loanNumber || 'Auto-generated on submission'" 
+                          placeholder="Auto-generated on submission"
                           readonly
                         />
                       </div>
+                      <small class="text-muted">Standard format: 12-YY-NNNN (e.g. 12-26-0001)</small>
                     </div>
 
                   </div>
@@ -384,6 +580,55 @@
                   </div>
                 </div>
 
+              </div>
+
+              <!-- Loan Guarantors Section (Loan-Level Association) -->
+              <div class="odoo-guarantors-step-section my-4">
+                <div class="d-flex justify-content-between align-items-center mb-3 flex-wrap gap-2">
+                  <div>
+                    <h6 class="odoo-card-subtitle mb-0 fw-bold">
+                      <i class="bi bi-people-fill me-2 text-gold"></i>Loan Guarantors (Registered Members)
+                    </h6>
+                    <small class="text-secondary">Each guarantor must be an existing registered member and is tied specifically to this loan.</small>
+                  </div>
+                  
+                  <div>
+                    <span 
+                      class="badge" 
+                      [ngClass]="guarantor1 && guarantor2 ? 'badge-emerald' : 'badge-secondary'"
+                      style="font-size: 0.8rem; padding: 0.4rem 0.75rem;"
+                    >
+                      <i class="bi" [ngClass]="guarantor1 && guarantor2 ? 'bi-check-circle-fill me-1' : 'bi-info-circle me-1'"></i>
+                      {{ (guarantor1 && guarantor2) ? '✓ 2 Guarantors Verified' : ((guarantor1 || guarantor2) ? '1 of 2 Guarantors Selected' : '2 Registered Guarantors Required') }}
+                    </span>
+                  </div>
+                </div>
+
+                <div class="row g-3">
+                  <!-- Guarantor 1 -->
+                  <div class="col-12 col-lg-6">
+                    <app-guarantor-lookup
+                      [guarantorOrder]="1"
+                      title="Guarantor 1"
+                      [borrowerId]="foundClient?.client_id || null"
+                      [otherGuarantorId]="guarantor2?.client_id || null"
+                      [selectedGuarantor]="guarantor1"
+                      (guarantorSelected)="onGuarantor1Selected($event)"
+                    ></app-guarantor-lookup>
+                  </div>
+
+                  <!-- Guarantor 2 -->
+                  <div class="col-12 col-lg-6">
+                    <app-guarantor-lookup
+                      [guarantorOrder]="2"
+                      title="Guarantor 2"
+                      [borrowerId]="foundClient?.client_id || null"
+                      [otherGuarantorId]="guarantor1?.client_id || null"
+                      [selectedGuarantor]="guarantor2"
+                      (guarantorSelected)="onGuarantor2Selected($event)"
+                    ></app-guarantor-lookup>
+                  </div>
+                </div>
               </div>
 
               <!-- Live Financial Calculation Preview Strip -->

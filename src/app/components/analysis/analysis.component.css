@@ -1,0 +1,352 @@
+/* Analysis Module Master Styles */
+.lx-analysis-container {
+  min-height: calc(100vh - 120px);
+  padding-bottom: 3rem;
+}
+
+/* Odoo-style Control Panel Header */
+.odoo-control-panel {
+  background-color: var(--lx-bg-card);
+  border-bottom: 1px solid var(--lx-border-subtle);
+  transition: background-color var(--lx-transition-base), border-color var(--lx-transition-base);
+}
+
+.odoo-breadcrumb-trail {
+  font-family: var(--lx-font-titles);
+  font-size: 1.15rem;
+  font-weight: 700;
+  color: var(--lx-text-primary);
+}
+
+.odoo-crumb-link {
+  color: var(--lx-primary-accent);
+  text-decoration: none;
+  cursor: pointer;
+}
+
+.odoo-crumb-link:hover {
+  text-decoration: underline;
+}
+
+.odoo-crumb-sep {
+  margin: 0 0.5rem;
+  color: var(--lx-text-muted, #94a3b8);
+  font-weight: 400;
+}
+
+.odoo-crumb-current {
+  color: var(--lx-text-primary);
+}
+
+/* KPI Cards Row */
+.odoo-kpi-card {
+  background-color: var(--lx-bg-card);
+  border: 1px solid var(--lx-border-subtle);
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
+  transition: transform 0.2s ease, box-shadow 0.2s ease, border-color 0.2s ease;
+}
+
+.odoo-kpi-card:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 6px 16px rgba(0, 0, 0, 0.08);
+  border-color: var(--lx-primary-accent);
+}
+
+.kpi-label {
+  font-family: var(--lx-font-subtitles);
+  font-size: 0.75rem;
+  font-weight: 700;
+  color: var(--lx-text-secondary);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+.kpi-value {
+  font-family: var(--lx-font-titles);
+  font-weight: 700;
+  font-size: 1.55rem;
+  line-height: 1.2;
+}
+
+.fs-6-responsive {
+  font-size: 1.25rem !important;
+}
+
+.kpi-icon-badge {
+  width: 32px;
+  height: 32px;
+  border-radius: 8px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1rem;
+}
+
+.kpi-gold {
+  background-color: rgba(212, 164, 55, 0.15);
+  color: #D4A437;
+}
+
+.kpi-emerald {
+  background-color: rgba(21, 154, 116, 0.15);
+  color: #159A74;
+}
+
+.kpi-amber {
+  background-color: rgba(229, 163, 61, 0.15);
+  color: #E5A33D;
+}
+
+.kpi-danger {
+  background-color: rgba(217, 83, 79, 0.15);
+  color: #D9534F;
+}
+
+/* Main Form Sheet Canvas */
+.odoo-form-sheet {
+  background-color: var(--lx-bg-card);
+  border: 1px solid var(--lx-border-subtle);
+  border-radius: var(--lx-radius-lg, 12px);
+  padding: 1.5rem;
+  transition: background-color var(--lx-transition-base), border-color var(--lx-transition-base);
+}
+
+/* Tabs Navigation */
+.odoo-tabs-header {
+  display: flex;
+  gap: 0.5rem;
+  overflow-x: auto;
+  scrollbar-width: none;
+}
+
+.odoo-tabs-header::-webkit-scrollbar {
+  display: none;
+}
+
+.odoo-tab-nav-btn {
+  background: transparent;
+  border: none;
+  border-bottom: 2px solid transparent;
+  color: var(--lx-text-secondary);
+  font-family: var(--lx-font-links);
+  font-size: 0.9rem;
+  font-weight: 600;
+  padding: 0.65rem 1rem;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  margin-bottom: -1px;
+  white-space: nowrap;
+  display: inline-flex;
+  align-items: center;
+}
+
+.odoo-tab-nav-btn:hover {
+  color: var(--lx-primary-accent);
+}
+
+.odoo-tab-nav-btn.active {
+  color: var(--lx-primary-accent);
+  border-bottom-color: var(--lx-primary-accent);
+  font-weight: 700;
+}
+
+/* Search Box */
+.odoo-search-box {
+  position: relative;
+  display: flex;
+  align-items: center;
+  background-color: var(--lx-bg-subtle);
+  border: 1px solid var(--lx-border-subtle);
+  border-radius: 8px;
+  padding: 0.1rem 0.6rem;
+  transition: all 0.2s ease;
+}
+
+.odoo-search-box:focus-within {
+  border-color: var(--lx-primary-accent);
+  box-shadow: 0 0 0 3px rgba(212, 164, 55, 0.15);
+}
+
+.odoo-search-icon {
+  color: var(--lx-text-secondary);
+  margin-right: 0.5rem;
+  font-size: 0.9rem;
+}
+
+.odoo-search-input {
+  border: none;
+  background: transparent;
+  width: 100%;
+  padding: 0.4rem 0;
+  font-size: 0.875rem;
+  color: var(--lx-text-primary);
+  outline: none;
+  font-family: var(--lx-font-paragraphs);
+}
+
+/* Date Filters */
+.odoo-date-input-group {
+  background-color: var(--lx-bg-subtle);
+  border: 1px solid var(--lx-border-subtle);
+  border-radius: 6px;
+  padding: 0.2rem 0.5rem;
+  font-size: 0.8125rem;
+}
+
+.odoo-date-label {
+  font-size: 0.75rem;
+  font-weight: 600;
+  color: var(--lx-text-secondary);
+  margin-right: 0.4rem;
+}
+
+.odoo-date-input {
+  border: none;
+  background: transparent;
+  color: var(--lx-text-primary);
+  font-family: var(--lx-font-paragraphs);
+  font-size: 0.8125rem;
+  outline: none;
+}
+
+/* Data Tables */
+.odoo-table-wrapper {
+  border: 1px solid var(--lx-border-subtle);
+  border-radius: 8px;
+  overflow: hidden;
+  max-height: 65vh;
+  overflow-y: auto;
+}
+
+.odoo-data-table {
+  font-family: var(--lx-font-paragraphs, 'Inter', sans-serif);
+  font-size: 0.85rem;
+  color: var(--lx-text-primary);
+}
+
+.odoo-data-table thead th {
+  background-color: var(--lx-bg-subtle);
+  color: var(--lx-text-secondary);
+  font-family: var(--lx-font-subtitles);
+  font-size: 0.75rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  border-bottom: 2px solid var(--lx-border-subtle);
+  padding: 0.75rem 0.9rem;
+  white-space: nowrap;
+  position: sticky;
+  top: 0;
+  z-index: 2;
+}
+
+.odoo-data-table tbody td {
+  padding: 0.75rem 0.9rem;
+  border-bottom: 1px solid var(--lx-border-subtle);
+  vertical-align: middle;
+}
+
+.odoo-row-hover:hover {
+  background-color: rgba(212, 164, 55, 0.04) !important;
+}
+
+/* Badges */
+.badge-gold {
+  background-color: rgba(212, 164, 55, 0.15);
+  color: #B8860B;
+  border: 1px solid rgba(212, 164, 55, 0.3);
+  font-weight: 600;
+}
+
+.badge-emerald {
+  background-color: rgba(21, 154, 116, 0.15);
+  color: #159A74;
+  border: 1px solid rgba(21, 154, 116, 0.3);
+  font-weight: 600;
+}
+
+.badge-amber {
+  background-color: rgba(229, 163, 61, 0.15);
+  color: #D97706;
+  border: 1px solid rgba(229, 163, 61, 0.3);
+  font-weight: 600;
+}
+
+.badge-danger {
+  background-color: rgba(217, 83, 79, 0.15);
+  color: #DC2626;
+  border: 1px solid rgba(217, 83, 79, 0.3);
+  font-weight: 600;
+}
+
+.badge-loan-number {
+  background-color: var(--lx-bg-subtle);
+  color: var(--lx-text-primary);
+  border: 1px solid var(--lx-border-subtle);
+  font-family: monospace;
+  font-size: 0.8125rem;
+  letter-spacing: 0.02em;
+  font-weight: 600;
+  padding: 0.35rem 0.5rem;
+}
+
+/* Buttons */
+.btn-gold {
+  background-color: var(--lx-primary-accent, #D4A437);
+  border-color: var(--lx-primary-accent, #D4A437);
+  color: #FFFFFF;
+  font-weight: 600;
+}
+
+.btn-gold:hover {
+  background-color: #C09228;
+  border-color: #C09228;
+  color: #FFFFFF;
+}
+
+.bg-primary-gold {
+  background-color: var(--lx-primary-accent, #D4A437) !important;
+}
+
+.text-gold {
+  color: var(--lx-primary-accent, #D4A437) !important;
+}
+
+.text-amber {
+  color: #E5A33D !important;
+}
+
+.text-primary-custom {
+  color: var(--lx-text-primary);
+}
+
+.font-numeric {
+  font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+  font-feature-settings: 'tnum' 1;
+}
+
+/* Empty State Circle */
+.empty-icon-circle {
+  width: 70px;
+  height: 70px;
+  border-radius: 50%;
+  background-color: var(--lx-bg-subtle);
+  border: 1px dashed var(--lx-border-subtle);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+/* Spin Animation */
+.spin-animation {
+  animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+  from {
+    transform: rotate(0deg);
+  }
+  to {
+    transform: rotate(360deg);
+  }
+}
