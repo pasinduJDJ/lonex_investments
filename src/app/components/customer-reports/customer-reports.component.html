@@ -1,0 +1,781 @@
+<div class="lx-reports-container container-fluid px-3 px-md-4 py-3">
+
+  <!-- Breadcrumb & Page Header -->
+  <div class="lx-report-header mb-3">
+    <div class="d-flex flex-wrap justify-content-between align-items-center gap-2">
+      <div>
+        <nav aria-label="breadcrumb">
+          <ol class="breadcrumb lx-report-breadcrumb mb-1">
+            <li class="breadcrumb-item"><a routerLink="/home">Home</a></li>
+            <li class="breadcrumb-item"><a routerLink="/member">Customers</a></li>
+            <li class="breadcrumb-item active" aria-current="page">Reports</li>
+            <li class="breadcrumb-item active text-gold fw-semibold" aria-current="page">
+              <span *ngIf="activeReportType === 'customer-master'">Customer Master</span>
+              <span *ngIf="activeReportType === 'loan-summary'">Customer Loan Summary</span>
+              <span *ngIf="activeReportType === 'statement'">Customer Statement</span>
+              <span *ngIf="activeReportType === 'guarantor'">Guarantor Report</span>
+            </li>
+          </ol>
+        </nav>
+        <h2 class="lx-report-title mb-0">
+          <i class="bi bi-file-earmark-spreadsheet me-2 text-gold"></i>
+          <span *ngIf="activeReportType === 'customer-master'">Customer Master Report</span>
+          <span *ngIf="activeReportType === 'loan-summary'">Customer Loan Summary</span>
+          <span *ngIf="activeReportType === 'statement'">Customer Statement</span>
+          <span *ngIf="activeReportType === 'guarantor'">Guarantor Report</span>
+        </h2>
+      </div>
+
+      <!-- Export Excel Action Button -->
+      <div class="d-flex align-items-center gap-2">
+        <button
+          type="button"
+          class="btn btn-export-excel d-flex align-items-center gap-2"
+          [disabled]="isLoading || isExporting || (activeReportType === 'statement' ? !statementData : totalItems === 0)"
+          (click)="activeReportType === 'customer-master' ? exportMasterToExcel() : (activeReportType === 'loan-summary' ? exportLoanSummaryToExcel() : (activeReportType === 'statement' ? exportStatementToExcel() : exportGuarantorToExcel()))"
+        >
+          <span *ngIf="isExporting" class="spinner-border spinner-border-sm" role="status"></span>
+          <i *ngIf="!isExporting" class="bi bi-file-earmark-excel-fill text-success"></i>
+          <span>{{ isExporting ? 'Preparing Excel file...' : 'Export Excel (.xlsx)' }}</span>
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Odoo-Style Report Switcher Tabs -->
+  <div class="lx-report-tabs mb-3">
+    <div class="nav nav-pills lx-pills-group" role="tablist">
+      <button 
+        type="button" 
+        class="nav-link lx-pill-tab" 
+        [class.active]="activeReportType === 'customer-master'"
+        (click)="switchReport('customer-master')"
+      >
+        <i class="bi bi-person-lines-fill me-1"></i> Customer Master
+      </button>
+
+      <button 
+        type="button" 
+        class="nav-link lx-pill-tab" 
+        [class.active]="activeReportType === 'loan-summary'"
+        (click)="switchReport('loan-summary')"
+      >
+        <i class="bi bi-cash-stack me-1"></i> Loan Summary
+      </button>
+
+      <button 
+        type="button" 
+        class="nav-link lx-pill-tab" 
+        [class.active]="activeReportType === 'statement'"
+        (click)="switchReport('statement')"
+      >
+        <i class="bi bi-person-badge me-1"></i> Customer Statement
+      </button>
+
+      <button 
+        type="button" 
+        class="nav-link lx-pill-tab" 
+        [class.active]="activeReportType === 'guarantor'"
+        (click)="switchReport('guarantor')"
+      >
+        <i class="bi bi-shield-check me-1"></i> Guarantor Report
+      </button>
+    </div>
+  </div>
+
+  <!-- ========================================================================= -->
+  <!-- REPORT 01: CUSTOMER MASTER REPORT VIEW                                    -->
+  <!-- ========================================================================= -->
+  <ng-container *ngIf="activeReportType === 'customer-master'">
+    
+    <!-- Filter Toolbar -->
+    <div class="lx-filter-card mb-3">
+      <div class="row g-2 align-items-end">
+        <div class="col-12 col-md-4">
+          <label class="lx-filter-label">Search Customer</label>
+          <div class="input-group input-group-sm">
+            <span class="input-group-text lx-input-icon"><i class="bi bi-search"></i></span>
+            <input 
+              type="text" 
+              class="form-control lx-filter-input" 
+              placeholder="Name, NIC, Phone, Member #..."
+              [(ngModel)]="masterSearch"
+              (keyup.enter)="loadCustomerMaster()"
+            />
+          </div>
+        </div>
+
+        <div class="col-6 col-md-2">
+          <label class="lx-filter-label">Registered From</label>
+          <input 
+            type="date" 
+            class="form-control form-control-sm lx-filter-input" 
+            [(ngModel)]="masterDateFrom"
+          />
+        </div>
+
+        <div class="col-6 col-md-2">
+          <label class="lx-filter-label">Registered To</label>
+          <input 
+            type="date" 
+            class="form-control form-control-sm lx-filter-input" 
+            [(ngModel)]="masterDateTo"
+          />
+        </div>
+
+        <div class="col-6 col-md-2">
+          <label class="lx-filter-label">Membership Status</label>
+          <select class="form-select form-select-sm lx-filter-input" [(ngModel)]="masterMembership">
+            <option value="all">All Status</option>
+            <option value="member">Registered Member</option>
+            <option value="non-member">Non-Member</option>
+          </select>
+        </div>
+
+        <div class="col-6 col-md-2 d-flex gap-2">
+          <button type="button" class="btn btn-sm btn-primary-gold flex-grow-1" (click)="loadCustomerMaster()">
+            <i class="bi bi-funnel me-1"></i> Apply
+          </button>
+          <button type="button" class="btn btn-sm btn-outline-secondary" (click)="resetMasterFilters()" title="Reset Filters">
+            <i class="bi bi-arrow-counterclockwise"></i>
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Summary Banner -->
+    <div class="lx-summary-strip mb-3">
+      <div class="lx-summary-stat">
+        <span class="lx-stat-label">Total Customers</span>
+        <span class="lx-stat-value">{{ masterSummary.totalCustomers }}</span>
+      </div>
+      <div class="lx-summary-divider"></div>
+      <div class="lx-summary-stat">
+        <span class="lx-stat-label">Registered Members</span>
+        <span class="lx-stat-value text-success">{{ masterSummary.totalMembers }}</span>
+      </div>
+      <div class="lx-summary-divider"></div>
+      <div class="lx-summary-stat">
+        <span class="lx-stat-label">Non-Members</span>
+        <span class="lx-stat-value text-muted">{{ masterSummary.totalNonMembers }}</span>
+      </div>
+    </div>
+
+    <!-- Table Container -->
+    <div class="lx-table-wrapper card shadow-sm">
+      <div class="table-responsive">
+        <table class="table table-hover lx-report-table align-middle mb-0">
+          <thead>
+            <tr>
+              <th style="width: 100px;">Member ID</th>
+              <th>Customer Name</th>
+              <th>NIC Number</th>
+              <th>Mobile</th>
+              <th>Address</th>
+              <th>Registered Date</th>
+              <th>Status</th>
+              <th>Group</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr *ngIf="isLoading">
+              <td colspan="8" class="text-center py-5">
+                <div class="spinner-border spinner-border-sm text-gold me-2" role="status"></div>
+                <span>Generating report...</span>
+              </td>
+            </tr>
+
+            <tr *ngIf="!isLoading && masterRows.length === 0">
+              <td colspan="8" class="text-center py-5">
+                <i class="bi bi-inbox text-muted fs-3 d-block mb-2"></i>
+                <span class="fw-semibold text-muted">No records found for the selected report criteria.</span>
+              </td>
+            </tr>
+
+            <tr *ngFor="let row of paginatedMasterRows">
+              <td>
+                <span class="badge badge-member-id">{{ row.memberId }}</span>
+              </td>
+              <td>
+                <span class="fw-semibold">{{ row.fullName }}</span>
+              </td>
+              <td><code>{{ row.nicNumber }}</code></td>
+              <td>{{ row.mobileNumber }}</td>
+              <td class="text-truncate" style="max-width: 250px;" [title]="row.fullAddress">
+                {{ row.fullAddress }}
+              </td>
+              <td>{{ row.registrationDate }}</td>
+              <td>
+                <span class="badge" [ngClass]="row.membershipStatus === 'Member' ? 'bg-success-subtle text-success' : 'bg-secondary-subtle text-secondary'">
+                  {{ row.membershipStatus }}
+                </span>
+              </td>
+              <td>
+                <span class="badge bg-light text-dark border">{{ row.groupName }}</span>
+              </td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+
+      <!-- Pagination Footer -->
+      <div class="lx-pagination-footer p-2 px-3 d-flex flex-wrap justify-content-between align-items-center gap-2" *ngIf="masterRows.length > 0">
+        <div class="d-flex align-items-center gap-2">
+          <span class="text-muted small">Show</span>
+          <select class="form-select form-select-sm lx-page-select" [(ngModel)]="pageSize" (change)="onPageSizeChange()">
+            <option *ngFor="let opt of pageSizeOptions" [value]="opt">{{ opt }}</option>
+          </select>
+          <span class="text-muted small">
+            Showing {{ (currentPage - 1) * pageSize + 1 }} to {{ (currentPage * pageSize > totalItems ? totalItems : currentPage * pageSize) }} of {{ totalItems }} records
+          </span>
+        </div>
+
+        <div class="d-flex align-items-center gap-1">
+          <button class="btn btn-sm btn-outline-secondary" [disabled]="currentPage === 1" (click)="setPage(currentPage - 1)">
+            <i class="bi bi-chevron-left"></i> Prev
+          </button>
+          <span class="px-2 small text-muted">Page {{ currentPage }} of {{ totalPages }}</span>
+          <button class="btn btn-sm btn-outline-secondary" [disabled]="currentPage === totalPages" (click)="setPage(currentPage + 1)">
+            Next <i class="bi bi-chevron-right"></i>
+          </button>
+        </div>
+      </div>
+    </div>
+  </ng-container>
+
+  <!-- ========================================================================= -->
+  <!-- REPORT 02: CUSTOMER LOAN SUMMARY VIEW                                     -->
+  <!-- ========================================================================= -->
+  <ng-container *ngIf="activeReportType === 'loan-summary'">
+    
+    <!-- Filter Toolbar -->
+    <div class="lx-filter-card mb-3">
+      <div class="row g-2 align-items-end">
+        <div class="col-12 col-md-4">
+          <label class="lx-filter-label">Search Customer / Loan #</label>
+          <div class="input-group input-group-sm">
+            <span class="input-group-text lx-input-icon"><i class="bi bi-search"></i></span>
+            <input 
+              type="text" 
+              class="form-control lx-filter-input" 
+              placeholder="Customer Name, NIC, Loan #..."
+              [(ngModel)]="loanSummarySearch"
+              (keyup.enter)="loadLoanSummary()"
+            />
+          </div>
+        </div>
+
+        <div class="col-6 col-md-2">
+          <label class="lx-filter-label">Loan Date From</label>
+          <input 
+            type="date" 
+            class="form-control form-control-sm lx-filter-input" 
+            [(ngModel)]="loanSummaryDateFrom"
+          />
+        </div>
+
+        <div class="col-6 col-md-2">
+          <label class="lx-filter-label">Loan Date To</label>
+          <input 
+            type="date" 
+            class="form-control form-control-sm lx-filter-input" 
+            [(ngModel)]="loanSummaryDateTo"
+          />
+        </div>
+
+        <div class="col-6 col-md-2">
+          <label class="lx-filter-label">Loan Status</label>
+          <select class="form-select form-select-sm lx-filter-input" [(ngModel)]="loanSummaryStatus">
+            <option value="all">All Borrowers</option>
+            <option value="active">Has Active Loans</option>
+            <option value="completed">All Completed Loans</option>
+            <option value="overdue">Has Overdue Loans</option>
+          </select>
+        </div>
+
+        <div class="col-6 col-md-2 d-flex gap-2">
+          <button type="button" class="btn btn-sm btn-primary-gold flex-grow-1" (click)="loadLoanSummary()">
+            <i class="bi bi-funnel me-1"></i> Apply
+          </button>
+          <button type="button" class="btn btn-sm btn-outline-secondary" (click)="resetLoanSummaryFilters()" title="Reset Filters">
+            <i class="bi bi-arrow-counterclockwise"></i>
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Summary Banner -->
+    <div class="lx-summary-strip mb-3 flex-wrap">
+      <div class="lx-summary-stat">
+        <span class="lx-stat-label">Active Borrowers</span>
+        <span class="lx-stat-value">{{ loanSummaryTotals.totalCustomersWithLoans }}</span>
+      </div>
+      <div class="lx-summary-divider"></div>
+      <div class="lx-summary-stat">
+        <span class="lx-stat-label">Total Loans</span>
+        <span class="lx-stat-value">{{ loanSummaryTotals.totalLoansIssued }}</span>
+      </div>
+      <div class="lx-summary-divider"></div>
+      <div class="lx-summary-stat">
+        <span class="lx-stat-label">Active Loans</span>
+        <span class="lx-stat-value text-primary">{{ loanSummaryTotals.totalActiveLoans }}</span>
+      </div>
+      <div class="lx-summary-divider"></div>
+      <div class="lx-summary-stat">
+        <span class="lx-stat-label">Total Amount Due</span>
+        <span class="lx-stat-value">Rs. {{ loanSummaryTotals.totalAmountDue | number:'1.2-2' }}</span>
+      </div>
+      <div class="lx-summary-divider"></div>
+      <div class="lx-summary-stat">
+        <span class="lx-stat-label">Total Collected</span>
+        <span class="lx-stat-value text-success">Rs. {{ loanSummaryTotals.totalPaid | number:'1.2-2' }}</span>
+      </div>
+      <div class="lx-summary-divider"></div>
+      <div class="lx-summary-stat">
+        <span class="lx-stat-label">Outstanding Balance</span>
+        <span class="lx-stat-value text-danger">Rs. {{ loanSummaryTotals.totalRemaining | number:'1.2-2' }}</span>
+      </div>
+    </div>
+
+    <!-- Table Container -->
+    <div class="lx-table-wrapper card shadow-sm">
+      <div class="table-responsive">
+        <table class="table table-hover lx-report-table align-middle mb-0">
+          <thead>
+            <tr>
+              <th style="width: 100px;">Member ID</th>
+              <th>Customer</th>
+              <th>NIC Number</th>
+              <th>Mobile</th>
+              <th class="text-center">Total Loans</th>
+              <th class="text-center">Active</th>
+              <th class="text-center">Closed</th>
+              <th class="text-end">Total Due (Rs.)</th>
+              <th class="text-end">Total Paid (Rs.)</th>
+              <th class="text-end">Remaining (Rs.)</th>
+              <th class="text-center">Status</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr *ngIf="isLoading">
+              <td colspan="11" class="text-center py-5">
+                <div class="spinner-border spinner-border-sm text-gold me-2" role="status"></div>
+                <span>Generating report...</span>
+              </td>
+            </tr>
+
+            <tr *ngIf="!isLoading && loanSummaryRows.length === 0">
+              <td colspan="11" class="text-center py-5">
+                <i class="bi bi-inbox text-muted fs-3 d-block mb-2"></i>
+                <span class="fw-semibold text-muted">No records found for the selected report criteria.</span>
+              </td>
+            </tr>
+
+            <tr *ngFor="let row of paginatedLoanSummaryRows">
+              <td><span class="badge badge-member-id">{{ row.memberId }}</span></td>
+              <td><span class="fw-semibold">{{ row.customerName }}</span></td>
+              <td><code>{{ row.nicNumber }}</code></td>
+              <td>{{ row.mobileNumber }}</td>
+              <td class="text-center fw-semibold">{{ row.totalLoans }}</td>
+              <td class="text-center text-primary fw-semibold">{{ row.activeLoans }}</td>
+              <td class="text-center text-muted">{{ row.completedLoans }}</td>
+              <td class="text-end fw-semibold">Rs. {{ row.totalLoanAmount | number:'1.2-2' }}</td>
+              <td class="text-end text-success">Rs. {{ row.totalPaid | number:'1.2-2' }}</td>
+              <td class="text-end text-danger fw-bold">Rs. {{ row.remainingAmount | number:'1.2-2' }}</td>
+              <td class="text-center">
+                <span *ngIf="row.hasOverdue" class="badge bg-danger-subtle text-danger">Overdue</span>
+                <span *ngIf="!row.hasOverdue && row.activeLoans > 0" class="badge bg-primary-subtle text-primary">Active</span>
+                <span *ngIf="!row.hasOverdue && row.activeLoans === 0 && row.totalLoans > 0" class="badge bg-success-subtle text-success">Completed</span>
+                <span *ngIf="row.totalLoans === 0" class="badge bg-secondary-subtle text-muted">No Loans</span>
+              </td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+
+      <!-- Pagination Footer -->
+      <div class="lx-pagination-footer p-2 px-3 d-flex flex-wrap justify-content-between align-items-center gap-2" *ngIf="loanSummaryRows.length > 0">
+        <div class="d-flex align-items-center gap-2">
+          <span class="text-muted small">Show</span>
+          <select class="form-select form-select-sm lx-page-select" [(ngModel)]="pageSize" (change)="onPageSizeChange()">
+            <option *ngFor="let opt of pageSizeOptions" [value]="opt">{{ opt }}</option>
+          </select>
+          <span class="text-muted small">
+            Showing {{ (currentPage - 1) * pageSize + 1 }} to {{ (currentPage * pageSize > totalItems ? totalItems : currentPage * pageSize) }} of {{ totalItems }} records
+          </span>
+        </div>
+
+        <div class="d-flex align-items-center gap-1">
+          <button class="btn btn-sm btn-outline-secondary" [disabled]="currentPage === 1" (click)="setPage(currentPage - 1)">
+            <i class="bi bi-chevron-left"></i> Prev
+          </button>
+          <span class="px-2 small text-muted">Page {{ currentPage }} of {{ totalPages }}</span>
+          <button class="btn btn-sm btn-outline-secondary" [disabled]="currentPage === totalPages" (click)="setPage(currentPage + 1)">
+            Next <i class="bi bi-chevron-right"></i>
+          </button>
+        </div>
+      </div>
+    </div>
+  </ng-container>
+
+  <!-- ========================================================================= -->
+  <!-- REPORT 03: CUSTOMER STATEMENT VIEW                                        -->
+  <!-- ========================================================================= -->
+  <ng-container *ngIf="activeReportType === 'statement'">
+    
+    <!-- Filter Toolbar -->
+    <div class="lx-filter-card mb-3">
+      <div class="row g-2 align-items-end">
+        <div class="col-12 col-md-5">
+          <label class="lx-filter-label">Select Customer / Member</label>
+          <select class="form-select form-select-sm lx-filter-input" [(ngModel)]="selectedClientId" (change)="onSelectCustomerChange()">
+            <option value="" disabled>-- Select a customer to view statement --</option>
+            <option *ngFor="let c of allClientsList" [value]="c.client_id">
+              #{{ (c.register_number || 0).toString().padStart(4, '0') }} - {{ c.first_name }} {{ c.last_name }} ({{ c.nic_number }})
+            </option>
+          </select>
+        </div>
+
+        <div class="col-6 col-md-2">
+          <label class="lx-filter-label">Payments From</label>
+          <input 
+            type="date" 
+            class="form-control form-control-sm lx-filter-input" 
+            [(ngModel)]="statementDateFrom"
+          />
+        </div>
+
+        <div class="col-6 col-md-2">
+          <label class="lx-filter-label">Payments To</label>
+          <input 
+            type="date" 
+            class="form-control form-control-sm lx-filter-input" 
+            [(ngModel)]="statementDateTo"
+          />
+        </div>
+
+        <div class="col-12 col-md-3 d-flex gap-2">
+          <button type="button" class="btn btn-sm btn-primary-gold flex-grow-1" (click)="loadCustomerStatement()">
+            <i class="bi bi-file-earmark-text me-1"></i> Generate Statement
+          </button>
+          <button type="button" class="btn btn-sm btn-outline-secondary" (click)="resetStatementFilters()" title="Reset Period">
+            <i class="bi bi-arrow-counterclockwise"></i>
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Statement Body -->
+    <div *ngIf="isLoading" class="text-center py-5">
+      <div class="spinner-border spinner-border-sm text-gold me-2" role="status"></div>
+      <span>Generating customer statement...</span>
+    </div>
+
+    <div *ngIf="!isLoading && statementData" class="lx-statement-wrapper">
+      
+      <!-- Customer Info Header Banner -->
+      <div class="card lx-client-profile-card shadow-sm p-3 mb-3">
+        <div class="d-flex flex-wrap justify-content-between align-items-center gap-3">
+          <div class="d-flex align-items-center gap-3">
+            <div class="lx-client-avatar">
+              <i class="bi bi-person-fill"></i>
+            </div>
+            <div>
+              <h4 class="mb-1 fw-bold">{{ statementData.fullName }}</h4>
+              <div class="d-flex flex-wrap gap-3 small text-muted">
+                <span><i class="bi bi-hash text-gold"></i> ID: <strong>{{ statementData.memberId }}</strong></span>
+                <span><i class="bi bi-person-vcard text-gold"></i> NIC: <strong>{{ statementData.nicNumber }}</strong></span>
+                <span><i class="bi bi-telephone text-gold"></i> Mobile: <strong>{{ statementData.mobileNumber }}</strong></span>
+                <span><i class="bi bi-geo-alt text-gold"></i> Address: <strong>{{ statementData.address }}</strong></span>
+              </div>
+            </div>
+          </div>
+          <div>
+            <span class="badge badge-gold px-3 py-2">
+              <i class="bi bi-calendar-event me-1"></i>
+              Period: {{ (statementDateFrom || statementDateTo) ? (statementDateFrom || 'Start') + ' to ' + (statementDateTo || 'End') : 'All Time' }}
+            </span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Customer Summary KPIs -->
+      <div class="lx-summary-strip mb-3 flex-wrap">
+        <div class="lx-summary-stat">
+          <span class="lx-stat-label">Total Loans</span>
+          <span class="lx-stat-value">{{ statementData.summary.totalLoans }}</span>
+        </div>
+        <div class="lx-summary-divider"></div>
+        <div class="lx-summary-stat">
+          <span class="lx-stat-label">Active Loans</span>
+          <span class="lx-stat-value text-primary">{{ statementData.summary.activeLoans }}</span>
+        </div>
+        <div class="lx-summary-divider"></div>
+        <div class="lx-summary-stat">
+          <span class="lx-stat-label">Completed</span>
+          <span class="lx-stat-value text-success">{{ statementData.summary.completedLoans }}</span>
+        </div>
+        <div class="lx-summary-divider"></div>
+        <div class="lx-summary-stat">
+          <span class="lx-stat-label">Total Due</span>
+          <span class="lx-stat-value">Rs. {{ statementData.summary.totalAmountDue | number:'1.2-2' }}</span>
+        </div>
+        <div class="lx-summary-divider"></div>
+        <div class="lx-summary-stat">
+          <span class="lx-stat-label">Total Repaid</span>
+          <span class="lx-stat-value text-success">Rs. {{ statementData.summary.totalPaid | number:'1.2-2' }}</span>
+        </div>
+        <div class="lx-summary-divider"></div>
+        <div class="lx-summary-stat">
+          <span class="lx-stat-label">Remaining Balance</span>
+          <span class="lx-stat-value text-danger">Rs. {{ statementData.summary.totalRemaining | number:'1.2-2' }}</span>
+        </div>
+      </div>
+
+      <!-- Section: Loan Details -->
+      <div class="card shadow-sm mb-3">
+        <div class="card-header bg-transparent py-2 border-bottom">
+          <h6 class="mb-0 fw-bold"><i class="bi bi-card-checklist text-gold me-2"></i>Loan Accounts</h6>
+        </div>
+        <div class="table-responsive">
+          <table class="table table-hover lx-report-table align-middle mb-0">
+            <thead>
+              <tr>
+                <th>Loan Number</th>
+                <th>Period</th>
+                <th>Type</th>
+                <th class="text-end">Principal</th>
+                <th class="text-end">Interest</th>
+                <th class="text-end">Doc Charge</th>
+                <th class="text-end">Total Due</th>
+                <th class="text-end">Paid</th>
+                <th class="text-end">Remaining</th>
+                <th class="text-center">Status</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr *ngIf="statementData.loans.length === 0">
+                <td colspan="10" class="text-center py-4 text-muted">No loans found for this customer.</td>
+              </tr>
+              <tr *ngFor="let loan of statementData.loans">
+                <td><span class="badge badge-loan-number">{{ loan.loanNumber }}</span></td>
+                <td><small>{{ loan.startDate }} to {{ loan.endDate }}</small></td>
+                <td><span class="badge bg-light text-dark border">{{ loan.loanType }}</span></td>
+                <td class="text-end">Rs. {{ loan.principalAmount | number:'1.2-2' }}</td>
+                <td class="text-end">{{ loan.interestRate }}%</td>
+                <td class="text-end">Rs. {{ loan.documentCharge | number:'1.2-2' }}</td>
+                <td class="text-end fw-semibold">Rs. {{ loan.totalAmountDue | number:'1.2-2' }}</td>
+                <td class="text-end text-success">Rs. {{ loan.totalPaid | number:'1.2-2' }}</td>
+                <td class="text-end text-danger fw-bold">Rs. {{ loan.remainingAmount | number:'1.2-2' }}</td>
+                <td class="text-center">
+                  <span class="badge" [ngClass]="loan.status === 'active' ? 'bg-primary-subtle text-primary' : 'bg-success-subtle text-success'">
+                    {{ loan.status | uppercase }}
+                  </span>
+                </td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+      <!-- Section: Payment History -->
+      <div class="card shadow-sm">
+        <div class="card-header bg-transparent py-2 border-bottom d-flex justify-content-between align-items-center">
+          <h6 class="mb-0 fw-bold"><i class="bi bi-clock-history text-gold me-2"></i>Repayment History</h6>
+          <span class="badge bg-light text-dark border">{{ statementData.payments.length }} payments</span>
+        </div>
+        <div class="table-responsive">
+          <table class="table table-hover lx-report-table align-middle mb-0">
+            <thead>
+              <tr>
+                <th>Payment Date</th>
+                <th>Loan Number</th>
+                <th class="text-end">Amount (Rs.)</th>
+                <th>Remark / Method</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr *ngIf="statementData.payments.length === 0">
+                <td colspan="4" class="text-center py-4 text-muted">No payment records found for the selected period.</td>
+              </tr>
+              <tr *ngFor="let pay of statementData.payments">
+                <td>{{ pay.paidDate }}</td>
+                <td><span class="badge badge-loan-number">{{ pay.loanNumber }}</span></td>
+                <td class="text-end fw-bold text-success">Rs. {{ pay.amount | number:'1.2-2' }}</td>
+                <td>{{ pay.remark }}</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+    </div>
+  </ng-container>
+
+  <!-- ========================================================================= -->
+  <!-- REPORT 04: GUARANTOR REPORT VIEW                                          -->
+  <!-- ========================================================================= -->
+  <ng-container *ngIf="activeReportType === 'guarantor'">
+    
+    <!-- Filter Toolbar -->
+    <div class="lx-filter-card mb-3">
+      <div class="row g-2 align-items-end">
+        <div class="col-12 col-md-4">
+          <label class="lx-filter-label">Search Guarantor / Borrower / Loan</label>
+          <div class="input-group input-group-sm">
+            <span class="input-group-text lx-input-icon"><i class="bi bi-search"></i></span>
+            <input 
+              type="text" 
+              class="form-control lx-filter-input" 
+              placeholder="Guarantor Name, NIC, Borrower..."
+              [(ngModel)]="guarantorSearch"
+              (keyup.enter)="loadGuarantorReport()"
+            />
+          </div>
+        </div>
+
+        <div class="col-6 col-md-2">
+          <label class="lx-filter-label">Loan Date From</label>
+          <input 
+            type="date" 
+            class="form-control form-control-sm lx-filter-input" 
+            [(ngModel)]="guarantorDateFrom"
+          />
+        </div>
+
+        <div class="col-6 col-md-2">
+          <label class="lx-filter-label">Loan Date To</label>
+          <input 
+            type="date" 
+            class="form-control form-control-sm lx-filter-input" 
+            [(ngModel)]="guarantorDateTo"
+          />
+        </div>
+
+        <div class="col-6 col-md-2">
+          <label class="lx-filter-label">Loan Status</label>
+          <select class="form-select form-select-sm lx-filter-input" [(ngModel)]="guarantorStatus">
+            <option value="all">All Loans</option>
+            <option value="active">Active Loans</option>
+            <option value="closed">Closed Loans</option>
+          </select>
+        </div>
+
+        <div class="col-6 col-md-2 d-flex gap-2">
+          <button type="button" class="btn btn-sm btn-primary-gold flex-grow-1" (click)="loadGuarantorReport()">
+            <i class="bi bi-funnel me-1"></i> Apply
+          </button>
+          <button type="button" class="btn btn-sm btn-outline-secondary" (click)="resetGuarantorFilters()" title="Reset Filters">
+            <i class="bi bi-arrow-counterclockwise"></i>
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Summary Banner -->
+    <div class="lx-summary-strip mb-3 flex-wrap">
+      <div class="lx-summary-stat">
+        <span class="lx-stat-label">Total Guarantee Links</span>
+        <span class="lx-stat-value">{{ guarantorSummary.totalRelationships }}</span>
+      </div>
+      <div class="lx-summary-divider"></div>
+      <div class="lx-summary-stat">
+        <span class="lx-stat-label">Unique Guarantors</span>
+        <span class="lx-stat-value">{{ guarantorSummary.uniqueGuarantors }}</span>
+      </div>
+      <div class="lx-summary-divider"></div>
+      <div class="lx-summary-stat">
+        <span class="lx-stat-label">Active Guarantees</span>
+        <span class="lx-stat-value text-primary">{{ guarantorSummary.activeGuarantees }}</span>
+      </div>
+      <div class="lx-summary-divider"></div>
+      <div class="lx-summary-stat">
+        <span class="lx-stat-label">Total Guaranteed Balance</span>
+        <span class="lx-stat-value text-danger">Rs. {{ guarantorSummary.totalGuaranteedBalance | number:'1.2-2' }}</span>
+      </div>
+    </div>
+
+    <!-- Table Container -->
+    <div class="lx-table-wrapper card shadow-sm">
+      <div class="table-responsive">
+        <table class="table table-hover lx-report-table align-middle mb-0">
+          <thead>
+            <tr>
+              <th>Guarantor Name</th>
+              <th>Guarantor NIC</th>
+              <th>Guarantor Mobile</th>
+              <th>Borrower Name</th>
+              <th>Borrower NIC</th>
+              <th>Loan Number</th>
+              <th>Loan Date</th>
+              <th>Type</th>
+              <th class="text-end">Loan Amount (Rs.)</th>
+              <th class="text-end">Remaining (Rs.)</th>
+              <th class="text-center">Status</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr *ngIf="isLoading">
+              <td colspan="11" class="text-center py-5">
+                <div class="spinner-border spinner-border-sm text-gold me-2" role="status"></div>
+                <span>Generating report...</span>
+              </td>
+            </tr>
+
+            <tr *ngIf="!isLoading && guarantorRows.length === 0">
+              <td colspan="11" class="text-center py-5">
+                <i class="bi bi-inbox text-muted fs-3 d-block mb-2"></i>
+                <span class="fw-semibold text-muted">No records found for the selected report criteria.</span>
+              </td>
+            </tr>
+
+            <tr *ngFor="let row of paginatedGuarantorRows">
+              <td>
+                <span class="fw-semibold">{{ row.guarantorName }}</span>
+                <span *ngIf="row.guarantorMemberId && row.guarantorMemberId !== '-'" class="badge badge-member-id ms-1">{{ row.guarantorMemberId }}</span>
+              </td>
+              <td><code>{{ row.guarantorNic }}</code></td>
+              <td>{{ row.guarantorMobile }}</td>
+              <td><span class="fw-semibold">{{ row.borrowerName }}</span></td>
+              <td><code>{{ row.borrowerNic }}</code></td>
+              <td><span class="badge badge-loan-number">{{ row.loanNumber }}</span></td>
+              <td>{{ row.loanDate }}</td>
+              <td><span class="badge bg-light text-dark border">{{ row.loanType }}</span></td>
+              <td class="text-end">Rs. {{ row.loanAmount | number:'1.2-2' }}</td>
+              <td class="text-end text-danger fw-bold">Rs. {{ row.remainingAmount | number:'1.2-2' }}</td>
+              <td class="text-center">
+                <span class="badge" [ngClass]="row.loanStatus === 'active' ? 'bg-primary-subtle text-primary' : 'bg-success-subtle text-success'">
+                  {{ row.loanStatus | uppercase }}
+                </span>
+              </td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+
+      <!-- Pagination Footer -->
+      <div class="lx-pagination-footer p-2 px-3 d-flex flex-wrap justify-content-between align-items-center gap-2" *ngIf="guarantorRows.length > 0">
+        <div class="d-flex align-items-center gap-2">
+          <span class="text-muted small">Show</span>
+          <select class="form-select form-select-sm lx-page-select" [(ngModel)]="pageSize" (change)="onPageSizeChange()">
+            <option *ngFor="let opt of pageSizeOptions" [value]="opt">{{ opt }}</option>
+          </select>
+          <span class="text-muted small">
+            Showing {{ (currentPage - 1) * pageSize + 1 }} to {{ (currentPage * pageSize > totalItems ? totalItems : currentPage * pageSize) }} of {{ totalItems }} records
+          </span>
+        </div>
+
+        <div class="d-flex align-items-center gap-1">
+          <button class="btn btn-sm btn-outline-secondary" [disabled]="currentPage === 1" (click)="setPage(currentPage - 1)">
+            <i class="bi bi-chevron-left"></i> Prev
+          </button>
+          <span class="px-2 small text-muted">Page {{ currentPage }} of {{ totalPages }}</span>
+          <button class="btn btn-sm btn-outline-secondary" [disabled]="currentPage === totalPages" (click)="setPage(currentPage + 1)">
+            Next <i class="bi bi-chevron-right"></i>
+          </button>
+        </div>
+      </div>
+    </div>
+  </ng-container>
+
+</div>

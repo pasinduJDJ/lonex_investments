@@ -31,17 +31,50 @@
     <!-- Right: Module Action / Sub-Navigation Tabs -->
     <div class="lx-module-nav-right">
       <div class="lx-nav-tabs-group" role="tablist">
-        <a *ngFor="let tab of navTabs" 
-           [routerLink]="tab.url"
-           class="lx-module-tab-btn" 
-           [class.active]="isTabActive(tab.url)"
-           [class.lx-tab-primary]="tab.isPrimary && !isTabActive(tab.url)"
-           role="tab"
-           [attr.aria-selected]="isTabActive(tab.url)"
-        >
-          <i *ngIf="tab.icon" [class]="'bi ' + tab.icon + ' me-1'"></i>
-          <span>{{ tab.label }}</span>
-        </a>
+        <ng-container *ngFor="let tab of navTabs">
+
+          <!-- Dropdown Tab (e.g. Reports ▾) -->
+          <div *ngIf="tab.isDropdown" class="lx-nav-dropdown-wrapper position-relative">
+            <button 
+              type="button"
+              class="lx-module-tab-btn lx-dropdown-toggle-btn"
+              [class.active]="isTabActive(tab)"
+              (click)="toggleDropdown(tab, $event)"
+              [attr.aria-expanded]="openDropdownTabUrl === tab.url"
+            >
+              <i *ngIf="tab.icon" [class]="'bi ' + tab.icon + ' me-1'"></i>
+              <span>{{ tab.label }}</span>
+              <i class="bi bi-chevron-down ms-1" style="font-size: 0.7rem;"></i>
+            </button>
+
+            <!-- Dropdown Menu Popover -->
+            <div *ngIf="openDropdownTabUrl === tab.url" class="lx-nav-dropdown-menu shadow-lg" (click)="$event.stopPropagation()">
+              <a *ngFor="let child of tab.children"
+                 [routerLink]="child.url"
+                 class="lx-nav-dropdown-item d-flex align-items-center"
+                 [class.active]="currentUrl.startsWith(child.url)"
+                 (click)="closeDropdown()"
+              >
+                <i *ngIf="child.icon" [class]="'bi ' + child.icon + ' me-2 text-gold'"></i>
+                <span>{{ child.label }}</span>
+              </a>
+            </div>
+          </div>
+
+          <!-- Standard Link Tab -->
+          <a *ngIf="!tab.isDropdown"
+             [routerLink]="tab.url"
+             class="lx-module-tab-btn" 
+             [class.active]="isTabActive(tab)"
+             [class.lx-tab-primary]="tab.isPrimary && !isTabActive(tab)"
+             role="tab"
+             [attr.aria-selected]="isTabActive(tab)"
+          >
+            <i *ngIf="tab.icon" [class]="'bi ' + tab.icon + ' me-1'"></i>
+            <span>{{ tab.label }}</span>
+          </a>
+
+        </ng-container>
       </div>
     </div>
 

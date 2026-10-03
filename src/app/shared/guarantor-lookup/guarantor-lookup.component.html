@@ -1,5 +1,5 @@
 <div class="odoo-guarantor-card border rounded p-3 h-100">
-  
+
   <!-- Header: Order & Status -->
   <div class="d-flex justify-content-between align-items-center mb-3 pb-2 border-bottom">
     <div class="d-flex align-items-center gap-2">
@@ -20,27 +20,15 @@
     <label [for]="'guarantorNicInput' + guarantorOrder" class="odoo-form-label mb-2">
       Guarantor NIC Number <span class="text-danger">*</span>
     </label>
-    
+
     <div class="input-group">
       <span class="input-group-text odoo-input-addon">
         <i class="bi bi-person-vcard"></i>
       </span>
-      <input 
-        type="text" 
-        [id]="'guarantorNicInput' + guarantorOrder"
-        class="form-control odoo-form-control" 
-        placeholder="e.g. 901234567V" 
-        [(ngModel)]="nicInput"
-        (keyup.enter)="onSearch()"
-        [disabled]="isSearching"
-        maxlength="15"
-      />
-      <button 
-        type="button" 
-        class="btn btn-lx-primary px-3" 
-        (click)="onSearch()" 
-        [disabled]="isSearching"
-      >
+      <input type="text" [id]="'guarantorNicInput' + guarantorOrder" class="form-control odoo-form-control"
+        placeholder="e.g. 901234567V" [(ngModel)]="nicInput" (keyup.enter)="onSearch()" [disabled]="isSearching"
+        maxlength="15" />
+      <button type="button" class="btn btn-lx-primary px-3" (click)="onSearch()" [disabled]="isSearching">
         <span *ngIf="isSearching" class="spinner-border spinner-border-sm me-1" role="status"></span>
         <i *ngIf="!isSearching" class="bi bi-search me-1"></i>
         {{ isSearching ? 'Searching...' : 'Search' }}
@@ -53,16 +41,13 @@
         <i class="bi bi-exclamation-triangle-fill text-warning flex-shrink-0 mt-1"></i>
         <div class="flex-grow-1">
           <div class="fw-semibold">{{ errorMessage }}</div>
-          
+
           <!-- Call to action if unregistered -->
-          <div *ngIf="isUnregistered" class="mt-2 pt-2 border-top border-warning-subtle d-flex justify-content-between align-items-center flex-wrap gap-2">
+          <div *ngIf="isUnregistered"
+            class="mt-2 pt-2 border-top border-warning-subtle d-flex justify-content-between align-items-center flex-wrap gap-2">
             <span class="text-muted small">Person must be registered first:</span>
-            <a 
-              routerLink="/add-member" 
-              target="_blank" 
-              class="btn btn-xs btn-lx-primary py-1 px-2"
-              title="Open Register Member in new tab"
-            >
+            <a routerLink="/add-member" target="_blank" class="btn btn-xs btn-lx-primary py-1 px-2"
+              title="Open Register Member in new tab">
               <i class="bi bi-person-plus me-1"></i>Register New Member
             </a>
           </div>
@@ -78,7 +63,8 @@
         {{ initials }}
       </div>
       <div class="flex-grow-1 min-w-0">
-        <h5 class="mb-0 fw-bold text-truncate" style="color: var(--lx-text-primary);" [title]="selectedGuarantor.first_name + ' ' + selectedGuarantor.last_name">
+        <h5 class="mb-0 fw-bold text-truncate" style="color: var(--lx-text-primary);"
+          [title]="selectedGuarantor.first_name + ' ' + selectedGuarantor.last_name">
           {{ selectedGuarantor.first_name }} {{ selectedGuarantor.last_name }}
         </h5>
         <div class="d-flex align-items-center gap-2 mt-1">
@@ -94,7 +80,7 @@
 
     <!-- Read-Only Field Grid -->
     <div class="guarantor-info-grid row g-2 mb-3 p-2 rounded" style="background-color: var(--lx-bg-subtle);">
-      
+
       <div class="col-6">
         <span class="info-micro-label">NIC Number</span>
         <div class="info-micro-val font-monospace">{{ selectedGuarantor.nic_number }}</div>
@@ -112,7 +98,8 @@
 
       <div class="col-6">
         <span class="info-micro-label">Member ID</span>
-        <div class="info-micro-val text-gold font-monospace">{{ formatMemberId(selectedGuarantor.register_number) }}</div>
+        <div class="info-micro-val text-gold font-monospace">{{ formatMemberId(selectedGuarantor.register_number) }}
+        </div>
       </div>
 
     </div>
@@ -124,21 +111,14 @@
 
     <!-- Action Buttons -->
     <div class="d-flex justify-content-between align-items-center gap-2 pt-2 border-top">
-      <a 
-        [routerLink]="['/single-member', selectedGuarantor.register_number]" 
-        target="_blank"
-        class="btn btn-sm btn-lx-secondary flex-grow-1 text-center" 
-        title="View Member 360° Profile in new tab without losing form data"
-      >
+      <a [routerLink]="['/single-member', selectedGuarantor.register_number]" target="_blank"
+        class="btn btn-sm btn-lx-secondary flex-grow-1 text-center"
+        title="View Member 360° Profile in new tab without losing form data">
         <i class="bi bi-box-arrow-up-right me-1"></i>View Member &rarr;
       </a>
 
-      <button 
-        type="button" 
-        class="btn btn-sm btn-outline-danger px-3" 
-        (click)="onClear()" 
-        title="Clear and select a different guarantor"
-      >
+      <button type="button" class="btn btn-sm btn-outline-danger px-3" (click)="onClear()"
+        title="Clear and select a different guarantor">
         <i class="bi bi-arrow-repeat me-1"></i>Change
       </button>
     </div>

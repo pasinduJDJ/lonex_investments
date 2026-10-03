@@ -27,16 +27,48 @@
           <span class="lx-module-title-text">{{ activeModuleTitle }}</span>
         </div>
 
-        <!-- In-Header Action Tabs (e.g. All Customers, Add Customer) -->
+        <!-- In-Header Action Tabs (e.g. All Customers, Add Customer, Reports) -->
         <div class="lx-header-tabs ms-3 d-none d-sm-flex align-items-center gap-2">
-          <a *ngFor="let tab of activeModuleTabs" 
-             [routerLink]="tab.url"
-             class="lx-header-tab-btn"
-             [class.active]="isTabActive(tab.url)"
-          >
-            <i *ngIf="tab.icon" [class]="'bi ' + tab.icon + ' me-1'"></i>
-            <span>{{ tab.label }}</span>
-          </a>
+          <ng-container *ngFor="let tab of activeModuleTabs">
+            
+            <!-- Dropdown Tab (e.g. Reports ▾) -->
+            <div *ngIf="tab.isDropdown" class="position-relative">
+              <button 
+                type="button" 
+                class="lx-header-tab-btn border-0"
+                [class.active]="isTabActive(tab.url) || currentUrl.startsWith(tab.url)"
+                (click)="toggleReportsDropdown($event)"
+              >
+                <i *ngIf="tab.icon" [class]="'bi ' + tab.icon + ' me-1'"></i>
+                <span>{{ tab.label }}</span>
+                <i class="bi bi-chevron-down ms-1" style="font-size: 0.65rem;"></i>
+              </button>
+
+              <!-- Reports Dropdown Menu -->
+              <div *ngIf="isReportsDropdownOpen" class="lx-popover shadow-lg py-1" style="position: absolute; top: calc(100% + 6px); left: 0; min-width: 220px; z-index: 1060;" (click)="$event.stopPropagation()">
+                <a *ngFor="let child of tab.children"
+                   [routerLink]="child.url"
+                   class="lx-dropdown-item d-flex align-items-center"
+                   [class.active]="currentUrl.startsWith(child.url)"
+                   (click)="isReportsDropdownOpen = false"
+                >
+                  <i *ngIf="child.icon" [class]="'bi ' + child.icon + ' me-2 text-gold'"></i>
+                  <span>{{ child.label }}</span>
+                </a>
+              </div>
+            </div>
+
+            <!-- Regular Link Tab -->
+            <a *ngIf="!tab.isDropdown"
+               [routerLink]="tab.url"
+               class="lx-header-tab-btn"
+               [class.active]="isTabActive(tab.url)"
+            >
+              <i *ngIf="tab.icon" [class]="'bi ' + tab.icon + ' me-1'"></i>
+              <span>{{ tab.label }}</span>
+            </a>
+
+          </ng-container>
         </div>
       </ng-container>
     </div>
@@ -164,7 +196,7 @@
       <a *ngFor="let tab of activeModuleTabs" 
          [routerLink]="tab.url"
          class="lx-mobile-subnav-btn"
-         [class.active]="isTabActive(tab.url)"
+         [class.active]="isTabActive(tab.url) || currentUrl.startsWith(tab.url)"
       >
         <span>{{ tab.label }}</span>
       </a>

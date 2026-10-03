@@ -1,0 +1,833 @@
+<div class="lx-finance-reports-container container-fluid px-3 px-lg-4 py-3">
+  
+  <!-- Header & Title Bar -->
+  <div class="d-flex flex-column flex-md-row justify-content-between align-items-start align-items-md-center gap-3 mb-3">
+    <div>
+      <div class="lx-report-breadcrumb text-muted mb-1">
+        <a routerLink="/profit" class="text-decoration-none">Finance</a>
+        <span class="mx-1 text-muted">/</span>
+        <span class="text-muted">Reports</span>
+        <span class="mx-1 text-muted">•</span>
+        <span class="badge bg-secondary-subtle text-secondary border px-2 py-0">100% Read Only</span>
+      </div>
+      <h1 class="lx-report-title h3 mb-0">Financial & Accounting Reports</h1>
+    </div>
+
+    <!-- Quick Report Navigation Tabs -->
+    <div class="d-flex align-items-center gap-1 p-1 bg-surface border rounded shadow-sm lx-report-nav-tabs overflow-x-auto">
+      <button 
+        type="button" 
+        class="btn btn-sm"
+        [class.btn-warning]="activeReportType === 'account-history'"
+        [class.btn-light]="activeReportType !== 'account-history'"
+        (click)="switchReportType('account-history')"
+      >
+        <i class="bi bi-bank me-1"></i> Account History
+      </button>
+
+      <button 
+        type="button" 
+        class="btn btn-sm"
+        [class.btn-warning]="activeReportType === 'transaction-history'"
+        [class.btn-light]="activeReportType !== 'transaction-history'"
+        (click)="switchReportType('transaction-history')"
+      >
+        <i class="bi bi-journal-text me-1"></i> Central Transactions
+      </button>
+
+      <button 
+        type="button" 
+        class="btn btn-sm"
+        [class.btn-warning]="activeReportType === 'income-expense'"
+        [class.btn-light]="activeReportType !== 'income-expense'"
+        (click)="switchReportType('income-expense')"
+      >
+        <i class="bi bi-graph-up-arrow me-1"></i> Income & Expense
+      </button>
+
+      <button 
+        type="button" 
+        class="btn btn-sm"
+        [class.btn-warning]="activeReportType === 'capital-history'"
+        [class.btn-light]="activeReportType !== 'capital-history'"
+        (click)="switchReportType('capital-history')"
+      >
+        <i class="bi bi-cash-stack me-1"></i> Capital History
+      </button>
+
+      <button 
+        type="button" 
+        class="btn btn-sm"
+        [class.btn-warning]="activeReportType === 'expense'"
+        [class.btn-light]="activeReportType !== 'expense'"
+        (click)="switchReportType('expense')"
+      >
+        <i class="bi bi-receipt me-1"></i> Expense Report
+      </button>
+
+      <button 
+        type="button" 
+        class="btn btn-sm"
+        [class.btn-warning]="activeReportType === 'cash-movement'"
+        [class.btn-light]="activeReportType !== 'cash-movement'"
+        (click)="switchReportType('cash-movement')"
+      >
+        <i class="bi bi-arrow-left-right me-1"></i> Cash Movement
+      </button>
+    </div>
+  </div>
+
+  <!-- Filter & Action Toolbar -->
+  <div class="card border mb-3 shadow-sm bg-surface">
+    <div class="card-body p-3">
+      
+      <!-- 1. ACCOUNT HISTORY FILTERS -->
+      <div *ngIf="activeReportType === 'account-history'" class="row g-2 align-items-end">
+        <div class="col-12 col-md-3">
+          <label class="form-label text-muted small fw-semibold text-uppercase mb-1">Target Account</label>
+          <select class="form-select form-select-sm lx-filter-input" [(ngModel)]="accountFilter" (change)="onFilterChange()">
+            <option value="BANK_CAPITAL">Bank Capital Account</option>
+            <option value="ASSETS_CASH">Assets / Cash Account</option>
+          </select>
+        </div>
+
+        <div class="col-12 col-md-2">
+          <label class="form-label text-muted small fw-semibold text-uppercase mb-1">Transaction Type</label>
+          <select class="form-select form-select-sm lx-filter-input" [(ngModel)]="accountTxTypeFilter" (change)="onFilterChange()">
+            <option value="all">All Types</option>
+            <option *ngIf="accountFilter === 'BANK_CAPITAL'" value="Capital Deposit">Capital Deposit</option>
+            <option *ngIf="accountFilter === 'BANK_CAPITAL'" value="Loan Disbursement">Loan Disbursement</option>
+            <option *ngIf="accountFilter === 'BANK_CAPITAL'" value="Loan Repayment">Loan Repayment</option>
+            <option *ngIf="accountFilter === 'BANK_CAPITAL'" value="Expense">Expense</option>
+            <option *ngIf="accountFilter === 'ASSETS_CASH'" value="Document Charge">Document Charge</option>
+            <option value="Cash In">Cash In</option>
+            <option value="Cash Out">Cash Out</option>
+            <option value="Transfer">Transfer</option>
+          </select>
+        </div>
+
+        <div class="col-6 col-md-2">
+          <label class="form-label text-muted small fw-semibold text-uppercase mb-1">Date From</label>
+          <input type="date" class="form-control form-control-sm lx-filter-input" [(ngModel)]="accountDateFrom" (change)="onFilterChange()">
+        </div>
+
+        <div class="col-6 col-md-2">
+          <label class="form-label text-muted small fw-semibold text-uppercase mb-1">Date To</label>
+          <input type="date" class="form-control form-control-sm lx-filter-input" [(ngModel)]="accountDateTo" (change)="onFilterChange()">
+        </div>
+
+        <div class="col-12 col-md-3">
+          <label class="form-label text-muted small fw-semibold text-uppercase mb-1">Search</label>
+          <div class="input-group input-group-sm">
+            <span class="input-group-text bg-transparent text-muted"><i class="bi bi-search"></i></span>
+            <input type="text" class="form-control lx-filter-input" placeholder="Ref, Loan #, remark..." [(ngModel)]="accountSearch" (input)="onFilterChange()">
+          </div>
+        </div>
+      </div>
+
+      <!-- 2. TRANSACTION HISTORY FILTERS -->
+      <div *ngIf="activeReportType === 'transaction-history'" class="row g-2 align-items-end">
+        <div class="col-12 col-md-3">
+          <label class="form-label text-muted small fw-semibold text-uppercase mb-1">Transaction Type</label>
+          <select class="form-select form-select-sm lx-filter-input" [(ngModel)]="txTypeFilter" (change)="onFilterChange()">
+            <option value="all">All Transactions</option>
+            <option value="Loan Disbursement">Loan Disbursement</option>
+            <option value="Loan Repayment">Loan Repayment</option>
+            <option value="Capital Deposit">Capital Deposit</option>
+            <option value="Expense">Expense</option>
+            <option value="Cash In">Cash In</option>
+            <option value="Cash Out">Cash Out</option>
+            <option value="Transfer">Transfer</option>
+            <option value="Document Charge">Document Charge</option>
+          </select>
+        </div>
+
+        <div class="col-12 col-md-2">
+          <label class="form-label text-muted small fw-semibold text-uppercase mb-1">Account Filter</label>
+          <select class="form-select form-select-sm lx-filter-input" [(ngModel)]="txAccountFilter" (change)="onFilterChange()">
+            <option value="all">All Accounts</option>
+            <option value="Bank Capital">Bank Capital</option>
+            <option value="Assets / Cash">Assets / Cash</option>
+          </select>
+        </div>
+
+        <div class="col-6 col-md-2">
+          <label class="form-label text-muted small fw-semibold text-uppercase mb-1">Date From</label>
+          <input type="date" class="form-control form-control-sm lx-filter-input" [(ngModel)]="txDateFrom" (change)="onFilterChange()">
+        </div>
+
+        <div class="col-6 col-md-2">
+          <label class="form-label text-muted small fw-semibold text-uppercase mb-1">Date To</label>
+          <input type="date" class="form-control form-control-sm lx-filter-input" [(ngModel)]="txDateTo" (change)="onFilterChange()">
+        </div>
+
+        <div class="col-12 col-md-3">
+          <label class="form-label text-muted small fw-semibold text-uppercase mb-1">Search</label>
+          <div class="input-group input-group-sm">
+            <span class="input-group-text bg-transparent text-muted"><i class="bi bi-search"></i></span>
+            <input type="text" class="form-control lx-filter-input" placeholder="Ref, Customer, Loan #..." [(ngModel)]="txSearch" (input)="onFilterChange()">
+          </div>
+        </div>
+      </div>
+
+      <!-- 3. INCOME & EXPENSE FILTERS -->
+      <div *ngIf="activeReportType === 'income-expense'" class="row g-2 align-items-end">
+        <div class="col-6 col-md-3">
+          <label class="form-label text-muted small fw-semibold text-uppercase mb-1">Date From</label>
+          <input type="date" class="form-control form-control-sm lx-filter-input" [(ngModel)]="ieDateFrom" (change)="onFilterChange()">
+        </div>
+
+        <div class="col-6 col-md-3">
+          <label class="form-label text-muted small fw-semibold text-uppercase mb-1">Date To</label>
+          <input type="date" class="form-control form-control-sm lx-filter-input" [(ngModel)]="ieDateTo" (change)="onFilterChange()">
+        </div>
+
+        <div class="col-12 col-md-6">
+          <label class="form-label text-muted small fw-semibold text-uppercase mb-1">Search</label>
+          <div class="input-group input-group-sm">
+            <span class="input-group-text bg-transparent text-muted"><i class="bi bi-search"></i></span>
+            <input type="text" class="form-control lx-filter-input" placeholder="Loan #, Customer, Expense remark..." [(ngModel)]="ieSearch" (input)="onFilterChange()">
+          </div>
+        </div>
+      </div>
+
+      <!-- 4. CAPITAL HISTORY FILTERS -->
+      <div *ngIf="activeReportType === 'capital-history'" class="row g-2 align-items-end">
+        <div class="col-12 col-md-3">
+          <label class="form-label text-muted small fw-semibold text-uppercase mb-1">Destination Account</label>
+          <select class="form-select form-select-sm lx-filter-input" [(ngModel)]="capAccountFilter" (change)="onFilterChange()">
+            <option value="all">All Accounts</option>
+            <option value="Bank Capital">Bank Capital</option>
+            <option value="Assets / Cash">Assets / Cash</option>
+          </select>
+        </div>
+
+        <div class="col-6 col-md-2">
+          <label class="form-label text-muted small fw-semibold text-uppercase mb-1">Date From</label>
+          <input type="date" class="form-control form-control-sm lx-filter-input" [(ngModel)]="capDateFrom" (change)="onFilterChange()">
+        </div>
+
+        <div class="col-6 col-md-2">
+          <label class="form-label text-muted small fw-semibold text-uppercase mb-1">Date To</label>
+          <input type="date" class="form-control form-control-sm lx-filter-input" [(ngModel)]="capDateTo" (change)="onFilterChange()">
+        </div>
+
+        <div class="col-12 col-md-5">
+          <label class="form-label text-muted small fw-semibold text-uppercase mb-1">Search</label>
+          <div class="input-group input-group-sm">
+            <span class="input-group-text bg-transparent text-muted"><i class="bi bi-search"></i></span>
+            <input type="text" class="form-control lx-filter-input" placeholder="Ref, capital remark..." [(ngModel)]="capSearch" (input)="onFilterChange()">
+          </div>
+        </div>
+      </div>
+
+      <!-- 5. EXPENSE REPORT FILTERS -->
+      <div *ngIf="activeReportType === 'expense'" class="row g-2 align-items-end">
+        <div class="col-12 col-md-3">
+          <label class="form-label text-muted small fw-semibold text-uppercase mb-1">Paid From Account</label>
+          <select class="form-select form-select-sm lx-filter-input" [(ngModel)]="expAccountFilter" (change)="onFilterChange()">
+            <option value="all">All Accounts</option>
+            <option value="Bank Capital">Bank Capital</option>
+            <option value="Assets / Cash">Assets / Cash</option>
+          </select>
+        </div>
+
+        <div class="col-6 col-md-2">
+          <label class="form-label text-muted small fw-semibold text-uppercase mb-1">Date From</label>
+          <input type="date" class="form-control form-control-sm lx-filter-input" [(ngModel)]="expDateFrom" (change)="onFilterChange()">
+        </div>
+
+        <div class="col-6 col-md-2">
+          <label class="form-label text-muted small fw-semibold text-uppercase mb-1">Date To</label>
+          <input type="date" class="form-control form-control-sm lx-filter-input" [(ngModel)]="expDateTo" (change)="onFilterChange()">
+        </div>
+
+        <div class="col-12 col-md-5">
+          <label class="form-label text-muted small fw-semibold text-uppercase mb-1">Search</label>
+          <div class="input-group input-group-sm">
+            <span class="input-group-text bg-transparent text-muted"><i class="bi bi-search"></i></span>
+            <input type="text" class="form-control lx-filter-input" placeholder="Ref, expense remark, reason..." [(ngModel)]="expSearch" (input)="onFilterChange()">
+          </div>
+        </div>
+      </div>
+
+      <!-- 6. CASH MOVEMENT FILTERS -->
+      <div *ngIf="activeReportType === 'cash-movement'" class="row g-2 align-items-end">
+        <div class="col-12 col-md-2">
+          <label class="form-label text-muted small fw-semibold text-uppercase mb-1">Account Filter</label>
+          <select class="form-select form-select-sm lx-filter-input" [(ngModel)]="cmAccountFilter" (change)="onFilterChange()">
+            <option value="all">All Accounts</option>
+            <option value="Bank Capital">Bank Capital</option>
+            <option value="Assets / Cash">Assets / Cash</option>
+          </select>
+        </div>
+
+        <div class="col-12 col-md-2">
+          <label class="form-label text-muted small fw-semibold text-uppercase mb-1">Direction</label>
+          <select class="form-select form-select-sm lx-filter-input" [(ngModel)]="cmMovementFilter" (change)="onFilterChange()">
+            <option value="all">All Movements</option>
+            <option value="in">Money In Only</option>
+            <option value="out">Money Out Only</option>
+          </select>
+        </div>
+
+        <div class="col-12 col-md-2">
+          <label class="form-label text-muted small fw-semibold text-uppercase mb-1">Transaction Type</label>
+          <select class="form-select form-select-sm lx-filter-input" [(ngModel)]="cmTxTypeFilter" (change)="onFilterChange()">
+            <option value="all">All Types</option>
+            <option value="Loan Disbursement">Loan Disbursement</option>
+            <option value="Loan Repayment">Loan Repayment</option>
+            <option value="Capital Deposit">Capital Deposit</option>
+            <option value="Expense">Expense</option>
+            <option value="Cash In">Cash In</option>
+            <option value="Cash Out">Cash Out</option>
+            <option value="Transfer">Transfer</option>
+            <option value="Document Charge">Document Charge</option>
+          </select>
+        </div>
+
+        <div class="col-6 col-md-1">
+          <label class="form-label text-muted small fw-semibold text-uppercase mb-1">From</label>
+          <input type="date" class="form-control form-control-sm lx-filter-input" [(ngModel)]="cmDateFrom" (change)="onFilterChange()">
+        </div>
+
+        <div class="col-6 col-md-1">
+          <label class="form-label text-muted small fw-semibold text-uppercase mb-1">To</label>
+          <input type="date" class="form-control form-control-sm lx-filter-input" [(ngModel)]="cmDateTo" (change)="onFilterChange()">
+        </div>
+
+        <div class="col-12 col-md-4">
+          <label class="form-label text-muted small fw-semibold text-uppercase mb-1">Search</label>
+          <div class="input-group input-group-sm">
+            <span class="input-group-text bg-transparent text-muted"><i class="bi bi-search"></i></span>
+            <input type="text" class="form-control lx-filter-input" placeholder="Ref, Loan #, description..." [(ngModel)]="cmSearch" (input)="onFilterChange()">
+          </div>
+        </div>
+      </div>
+
+      <!-- Action Buttons Row -->
+      <div class="d-flex justify-content-end align-items-center gap-2 mt-3 pt-2 border-top">
+        <button type="button" class="btn btn-sm btn-outline-secondary d-flex align-items-center gap-1" (click)="resetFilters()">
+          <i class="bi bi-arrow-counterclockwise"></i> Reset Filters
+        </button>
+
+        <button 
+          type="button" 
+          class="btn btn-sm btn-success d-flex align-items-center gap-1 px-3" 
+          (click)="exportReportToExcel()"
+          [disabled]="isExporting || getActiveRowCount() === 0"
+        >
+          <i class="bi bi-file-earmark-excel-fill"></i>
+          <span>{{ isExporting ? 'Exporting...' : 'Export .xlsx' }}</span>
+        </button>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- KPI Summary Cards Strip -->
+  
+  <!-- 1. Account History Summary -->
+  <div *ngIf="activeReportType === 'account-history'" class="row g-3 mb-3">
+    <div class="col-12 col-md-3">
+      <div class="card p-3 border shadow-sm lx-kpi-card bg-surface">
+        <span class="text-muted small fw-bold text-uppercase">Account Balance</span>
+        <h4 class="h5 mb-0 mt-1 text-primary fw-bold">Rs. {{ accountSummary.currentBalance | number:'1.2-2' }}</h4>
+        <span class="small text-muted mt-1">{{ accountSummary.accountName }}</span>
+      </div>
+    </div>
+    <div class="col-12 col-md-3">
+      <div class="card p-3 border shadow-sm lx-kpi-card bg-surface">
+        <span class="text-muted small fw-bold text-uppercase">Total Money In</span>
+        <h4 class="h5 mb-0 mt-1 text-success fw-bold">Rs. {{ accountSummary.totalMoneyIn | number:'1.2-2' }}</h4>
+        <span class="small text-muted mt-1">Inflows into account</span>
+      </div>
+    </div>
+    <div class="col-12 col-md-3">
+      <div class="card p-3 border shadow-sm lx-kpi-card bg-surface">
+        <span class="text-muted small fw-bold text-uppercase">Total Money Out</span>
+        <h4 class="h5 mb-0 mt-1 text-danger fw-bold">Rs. {{ accountSummary.totalMoneyOut | number:'1.2-2' }}</h4>
+        <span class="small text-muted mt-1">Outflows from account</span>
+      </div>
+    </div>
+    <div class="col-12 col-md-3">
+      <div class="card p-3 border shadow-sm lx-kpi-card bg-surface">
+        <span class="text-muted small fw-bold text-uppercase">Net Period Movement</span>
+        <h4 class="h5 mb-0 mt-1 fw-bold" [ngClass]="accountSummary.netMovement >= 0 ? 'text-success' : 'text-danger'">
+          Rs. {{ accountSummary.netMovement | number:'1.2-2' }}
+        </h4>
+        <span class="small text-muted mt-1">{{ accountSummary.transactionCount }} transactions recorded</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- 2. Transaction History Summary -->
+  <div *ngIf="activeReportType === 'transaction-history'" class="row g-3 mb-3">
+    <div class="col-12 col-md-3">
+      <div class="card p-3 border shadow-sm lx-kpi-card bg-surface">
+        <span class="text-muted small fw-bold text-uppercase">Total Ledger Transactions</span>
+        <h4 class="h5 mb-0 mt-1 text-primary fw-bold">{{ txSummary.totalTransactions }}</h4>
+        <span class="small text-muted mt-1">Unified normalized records</span>
+      </div>
+    </div>
+    <div class="col-12 col-md-3">
+      <div class="card p-3 border shadow-sm lx-kpi-card bg-surface">
+        <span class="text-muted small fw-bold text-uppercase">Total Money In</span>
+        <h4 class="h5 mb-0 mt-1 text-success fw-bold">Rs. {{ txSummary.totalMoneyIn | number:'1.2-2' }}</h4>
+        <span class="small text-muted mt-1">External inflows received</span>
+      </div>
+    </div>
+    <div class="col-12 col-md-3">
+      <div class="card p-3 border shadow-sm lx-kpi-card bg-surface">
+        <span class="text-muted small fw-bold text-uppercase">Total Money Out</span>
+        <h4 class="h5 mb-0 mt-1 text-danger fw-bold">Rs. {{ txSummary.totalMoneyOut | number:'1.2-2' }}</h4>
+        <span class="small text-muted mt-1">External outflows disbursed</span>
+      </div>
+    </div>
+    <div class="col-12 col-md-3">
+      <div class="card p-3 border shadow-sm lx-kpi-card bg-surface">
+        <span class="text-muted small fw-bold text-uppercase">Net External Movement</span>
+        <h4 class="h5 mb-0 mt-1 fw-bold" [ngClass]="txSummary.netMovement >= 0 ? 'text-success' : 'text-danger'">
+          Rs. {{ txSummary.netMovement | number:'1.2-2' }}
+        </h4>
+        <span class="small text-muted mt-1">Net Movement ≠ Net Profit</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- 3. Income & Expense Summary -->
+  <div *ngIf="activeReportType === 'income-expense'" class="row g-3 mb-3">
+    <div class="col-12 col-md-3">
+      <div class="card p-3 border shadow-sm lx-kpi-card bg-surface">
+        <span class="text-muted small fw-bold text-uppercase">Recognized Loan Income</span>
+        <h4 class="h5 mb-0 mt-1 text-success fw-bold">Rs. {{ ieSummary.totalIncome | number:'1.2-2' }}</h4>
+        <span class="small text-muted mt-1">{{ ieSummary.closedLoansCount }} closed loans generating profit</span>
+      </div>
+    </div>
+    <div class="col-12 col-md-3">
+      <div class="card p-3 border shadow-sm lx-kpi-card bg-surface">
+        <span class="text-muted small fw-bold text-uppercase">Operating Expenses</span>
+        <h4 class="h5 mb-0 mt-1 text-danger fw-bold">Rs. {{ ieSummary.totalExpenses | number:'1.2-2' }}</h4>
+        <span class="small text-muted mt-1">{{ ieSummary.expensesCount }} expense records</span>
+      </div>
+    </div>
+    <div class="col-12 col-md-3">
+      <div class="card p-3 border shadow-sm lx-kpi-card bg-surface">
+        <span class="text-muted small fw-bold text-uppercase">Net Business Profit</span>
+        <h4 class="h5 mb-0 mt-1 fw-bold" [ngClass]="ieSummary.netProfit >= 0 ? 'text-warning' : 'text-danger'">
+          Rs. {{ ieSummary.netProfit | number:'1.2-2' }}
+        </h4>
+        <span class="small text-muted mt-1">Recognized Income - Operating Expenses</span>
+      </div>
+    </div>
+    <div class="col-12 col-md-3">
+      <div class="card p-3 border shadow-sm lx-kpi-card bg-surface">
+        <span class="text-muted small fw-bold text-uppercase">Cash Collections</span>
+        <h4 class="h5 mb-0 mt-1 text-primary fw-bold">Rs. {{ ieSummary.totalRepaymentsCollected | number:'1.2-2' }}</h4>
+        <span class="small text-muted mt-1">Total customer repayments in period</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- 4. Capital History Summary -->
+  <div *ngIf="activeReportType === 'capital-history'" class="row g-3 mb-3">
+    <div class="col-12 col-md-4">
+      <div class="card p-3 border shadow-sm lx-kpi-card bg-surface">
+        <span class="text-muted small fw-bold text-uppercase">Total Capital Deposited</span>
+        <h4 class="h5 mb-0 mt-1 text-primary fw-bold">Rs. {{ capitalSummary.totalCapitalDeposited | number:'1.2-2' }}</h4>
+        <span class="small text-muted mt-1">{{ capitalSummary.depositCount }} deposits recorded (Capital ≠ Profit)</span>
+      </div>
+    </div>
+    <div class="col-12 col-md-4">
+      <div class="card p-3 border shadow-sm lx-kpi-card bg-surface">
+        <span class="text-muted small fw-bold text-uppercase">Bank Capital Inflows</span>
+        <h4 class="h5 mb-0 mt-1 text-success fw-bold">Rs. {{ capitalSummary.bankCapitalDeposits | number:'1.2-2' }}</h4>
+        <span class="small text-muted mt-1">Directly credited to Bank Capital</span>
+      </div>
+    </div>
+    <div class="col-12 col-md-4">
+      <div class="card p-3 border shadow-sm lx-kpi-card bg-surface">
+        <span class="text-muted small fw-bold text-uppercase">Assets / Cash Inflows</span>
+        <h4 class="h5 mb-0 mt-1 text-warning fw-bold">Rs. {{ capitalSummary.assetsCashDeposits | number:'1.2-2' }}</h4>
+        <span class="small text-muted mt-1">Directly credited to Assets / Cash</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- 5. Expense Report Summary -->
+  <div *ngIf="activeReportType === 'expense'" class="row g-3 mb-3">
+    <div class="col-12 col-md-4">
+      <div class="card p-3 border shadow-sm lx-kpi-card bg-surface">
+        <span class="text-muted small fw-bold text-uppercase">Total Operating Expenses</span>
+        <h4 class="h5 mb-0 mt-1 text-danger fw-bold">Rs. {{ expenseReportSummary.totalExpenses | number:'1.2-2' }}</h4>
+        <span class="small text-muted mt-1">{{ expenseReportSummary.expenseCount }} total expense items</span>
+      </div>
+    </div>
+    <div class="col-12 col-md-4">
+      <div class="card p-3 border shadow-sm lx-kpi-card bg-surface">
+        <span class="text-muted small fw-bold text-uppercase">Paid From Bank Capital</span>
+        <h4 class="h5 mb-0 mt-1 text-danger fw-bold">Rs. {{ expenseReportSummary.bankCapitalExpenses | number:'1.2-2' }}</h4>
+        <span class="small text-muted mt-1">Disbursed via bank liquidity</span>
+      </div>
+    </div>
+    <div class="col-12 col-md-4">
+      <div class="card p-3 border shadow-sm lx-kpi-card bg-surface">
+        <span class="text-muted small fw-bold text-uppercase">Paid From Assets / Cash</span>
+        <h4 class="h5 mb-0 mt-1 text-danger fw-bold">Rs. {{ expenseReportSummary.assetsCashExpenses | number:'1.2-2' }}</h4>
+        <span class="small text-muted mt-1">Disbursed via cash drawer</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- 6. Cash Movement Summary -->
+  <div *ngIf="activeReportType === 'cash-movement'" class="row g-3 mb-3">
+    <div class="col-12 col-md-4">
+      <div class="card p-3 border shadow-sm lx-kpi-card bg-surface">
+        <span class="text-muted small fw-bold text-uppercase">Bank Capital Net Movement</span>
+        <h4 class="h5 mb-0 mt-1 fw-bold" [ngClass]="cmSummary.bankCapitalNet >= 0 ? 'text-success' : 'text-danger'">
+          Rs. {{ cmSummary.bankCapitalNet | number:'1.2-2' }}
+        </h4>
+        <span class="small text-muted mt-1">In: Rs. {{ cmSummary.bankCapitalIn | number:'1.2-2' }} | Out: Rs. {{ cmSummary.bankCapitalOut | number:'1.2-2' }}</span>
+      </div>
+    </div>
+    <div class="col-12 col-md-4">
+      <div class="card p-3 border shadow-sm lx-kpi-card bg-surface">
+        <span class="text-muted small fw-bold text-uppercase">Assets / Cash Net Movement</span>
+        <h4 class="h5 mb-0 mt-1 fw-bold" [ngClass]="cmSummary.assetsCashNet >= 0 ? 'text-success' : 'text-danger'">
+          Rs. {{ cmSummary.assetsCashNet | number:'1.2-2' }}
+        </h4>
+        <span class="small text-muted mt-1">In: Rs. {{ cmSummary.assetsCashIn | number:'1.2-2' }} | Out: Rs. {{ cmSummary.assetsCashOut | number:'1.2-2' }}</span>
+      </div>
+    </div>
+    <div class="col-12 col-md-4">
+      <div class="card p-3 border shadow-sm lx-kpi-card bg-surface">
+        <span class="text-muted small fw-bold text-uppercase">Company Net External Movement</span>
+        <h4 class="h5 mb-0 mt-1 fw-bold" [ngClass]="cmSummary.companyExternalNet >= 0 ? 'text-success' : 'text-danger'">
+          Rs. {{ cmSummary.companyExternalNet | number:'1.2-2' }}
+        </h4>
+        <span class="small text-muted mt-1">Internal Transfers: Rs. {{ cmSummary.internalTransfersVolume | number:'1.2-2' }} (Zero Company Impact)</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- Sub-Tabs for Income & Expense Report -->
+  <div *ngIf="activeReportType === 'income-expense'" class="d-flex gap-2 mb-3">
+    <button 
+      type="button" 
+      class="btn btn-sm px-3"
+      [class.btn-warning]="ieActiveTab === 'income'"
+      [class.btn-outline-secondary]="ieActiveTab !== 'income'"
+      (click)="ieActiveTab = 'income'; currentPage = 1"
+    >
+      <i class="bi bi-graph-up-arrow me-1"></i> Realized Loan Profit ({{ incomeRows.length }})
+    </button>
+    <button 
+      type="button" 
+      class="btn btn-sm px-3"
+      [class.btn-warning]="ieActiveTab === 'expenses'"
+      [class.btn-outline-secondary]="ieActiveTab !== 'expenses'"
+      (click)="ieActiveTab = 'expenses'; currentPage = 1"
+    >
+      <i class="bi bi-receipt me-1"></i> Operating Expenses ({{ expenseRows.length }})
+    </button>
+  </div>
+
+  <!-- Data Table Card -->
+  <div class="card border shadow-sm bg-surface">
+    <div class="table-responsive">
+
+      <!-- Loading State -->
+      <div *ngIf="isLoading" class="text-center py-5">
+        <div class="spinner-border text-warning" role="status">
+          <span class="visually-hidden">Loading report data...</span>
+        </div>
+        <p class="text-muted small mt-2 mb-0">Loading authoritative financial data...</p>
+      </div>
+
+      <!-- Error State -->
+      <div *ngIf="!isLoading && errorMessage" class="alert alert-danger m-3 d-flex align-items-center gap-2">
+        <i class="bi bi-exclamation-octagon-fill"></i>
+        <span>{{ errorMessage }}</span>
+      </div>
+
+      <!-- 1. Account History Table -->
+      <table *ngIf="!isLoading && !errorMessage && activeReportType === 'account-history'" class="table table-hover align-middle mb-0 lx-report-table">
+        <thead class="table-light">
+          <tr>
+            <th class="ps-3">Date</th>
+            <th>Reference</th>
+            <th>Type</th>
+            <th>Description</th>
+            <th class="text-end">Money In</th>
+            <th class="text-end">Money Out</th>
+            <th>Status</th>
+            <th class="pe-3">Related Loan</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr *ngFor="let row of getPaginatedItems(accountRows)">
+            <td class="ps-3 text-nowrap font-monospace small">{{ row.date }}</td>
+            <td class="fw-semibold text-warning font-monospace">{{ row.reference }}</td>
+            <td><span class="badge bg-secondary-subtle text-secondary border">{{ row.type }}</span></td>
+            <td>{{ row.description }}</td>
+            <td class="text-end font-monospace text-success fw-bold">
+              {{ row.moneyIn !== null ? ('Rs. ' + (row.moneyIn | number:'1.2-2')) : '-' }}
+            </td>
+            <td class="text-end font-monospace text-danger fw-bold">
+              {{ row.moneyOut !== null ? ('Rs. ' + (row.moneyOut | number:'1.2-2')) : '-' }}
+            </td>
+            <td><span class="badge bg-success-subtle text-success border">{{ row.status }}</span></td>
+            <td class="pe-3 text-muted font-monospace small">{{ row.relatedLoanNumber || '-' }}</td>
+          </tr>
+          <tr *ngIf="accountRows.length === 0">
+            <td colspan="8" class="text-center py-5 text-muted">
+              <i class="bi bi-folder-x display-6 d-block mb-2"></i>
+              No account history movements match the selected filters.
+            </td>
+          </tr>
+        </tbody>
+      </table>
+
+      <!-- 2. Transaction History Table -->
+      <table *ngIf="!isLoading && !errorMessage && activeReportType === 'transaction-history'" class="table table-hover align-middle mb-0 lx-report-table">
+        <thead class="table-light">
+          <tr>
+            <th class="ps-3">Date</th>
+            <th>Reference</th>
+            <th>Type</th>
+            <th>Description</th>
+            <th>Account / Route</th>
+            <th class="text-end">Money In</th>
+            <th class="text-end">Money Out</th>
+            <th>Internal Transfer</th>
+            <th class="pe-3">Status</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr *ngFor="let row of getPaginatedItems(txRows)">
+            <td class="ps-3 text-nowrap font-monospace small">{{ row.date }}</td>
+            <td class="fw-semibold text-warning font-monospace">{{ row.reference }}</td>
+            <td><span class="badge bg-secondary-subtle text-secondary border">{{ row.type }}</span></td>
+            <td>{{ row.description }}</td>
+            <td class="text-muted small">{{ row.sourceAccount }}</td>
+            <td class="text-end font-monospace text-success fw-bold">
+              {{ row.moneyIn !== null ? ('Rs. ' + (row.moneyIn | number:'1.2-2')) : '-' }}
+            </td>
+            <td class="text-end font-monospace text-danger fw-bold">
+              {{ row.moneyOut !== null ? ('Rs. ' + (row.moneyOut | number:'1.2-2')) : '-' }}
+            </td>
+            <td>
+              <span *ngIf="row.isInternalTransfer" class="badge bg-info-subtle text-info border">Internal Transfer</span>
+              <span *ngIf="!row.isInternalTransfer" class="text-muted small">No</span>
+            </td>
+            <td class="pe-3"><span class="badge bg-success-subtle text-success border">{{ row.status }}</span></td>
+          </tr>
+          <tr *ngIf="txRows.length === 0">
+            <td colspan="9" class="text-center py-5 text-muted">
+              <i class="bi bi-folder-x display-6 d-block mb-2"></i>
+              No transactions found matching the selected criteria.
+            </td>
+          </tr>
+        </tbody>
+      </table>
+
+      <!-- 3A. Income & Expense - Realized Profit Table -->
+      <table *ngIf="!isLoading && !errorMessage && activeReportType === 'income-expense' && ieActiveTab === 'income'" class="table table-hover align-middle mb-0 lx-report-table">
+        <thead class="table-light">
+          <tr>
+            <th class="ps-3">Closed Date</th>
+            <th>Loan Number</th>
+            <th>Customer</th>
+            <th class="text-end">Principal</th>
+            <th class="text-end">Doc Charge</th>
+            <th class="text-end">Total Collected</th>
+            <th class="text-end">Realized Profit</th>
+            <th class="pe-3">Status</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr *ngFor="let row of getPaginatedItems(incomeRows)">
+            <td class="ps-3 text-nowrap font-monospace small">{{ row.date }}</td>
+            <td class="fw-semibold text-warning font-monospace">{{ row.reference }}</td>
+            <td class="fw-medium">{{ row.customerName }}</td>
+            <td class="text-end font-monospace">Rs. {{ row.principalAmount | number:'1.2-2' }}</td>
+            <td class="text-end font-monospace text-muted">Rs. {{ row.documentCharge | number:'1.2-2' }}</td>
+            <td class="text-end font-monospace text-primary fw-semibold">Rs. {{ row.totalPaid | number:'1.2-2' }}</td>
+            <td class="text-end font-monospace fw-bold" [ngClass]="row.realizedProfit >= 0 ? 'text-success' : 'text-danger'">
+              Rs. {{ row.realizedProfit | number:'1.2-2' }}
+            </td>
+            <td class="pe-3"><span class="badge bg-success-subtle text-success border">Closed</span></td>
+          </tr>
+          <tr *ngIf="incomeRows.length === 0">
+            <td colspan="8" class="text-center py-5 text-muted">
+              <i class="bi bi-folder-x display-6 d-block mb-2"></i>
+              No closed loans found in the selected period.
+            </td>
+          </tr>
+        </tbody>
+      </table>
+
+      <!-- 3B. Income & Expense - Expenses Table -->
+      <table *ngIf="!isLoading && !errorMessage && activeReportType === 'income-expense' && ieActiveTab === 'expenses'" class="table table-hover align-middle mb-0 lx-report-table">
+        <thead class="table-light">
+          <tr>
+            <th class="ps-3">Date</th>
+            <th>Reference</th>
+            <th>Description / Remark</th>
+            <th>Paid From Account</th>
+            <th class="text-end pe-3">Amount</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr *ngFor="let row of getPaginatedItems(expenseRows)">
+            <td class="ps-3 text-nowrap font-monospace small">{{ row.date }}</td>
+            <td class="fw-semibold text-danger font-monospace">{{ row.reference }}</td>
+            <td>{{ row.description }}</td>
+            <td><span class="badge bg-secondary-subtle text-secondary border">{{ row.paidFromAccount }}</span></td>
+            <td class="text-end pe-3 font-monospace text-danger fw-bold">Rs. {{ row.amount | number:'1.2-2' }}</td>
+          </tr>
+          <tr *ngIf="expenseRows.length === 0">
+            <td colspan="5" class="text-center py-5 text-muted">
+              <i class="bi bi-folder-x display-6 d-block mb-2"></i>
+              No operating expenses recorded in the selected period.
+            </td>
+          </tr>
+        </tbody>
+      </table>
+
+      <!-- 4. Capital History Table -->
+      <table *ngIf="!isLoading && !errorMessage && activeReportType === 'capital-history'" class="table table-hover align-middle mb-0 lx-report-table">
+        <thead class="table-light">
+          <tr>
+            <th class="ps-3">Deposit Date</th>
+            <th>Reference</th>
+            <th>Destination Account</th>
+            <th>Remark / Note</th>
+            <th class="text-end pe-3">Capital Amount</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr *ngFor="let row of getPaginatedItems(capitalRows)">
+            <td class="ps-3 text-nowrap font-monospace small">{{ row.date }}</td>
+            <td class="fw-semibold text-primary font-monospace">{{ row.reference }}</td>
+            <td><span class="badge bg-primary-subtle text-primary border">{{ row.destinationAccount }}</span></td>
+            <td>{{ row.remark }}</td>
+            <td class="text-end pe-3 font-monospace text-primary fw-bold">Rs. {{ row.amount | number:'1.2-2' }}</td>
+          </tr>
+          <tr *ngIf="capitalRows.length === 0">
+            <td colspan="5" class="text-center py-5 text-muted">
+              <i class="bi bi-folder-x display-6 d-block mb-2"></i>
+              No capital additions found matching the selected filters.
+            </td>
+          </tr>
+        </tbody>
+      </table>
+
+      <!-- 5. Expense Report Table -->
+      <table *ngIf="!isLoading && !errorMessage && activeReportType === 'expense'" class="table table-hover align-middle mb-0 lx-report-table">
+        <thead class="table-light">
+          <tr>
+            <th class="ps-3">Expense Date</th>
+            <th>Reference</th>
+            <th>Description / Purpose</th>
+            <th>Disbursed From</th>
+            <th class="text-end pe-3">Expense Amount</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr *ngFor="let row of getPaginatedItems(expenseReportRows)">
+            <td class="ps-3 text-nowrap font-monospace small">{{ row.date }}</td>
+            <td class="fw-semibold text-danger font-monospace">{{ row.reference }}</td>
+            <td>{{ row.description }}</td>
+            <td><span class="badge bg-secondary-subtle text-secondary border">{{ row.paidFromAccount }}</span></td>
+            <td class="text-end pe-3 font-monospace text-danger fw-bold">Rs. {{ row.amount | number:'1.2-2' }}</td>
+          </tr>
+          <tr *ngIf="expenseReportRows.length === 0">
+            <td colspan="5" class="text-center py-5 text-muted">
+              <i class="bi bi-folder-x display-6 d-block mb-2"></i>
+              No operating expenses recorded matching the selected criteria.
+            </td>
+          </tr>
+        </tbody>
+      </table>
+
+      <!-- 6. Cash Movement Table -->
+      <table *ngIf="!isLoading && !errorMessage && activeReportType === 'cash-movement'" class="table table-hover align-middle mb-0 lx-report-table">
+        <thead class="table-light">
+          <tr>
+            <th class="ps-3">Date</th>
+            <th>Reference</th>
+            <th>Type</th>
+            <th>Description</th>
+            <th>Source Account</th>
+            <th>Destination Account</th>
+            <th class="text-end">Money In</th>
+            <th class="text-end">Money Out</th>
+            <th class="pe-3">Transfer Nature</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr *ngFor="let row of getPaginatedItems(cmRows)">
+            <td class="ps-3 text-nowrap font-monospace small">{{ row.date }}</td>
+            <td class="fw-semibold text-warning font-monospace">{{ row.reference }}</td>
+            <td><span class="badge bg-secondary-subtle text-secondary border">{{ row.type }}</span></td>
+            <td>{{ row.description }}</td>
+            <td class="text-muted small">{{ row.sourceAccount }}</td>
+            <td class="text-muted small">{{ row.destinationAccount }}</td>
+            <td class="text-end font-monospace text-success fw-bold">
+              {{ row.moneyIn !== null ? ('Rs. ' + (row.moneyIn | number:'1.2-2')) : '-' }}
+            </td>
+            <td class="text-end font-monospace text-danger fw-bold">
+              {{ row.moneyOut !== null ? ('Rs. ' + (row.moneyOut | number:'1.2-2')) : '-' }}
+            </td>
+            <td class="pe-3">
+              <span *ngIf="row.isInternalTransfer" class="badge bg-info-subtle text-info border">Internal Transfer</span>
+              <span *ngIf="!row.isInternalTransfer" class="badge bg-light text-secondary border">External Cash Event</span>
+            </td>
+          </tr>
+          <tr *ngIf="cmRows.length === 0">
+            <td colspan="9" class="text-center py-5 text-muted">
+              <i class="bi bi-folder-x display-6 d-block mb-2"></i>
+              No cash movements match the selected filters.
+            </td>
+          </tr>
+        </tbody>
+      </table>
+
+    </div>
+
+    <!-- Pagination Footer -->
+    <div class="card-footer bg-surface border-top d-flex flex-column flex-sm-row justify-content-between align-items-center gap-2 py-2">
+      <div class="d-flex align-items-center gap-2">
+        <span class="text-muted small">Show</span>
+        <select class="form-select form-select-sm lx-filter-input" style="width: 75px;" [(ngModel)]="pageSize" (change)="currentPage = 1">
+          <option *ngFor="let size of pageSizeOptions" [value]="size">{{ size }}</option>
+        </select>
+        <span class="text-muted small">entries per page • Total: {{ getActiveRowCount() }} records</span>
+      </div>
+
+      <div class="d-flex align-items-center gap-1">
+        <button 
+          type="button" 
+          class="btn btn-sm btn-outline-secondary" 
+          [disabled]="currentPage === 1" 
+          (click)="goToPage(currentPage - 1)"
+        >
+          <i class="bi bi-chevron-left"></i> Previous
+        </button>
+
+        <span class="text-muted small px-2">Page {{ currentPage }} of {{ getTotalPages() }}</span>
+
+        <button 
+          type="button" 
+          class="btn btn-sm btn-outline-secondary" 
+          [disabled]="currentPage >= getTotalPages()" 
+          (click)="goToPage(currentPage + 1)"
+        >
+          Next <i class="bi bi-chevron-right"></i>
+        </button>
+      </div>
+    </div>
+  </div>
+
+</div>

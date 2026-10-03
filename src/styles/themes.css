@@ -12,6 +12,7 @@
   /* Surfaces & Backgrounds */
   --lx-bg-main: #F8F9FB;                  /* Soft White */
   --lx-bg-card: #FFFFFF;                  /* Card Background */
+  --lx-card-bg: var(--lx-bg-card);
   --lx-bg-surface-elevated: #FFFFFF;
   --lx-bg-subtle: #F2F4F7;
   --lx-bg-hover: #F0F2F6;
@@ -113,6 +114,7 @@
   /* Surfaces & Backgrounds */
   --lx-bg-main: #101114;                  /* Main Background */
   --lx-bg-card: #24262B;                  /* Card Background */
+  --lx-card-bg: var(--lx-bg-card);
   --lx-bg-surface-elevated: #2D3037;      /* Dialogs & elevated popups */
   --lx-bg-subtle: #1A1C21;
   --lx-bg-hover: #2C2F36;

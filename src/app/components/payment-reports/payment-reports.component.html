@@ -1,0 +1,1068 @@
+<div class="lx-reports-container container-fluid py-3">
+
+  <!-- ========================================================================= -->
+  <!-- Top Navigation & Reports Header                                           -->
+  <!-- ========================================================================= -->
+  <div class="d-flex flex-wrap justify-content-between align-items-center mb-3 gap-2">
+    <div>
+      <div class="d-flex align-items-center gap-2">
+        <span class="badge bg-gold-subtle text-gold px-2 py-1 fs-xs fw-semibold">Analysis &bull; Reports</span>
+        <span class="text-muted fs-xs">&bull;</span>
+        <span class="text-secondary fs-xs fw-medium">100% Read-Only</span>
+      </div>
+      <h1 class="h4 mb-0 fw-bold text-main mt-1">Payment & Collection Reports</h1>
+    </div>
+
+    <!-- Quick Switcher Tabs -->
+    <div class="lx-report-nav-tabs btn-group shadow-xs p-1 bg-surface rounded-3 border">
+      <button 
+        type="button" 
+        class="btn btn-sm"
+        [class.btn-primary-gold]="activeReportType === 'payment-history'"
+        [class.btn-subtle]="activeReportType !== 'payment-history'"
+        (click)="switchReport('payment-history')"
+      >
+        <i class="bi bi-clock-history me-1"></i> Payment History
+      </button>
+      <button 
+        type="button" 
+        class="btn btn-sm"
+        [class.btn-primary-gold]="activeReportType === 'delayed-payments'"
+        [class.btn-subtle]="activeReportType !== 'delayed-payments'"
+        (click)="switchReport('delayed-payments')"
+      >
+        <i class="bi bi-exclamation-triangle me-1"></i> Delayed Payments
+      </button>
+      <button 
+        type="button" 
+        class="btn btn-sm"
+        [class.btn-primary-gold]="activeReportType === 'collection'"
+        [class.btn-subtle]="activeReportType !== 'collection'"
+        (click)="switchReport('collection')"
+      >
+        <i class="bi bi-cash-coin me-1"></i> Collections
+      </button>
+      <button 
+        type="button" 
+        class="btn btn-sm"
+        [class.btn-primary-gold]="activeReportType === 'upcoming-payments'"
+        [class.btn-subtle]="activeReportType !== 'upcoming-payments'"
+        (click)="switchReport('upcoming-payments')"
+      >
+        <i class="bi bi-calendar-check me-1"></i> Upcoming
+      </button>
+      <button 
+        type="button" 
+        class="btn btn-sm"
+        [class.btn-primary-gold]="activeReportType === 'payment-performance'"
+        [class.btn-subtle]="activeReportType !== 'payment-performance'"
+        (click)="switchReport('payment-performance')"
+      >
+        <i class="bi bi-graph-up-arrow me-1"></i> Performance
+      </button>
+    </div>
+  </div>
+
+  <!-- ========================================================================= -->
+  <!-- REPORT 01: PAYMENT HISTORY REPORT                                         -->
+  <!-- ========================================================================= -->
+  <ng-container *ngIf="activeReportType === 'payment-history'">
+    <!-- ERP Filter Toolbar -->
+    <div class="card border shadow-xs mb-3">
+      <div class="card-body p-3">
+        <div class="row g-2 align-items-end">
+          <div class="col-12 col-md-3">
+            <label class="lx-filter-label">Search Query</label>
+            <div class="input-group input-group-sm">
+              <span class="input-group-text bg-surface"><i class="bi bi-search"></i></span>
+              <input 
+                type="text" 
+                class="form-control lx-filter-input" 
+                placeholder="Customer, NIC, Loan #, Remark..." 
+                [(ngModel)]="historySearch" 
+                (keyup.enter)="currentPage = 1; loadPaymentHistory()"
+              >
+            </div>
+          </div>
+
+          <div class="col-6 col-md-2">
+            <label class="lx-filter-label">Payment Date From</label>
+            <input type="date" class="form-control form-control-sm lx-filter-input" [(ngModel)]="historyDateFrom" (change)="currentPage = 1; loadPaymentHistory()">
+          </div>
+
+          <div class="col-6 col-md-2">
+            <label class="lx-filter-label">Payment Date To</label>
+            <input type="date" class="form-control form-control-sm lx-filter-input" [(ngModel)]="historyDateTo" (change)="currentPage = 1; loadPaymentHistory()">
+          </div>
+
+          <div class="col-6 col-md-2">
+            <label class="lx-filter-label">Loan Frequency</label>
+            <select class="form-select form-select-sm lx-filter-input" [(ngModel)]="historyLoanType" (change)="currentPage = 1; loadPaymentHistory()">
+              <option value="all">All Frequencies</option>
+              <option value="daily">Daily Loans</option>
+              <option value="weekly">Weekly Loans</option>
+              <option value="monthly">Monthly Loans</option>
+            </select>
+          </div>
+
+          <div class="col-6 col-md-1">
+            <label class="lx-filter-label">Loan Status</label>
+            <select class="form-select form-select-sm lx-filter-input" [(ngModel)]="historyLoanStatus" (change)="currentPage = 1; loadPaymentHistory()">
+              <option value="all">All</option>
+              <option value="active">Active</option>
+              <option value="closed">Closed</option>
+            </select>
+          </div>
+
+          <div class="col-12 col-md-2 d-flex gap-2 justify-content-end">
+            <button type="button" class="btn btn-sm btn-subtle flex-grow-1" (click)="resetHistoryFilters()">
+              <i class="bi bi-arrow-counterclockwise me-1"></i> Reset
+            </button>
+            <button 
+              type="button" 
+              class="btn btn-sm btn-excel-gold flex-grow-1" 
+              [disabled]="isExporting || historyRows.length === 0"
+              (click)="exportPaymentHistoryToExcel()"
+            >
+              <i *ngIf="!isExporting" class="bi bi-file-earmark-spreadsheet me-1"></i>
+              <span *ngIf="isExporting" class="spinner-border spinner-border-sm me-1"></span>
+              Export .xlsx
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Summary KPI Strip -->
+    <div class="row g-2 mb-3">
+      <div class="col-12 col-sm-4">
+        <div class="card border shadow-xs h-100 p-3 lx-kpi-card">
+          <div class="d-flex justify-content-between align-items-center">
+            <div>
+              <div class="text-muted fs-xs text-uppercase fw-semibold">Total Payments Recorded</div>
+              <div class="h4 mb-0 fw-bold text-main mt-1">{{ historySummary.totalPayments | number }}</div>
+            </div>
+            <div class="lx-kpi-icon bg-gold-subtle text-gold"><i class="bi bi-receipt"></i></div>
+          </div>
+        </div>
+      </div>
+      <div class="col-12 col-sm-4">
+        <div class="card border shadow-xs h-100 p-3 lx-kpi-card">
+          <div class="d-flex justify-content-between align-items-center">
+            <div>
+              <div class="text-muted fs-xs text-uppercase fw-semibold">Total Amount Collected</div>
+              <div class="h4 mb-0 fw-bold text-success mt-1">Rs. {{ historySummary.totalCollected | number:'1.2-2' }}</div>
+            </div>
+            <div class="lx-kpi-icon bg-success-subtle text-success"><i class="bi bi-cash-stack"></i></div>
+          </div>
+        </div>
+      </div>
+      <div class="col-12 col-sm-4">
+        <div class="card border shadow-xs h-100 p-3 lx-kpi-card">
+          <div class="d-flex justify-content-between align-items-center">
+            <div>
+              <div class="text-muted fs-xs text-uppercase fw-semibold">Average Payment Amount</div>
+              <div class="h4 mb-0 fw-bold text-primary mt-1">Rs. {{ historySummary.averagePayment | number:'1.2-2' }}</div>
+            </div>
+            <div class="lx-kpi-icon bg-primary-subtle text-primary"><i class="bi bi-calculator"></i></div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Data Table View -->
+    <div class="card border shadow-xs">
+      <div class="table-responsive">
+        <table class="table table-hover align-middle mb-0 lx-report-table">
+          <thead>
+            <tr>
+              <th scope="col" style="width: 110px;">Date</th>
+              <th scope="col">Customer</th>
+              <th scope="col" style="width: 120px;">NIC</th>
+              <th scope="col" style="width: 130px;">Loan #</th>
+              <th scope="col" style="width: 100px;">Frequency</th>
+              <th scope="col" style="width: 90px;">Loan Status</th>
+              <th scope="col" class="text-end" style="width: 140px;">Amount Paid</th>
+              <th scope="col">Remark</th>
+              <th scope="col" style="width: 110px;">Recorded</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr *ngFor="let row of paginatedHistoryRows">
+              <td class="fw-medium text-nowrap">{{ row.paidDate }}</td>
+              <td>
+                <div class="fw-bold text-main">{{ row.customerName }}</div>
+                <div class="text-muted fs-xs">{{ row.mobileNumber }}</div>
+              </td>
+              <td class="text-muted text-nowrap">{{ row.nicNumber }}</td>
+              <td class="fw-semibold text-gold text-nowrap">{{ row.loanNumber }}</td>
+              <td><span class="badge bg-surface border text-muted fs-xs">{{ row.loanType }}</span></td>
+              <td>
+                <span class="badge" [ngClass]="row.loanStatus === 'Completed' ? 'bg-success-subtle text-success' : 'bg-primary-subtle text-primary'">
+                  {{ row.loanStatus }}
+                </span>
+              </td>
+              <td class="text-end fw-bold text-success text-nowrap">Rs. {{ row.paidAmount | number:'1.2-2' }}</td>
+              <td class="text-muted text-truncate" style="max-width: 180px;" [title]="row.remark">{{ row.remark }}</td>
+              <td class="text-muted fs-xs text-nowrap">{{ row.recordedDate }}</td>
+            </tr>
+            <tr *ngIf="historyRows.length === 0 && !isLoading">
+              <td colspan="9" class="text-center py-5">
+                <i class="bi bi-inbox fs-2 text-muted d-block mb-2"></i>
+                <div class="text-muted fw-medium">No payment records found for the selected criteria.</div>
+              </td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </ng-container>
+
+  <!-- ========================================================================= -->
+  <!-- REPORT 02: DELAYED PAYMENT REPORT                                         -->
+  <!-- ========================================================================= -->
+  <ng-container *ngIf="activeReportType === 'delayed-payments'">
+    <!-- ERP Filter Toolbar -->
+    <div class="card border shadow-xs mb-3">
+      <div class="card-body p-3">
+        <div class="row g-2 align-items-end">
+          <div class="col-12 col-md-4">
+            <label class="lx-filter-label">Search Query</label>
+            <div class="input-group input-group-sm">
+              <span class="input-group-text bg-surface"><i class="bi bi-search"></i></span>
+              <input 
+                type="text" 
+                class="form-control lx-filter-input" 
+                placeholder="Customer, NIC, Loan #..." 
+                [(ngModel)]="delayedSearch" 
+                (keyup.enter)="currentPage = 1; loadDelayedPayments()"
+              >
+            </div>
+          </div>
+
+          <div class="col-6 col-md-2">
+            <label class="lx-filter-label">Due Date From</label>
+            <input type="date" class="form-control form-control-sm lx-filter-input" [(ngModel)]="delayedDateFrom" (change)="currentPage = 1; loadDelayedPayments()">
+          </div>
+
+          <div class="col-6 col-md-2">
+            <label class="lx-filter-label">Due Date To</label>
+            <input type="date" class="form-control form-control-sm lx-filter-input" [(ngModel)]="delayedDateTo" (change)="currentPage = 1; loadDelayedPayments()">
+          </div>
+
+          <div class="col-6 col-md-2">
+            <label class="lx-filter-label">Severity</label>
+            <select class="form-select form-select-sm lx-filter-input" [(ngModel)]="delayedSeverity" (change)="currentPage = 1; loadDelayedPayments()">
+              <option value="all">All Severities</option>
+              <option value="1-7">1–7 Days Late</option>
+              <option value="8-30">8–30 Days Late</option>
+              <option value="31+">31+ Days Late</option>
+            </select>
+          </div>
+
+          <div class="col-12 col-md-2 d-flex gap-2 justify-content-end">
+            <button type="button" class="btn btn-sm btn-subtle flex-grow-1" (click)="resetDelayedFilters()">
+              <i class="bi bi-arrow-counterclockwise me-1"></i> Reset
+            </button>
+            <button 
+              type="button" 
+              class="btn btn-sm btn-excel-gold flex-grow-1" 
+              [disabled]="isExporting || delayedRows.length === 0"
+              (click)="exportDelayedPaymentsToExcel()"
+            >
+              <i *ngIf="!isExporting" class="bi bi-file-earmark-spreadsheet me-1"></i>
+              <span *ngIf="isExporting" class="spinner-border spinner-border-sm me-1"></span>
+              Export .xlsx
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Summary KPI Strip -->
+    <div class="row g-2 mb-3">
+      <div class="col-12 col-sm-6 col-md-3">
+        <div class="card border shadow-xs h-100 p-3 lx-kpi-card">
+          <div class="d-flex justify-content-between align-items-center">
+            <div>
+              <div class="text-muted fs-xs text-uppercase fw-semibold">Delayed Obligations</div>
+              <div class="h4 mb-0 fw-bold text-danger mt-1">{{ delayedSummary.totalDelayedObligations | number }}</div>
+            </div>
+            <div class="lx-kpi-icon bg-danger-subtle text-danger"><i class="bi bi-exclamation-octagon"></i></div>
+          </div>
+        </div>
+      </div>
+      <div class="col-12 col-sm-6 col-md-3">
+        <div class="card border shadow-xs h-100 p-3 lx-kpi-card">
+          <div class="d-flex justify-content-between align-items-center">
+            <div>
+              <div class="text-muted fs-xs text-uppercase fw-semibold">Total Overdue Amount</div>
+              <div class="h4 mb-0 fw-bold text-danger mt-1">Rs. {{ delayedSummary.totalOverdueAmount | number:'1.2-2' }}</div>
+            </div>
+            <div class="lx-kpi-icon bg-danger-subtle text-danger"><i class="bi bi-cash-stack"></i></div>
+          </div>
+        </div>
+      </div>
+      <div class="col-12 col-sm-6 col-md-3">
+        <div class="card border shadow-xs h-100 p-3 lx-kpi-card">
+          <div class="d-flex justify-content-between align-items-center">
+            <div>
+              <div class="text-muted fs-xs text-uppercase fw-semibold">Affected Customers</div>
+              <div class="h4 mb-0 fw-bold text-main mt-1">{{ delayedSummary.affectedCustomers | number }}</div>
+            </div>
+            <div class="lx-kpi-icon bg-gold-subtle text-gold"><i class="bi bi-people"></i></div>
+          </div>
+        </div>
+      </div>
+      <div class="col-12 col-sm-6 col-md-3">
+        <div class="card border shadow-xs h-100 p-3 lx-kpi-card">
+          <div class="d-flex justify-content-between align-items-center">
+            <div>
+              <div class="text-muted fs-xs text-uppercase fw-semibold">Severity Breakdown</div>
+              <div class="fs-xs mt-1">
+                <span class="badge bg-warning-subtle text-warning me-1">1-7d: {{ delayedSummary.count1To7Days }}</span>
+                <span class="badge bg-orange-subtle text-orange me-1">8-30d: {{ delayedSummary.count8To30Days }}</span>
+                <span class="badge bg-danger-subtle text-danger">31+d: {{ delayedSummary.count31PlusDays }}</span>
+              </div>
+            </div>
+            <div class="lx-kpi-icon bg-surface border text-muted"><i class="bi bi-clock-history"></i></div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Data Table View -->
+    <div class="card border shadow-xs">
+      <div class="table-responsive">
+        <table class="table table-hover align-middle mb-0 lx-report-table">
+          <thead>
+            <tr>
+              <th scope="col">Customer</th>
+              <th scope="col" style="width: 120px;">NIC</th>
+              <th scope="col" style="width: 130px;">Loan #</th>
+              <th scope="col" style="width: 90px;">Frequency</th>
+              <th scope="col" style="width: 110px;">Due Date</th>
+              <th scope="col" class="text-end" style="width: 130px;">Instalment</th>
+              <th scope="col" class="text-end" style="width: 130px;">Overdue Amount</th>
+              <th scope="col" class="text-center" style="width: 90px;">Days Late</th>
+              <th scope="col" class="text-end" style="width: 140px;">Remaining Bal.</th>
+              <th scope="col" style="width: 100px;">Status</th>
+              <th scope="col" class="text-center" style="width: 80px;">Action</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr *ngFor="let row of paginatedDelayedRows">
+              <td>
+                <div class="fw-bold text-main">{{ row.customerName }}</div>
+                <div class="text-muted fs-xs">{{ row.mobileNumber }}</div>
+              </td>
+              <td class="text-muted text-nowrap">{{ row.nicNumber }}</td>
+              <td class="fw-semibold text-gold text-nowrap">{{ row.loanNumber }}</td>
+              <td><span class="badge bg-surface border text-muted fs-xs">{{ row.loanType }}</span></td>
+              <td class="text-nowrap text-danger fw-medium">{{ row.expectedPaymentDate }}</td>
+              <td class="text-end text-nowrap">Rs. {{ row.expectedAmount | number:'1.2-2' }}</td>
+              <td class="text-end fw-bold text-danger text-nowrap">Rs. {{ row.overdueAmount | number:'1.2-2' }}</td>
+              <td class="text-center">
+                <span class="badge" [ngClass]="row.daysLate <= 7 ? 'bg-warning-subtle text-warning' : (row.daysLate <= 30 ? 'bg-orange-subtle text-orange' : 'bg-danger-subtle text-danger')">
+                  {{ row.daysLate }}d
+                </span>
+              </td>
+              <td class="text-end fw-semibold text-nowrap">Rs. {{ row.remainingBalance | number:'1.2-2' }}</td>
+              <td>
+                <span class="badge" [ngClass]="row.status === 'Due Today' ? 'bg-primary-subtle text-primary' : (row.status === 'Late' ? 'bg-warning-subtle text-warning' : 'bg-danger-subtle text-danger')">
+                  {{ row.status }}
+                </span>
+              </td>
+              <td class="text-center">
+                <a [routerLink]="['/single-loan', row.loanId]" class="btn btn-xs btn-subtle text-primary" title="View Loan Details">
+                  <i class="bi bi-box-arrow-up-right"></i>
+                </a>
+              </td>
+            </tr>
+            <tr *ngIf="delayedRows.length === 0 && !isLoading">
+              <td colspan="11" class="text-center py-5">
+                <i class="bi bi-check2-circle fs-2 text-success d-block mb-2"></i>
+                <div class="text-muted fw-medium">No delayed payment obligations found. All loans are up to date!</div>
+              </td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </ng-container>
+
+  <!-- ========================================================================= -->
+  <!-- REPORT 03: COLLECTION REPORT                                              -->
+  <!-- ========================================================================= -->
+  <ng-container *ngIf="activeReportType === 'collection'">
+    <!-- ERP Filter Toolbar -->
+    <div class="card border shadow-xs mb-3">
+      <div class="card-body p-3">
+        <div class="row g-2 align-items-end">
+          <div class="col-12 col-md-4">
+            <label class="lx-filter-label">Search Query</label>
+            <div class="input-group input-group-sm">
+              <span class="input-group-text bg-surface"><i class="bi bi-search"></i></span>
+              <input 
+                type="text" 
+                class="form-control lx-filter-input" 
+                placeholder="Customer, NIC, Loan #, Remark..." 
+                [(ngModel)]="collectionSearch" 
+                (keyup.enter)="currentPage = 1; loadCollectionReport()"
+              >
+            </div>
+          </div>
+
+          <div class="col-6 col-md-2">
+            <label class="lx-filter-label">Collection Date From</label>
+            <input type="date" class="form-control form-control-sm lx-filter-input" [(ngModel)]="collectionDateFrom" (change)="currentPage = 1; loadCollectionReport()">
+          </div>
+
+          <div class="col-6 col-md-2">
+            <label class="lx-filter-label">Collection Date To</label>
+            <input type="date" class="form-control form-control-sm lx-filter-input" [(ngModel)]="collectionDateTo" (change)="currentPage = 1; loadCollectionReport()">
+          </div>
+
+          <div class="col-6 col-md-2">
+            <label class="lx-filter-label">Loan Frequency</label>
+            <select class="form-select form-select-sm lx-filter-input" [(ngModel)]="collectionLoanType" (change)="currentPage = 1; loadCollectionReport()">
+              <option value="all">All Frequencies</option>
+              <option value="daily">Daily Loans</option>
+              <option value="weekly">Weekly Loans</option>
+              <option value="monthly">Monthly Loans</option>
+            </select>
+          </div>
+
+          <div class="col-12 col-md-2 d-flex gap-2 justify-content-end">
+            <button type="button" class="btn btn-sm btn-subtle flex-grow-1" (click)="resetCollectionFilters()">
+              <i class="bi bi-arrow-counterclockwise me-1"></i> Reset
+            </button>
+            <button 
+              type="button" 
+              class="btn btn-sm btn-excel-gold flex-grow-1" 
+              [disabled]="isExporting || collectionRows.length === 0"
+              (click)="exportCollectionToExcel()"
+            >
+              <i *ngIf="!isExporting" class="bi bi-file-earmark-spreadsheet me-1"></i>
+              <span *ngIf="isExporting" class="spinner-border spinner-border-sm me-1"></span>
+              Export .xlsx
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Summary KPI Strip & Reconciled Breakdown -->
+    <div class="row g-2 mb-3">
+      <div class="col-12 col-sm-6 col-md-3">
+        <div class="card border shadow-xs h-100 p-3 lx-kpi-card">
+          <div class="d-flex justify-content-between align-items-center">
+            <div>
+              <div class="text-muted fs-xs text-uppercase fw-semibold">Total Collected</div>
+              <div class="h4 mb-0 fw-bold text-success mt-1">Rs. {{ collectionSummary.totalCollected | number:'1.2-2' }}</div>
+            </div>
+            <div class="lx-kpi-icon bg-success-subtle text-success"><i class="bi bi-cash-stack"></i></div>
+          </div>
+        </div>
+      </div>
+      <div class="col-12 col-sm-6 col-md-3">
+        <div class="card border shadow-xs h-100 p-3 lx-kpi-card">
+          <div class="d-flex justify-content-between align-items-center">
+            <div>
+              <div class="text-muted fs-xs text-uppercase fw-semibold">Transactions</div>
+              <div class="h4 mb-0 fw-bold text-main mt-1">{{ collectionSummary.transactionCount | number }}</div>
+            </div>
+            <div class="lx-kpi-icon bg-gold-subtle text-gold"><i class="bi bi-receipt-cutoff"></i></div>
+          </div>
+        </div>
+      </div>
+      <div class="col-12 col-sm-6 col-md-3">
+        <div class="card border shadow-xs h-100 p-3 lx-kpi-card">
+          <div class="d-flex justify-content-between align-items-center">
+            <div>
+              <div class="text-muted fs-xs text-uppercase fw-semibold">Customers &bull; Loans</div>
+              <div class="h4 mb-0 fw-bold text-main mt-1">{{ collectionSummary.customersPaid }} &bull; {{ collectionSummary.loansPaid }}</div>
+            </div>
+            <div class="lx-kpi-icon bg-primary-subtle text-primary"><i class="bi bi-people"></i></div>
+          </div>
+        </div>
+      </div>
+      <div class="col-12 col-sm-6 col-md-3">
+        <div class="card border shadow-xs h-100 p-3 lx-kpi-card">
+          <div class="text-muted fs-xs text-uppercase fw-semibold mb-1">Reconciled Breakdown</div>
+          <div class="d-flex justify-content-between fs-xs mb-1">
+            <span class="text-muted">Daily:</span>
+            <span class="fw-semibold">Rs. {{ collectionSummary.dailyCollections | number:'1.0-0' }}</span>
+          </div>
+          <div class="d-flex justify-content-between fs-xs mb-1">
+            <span class="text-muted">Weekly:</span>
+            <span class="fw-semibold">Rs. {{ collectionSummary.weeklyCollections | number:'1.0-0' }}</span>
+          </div>
+          <div class="d-flex justify-content-between fs-xs">
+            <span class="text-muted">Monthly:</span>
+            <span class="fw-semibold">Rs. {{ collectionSummary.monthlyCollections | number:'1.0-0' }}</span>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Data Table View -->
+    <div class="card border shadow-xs">
+      <div class="table-responsive">
+        <table class="table table-hover align-middle mb-0 lx-report-table">
+          <thead>
+            <tr>
+              <th scope="col" style="width: 110px;">Date</th>
+              <th scope="col">Customer</th>
+              <th scope="col" style="width: 120px;">NIC</th>
+              <th scope="col" style="width: 130px;">Loan #</th>
+              <th scope="col" style="width: 100px;">Frequency</th>
+              <th scope="col" class="text-end" style="width: 150px;">Amount Collected</th>
+              <th scope="col">Remark</th>
+              <th scope="col" style="width: 110px;">Recorded</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr *ngFor="let row of paginatedCollectionRows">
+              <td class="fw-medium text-nowrap">{{ row.paidDate }}</td>
+              <td>
+                <div class="fw-bold text-main">{{ row.customerName }}</div>
+                <div class="text-muted fs-xs">{{ row.mobileNumber }}</div>
+              </td>
+              <td class="text-muted text-nowrap">{{ row.nicNumber }}</td>
+              <td class="fw-semibold text-gold text-nowrap">{{ row.loanNumber }}</td>
+              <td><span class="badge bg-surface border text-muted fs-xs">{{ row.loanType }}</span></td>
+              <td class="text-end fw-bold text-success text-nowrap">Rs. {{ row.paidAmount | number:'1.2-2' }}</td>
+              <td class="text-muted text-truncate" style="max-width: 220px;" [title]="row.remark">{{ row.remark }}</td>
+              <td class="text-muted fs-xs text-nowrap">{{ row.recordedDate }}</td>
+            </tr>
+            <tr *ngIf="collectionRows.length === 0 && !isLoading">
+              <td colspan="8" class="text-center py-5">
+                <i class="bi bi-inbox fs-2 text-muted d-block mb-2"></i>
+                <div class="text-muted fw-medium">No collections found for the selected date period.</div>
+              </td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </ng-container>
+
+  <!-- ========================================================================= -->
+  <!-- REPORT 04: UPCOMING PAYMENTS REPORT                                       -->
+  <!-- ========================================================================= -->
+  <ng-container *ngIf="activeReportType === 'upcoming-payments'">
+    <!-- ERP Filter Toolbar -->
+    <div class="card border shadow-xs mb-3">
+      <div class="card-body p-3">
+        <div class="row g-2 align-items-end">
+          <div class="col-12 col-md-3">
+            <label class="lx-filter-label">Quick Period</label>
+            <div class="btn-group btn-group-sm w-100">
+              <button 
+                type="button" 
+                class="btn"
+                [class.btn-primary-gold]="upcomingQuickPeriod === 'today'"
+                [class.btn-subtle]="upcomingQuickPeriod !== 'today'"
+                (click)="setUpcomingQuickPeriod('today')"
+              >Today</button>
+              <button 
+                type="button" 
+                class="btn"
+                [class.btn-primary-gold]="upcomingQuickPeriod === 'this_week'"
+                [class.btn-subtle]="upcomingQuickPeriod !== 'this_week'"
+                (click)="setUpcomingQuickPeriod('this_week')"
+              >This Week</button>
+              <button 
+                type="button" 
+                class="btn"
+                [class.btn-primary-gold]="upcomingQuickPeriod === 'next_week'"
+                [class.btn-subtle]="upcomingQuickPeriod !== 'next_week'"
+                (click)="setUpcomingQuickPeriod('next_week')"
+              >Next Week</button>
+              <button 
+                type="button" 
+                class="btn"
+                [class.btn-primary-gold]="upcomingQuickPeriod === 'custom'"
+                [class.btn-subtle]="upcomingQuickPeriod !== 'custom'"
+                (click)="setUpcomingQuickPeriod('custom')"
+              >Custom</button>
+            </div>
+          </div>
+
+          <div *ngIf="upcomingQuickPeriod === 'custom'" class="col-6 col-md-2">
+            <label class="lx-filter-label">From Date</label>
+            <input type="date" class="form-control form-control-sm lx-filter-input" [(ngModel)]="upcomingDateFrom" (change)="currentPage = 1; loadUpcomingPayments()">
+          </div>
+
+          <div *ngIf="upcomingQuickPeriod === 'custom'" class="col-6 col-md-2">
+            <label class="lx-filter-label">To Date</label>
+            <input type="date" class="form-control form-control-sm lx-filter-input" [(ngModel)]="upcomingDateTo" (change)="currentPage = 1; loadUpcomingPayments()">
+          </div>
+
+          <div class="col-12" [ngClass]="upcomingQuickPeriod === 'custom' ? 'col-md-2' : 'col-md-4'">
+            <label class="lx-filter-label">Search Query</label>
+            <div class="input-group input-group-sm">
+              <span class="input-group-text bg-surface"><i class="bi bi-search"></i></span>
+              <input 
+                type="text" 
+                class="form-control lx-filter-input" 
+                placeholder="Customer, NIC, Loan #..." 
+                [(ngModel)]="upcomingSearch" 
+                (keyup.enter)="currentPage = 1; loadUpcomingPayments()"
+              >
+            </div>
+          </div>
+
+          <div class="col-6 col-md-1">
+            <label class="lx-filter-label">Frequency</label>
+            <select class="form-select form-select-sm lx-filter-input" [(ngModel)]="upcomingLoanType" (change)="currentPage = 1; loadUpcomingPayments()">
+              <option value="all">All</option>
+              <option value="daily">Daily</option>
+              <option value="weekly">Weekly</option>
+              <option value="monthly">Monthly</option>
+            </select>
+          </div>
+
+          <div class="col-6 col-md-2 d-flex gap-2 justify-content-end">
+            <button type="button" class="btn btn-sm btn-subtle flex-grow-1" (click)="resetUpcomingFilters()">
+              <i class="bi bi-arrow-counterclockwise me-1"></i> Reset
+            </button>
+            <button 
+              type="button" 
+              class="btn btn-sm btn-excel-gold flex-grow-1" 
+              [disabled]="isExporting || upcomingRows.length === 0"
+              (click)="exportUpcomingPaymentsToExcel()"
+            >
+              <i *ngIf="!isExporting" class="bi bi-file-earmark-spreadsheet me-1"></i>
+              <span *ngIf="isExporting" class="spinner-border spinner-border-sm me-1"></span>
+              Export .xlsx
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Summary KPI Strip -->
+    <div class="row g-2 mb-3">
+      <div class="col-12 col-sm-6 col-md-3">
+        <div class="card border shadow-xs h-100 p-3 lx-kpi-card">
+          <div class="d-flex justify-content-between align-items-center">
+            <div>
+              <div class="text-muted fs-xs text-uppercase fw-semibold">Upcoming Obligations</div>
+              <div class="h4 mb-0 fw-bold text-main mt-1">{{ upcomingSummary.expectedPaymentCount | number }}</div>
+            </div>
+            <div class="lx-kpi-icon bg-gold-subtle text-gold"><i class="bi bi-calendar-event"></i></div>
+          </div>
+        </div>
+      </div>
+      <div class="col-12 col-sm-6 col-md-3">
+        <div class="card border shadow-xs h-100 p-3 lx-kpi-card">
+          <div class="d-flex justify-content-between align-items-center">
+            <div>
+              <div class="text-muted fs-xs text-uppercase fw-semibold">Total Expected Collection</div>
+              <div class="h4 mb-0 fw-bold text-primary mt-1">Rs. {{ upcomingSummary.totalExpectedCollection | number:'1.2-2' }}</div>
+            </div>
+            <div class="lx-kpi-icon bg-primary-subtle text-primary"><i class="bi bi-cash-stack"></i></div>
+          </div>
+        </div>
+      </div>
+      <div class="col-12 col-sm-6 col-md-3">
+        <div class="card border shadow-xs h-100 p-3 lx-kpi-card">
+          <div class="d-flex justify-content-between align-items-center">
+            <div>
+              <div class="text-muted fs-xs text-uppercase fw-semibold">Customers &bull; Loans Due</div>
+              <div class="h4 mb-0 fw-bold text-main mt-1">{{ upcomingSummary.customersDue }} &bull; {{ upcomingSummary.loansDue }}</div>
+            </div>
+            <div class="lx-kpi-icon bg-surface border text-muted"><i class="bi bi-person-check"></i></div>
+          </div>
+        </div>
+      </div>
+      <div class="col-12 col-sm-6 col-md-3">
+        <div class="card border shadow-xs h-100 p-3 lx-kpi-card">
+          <div class="text-muted fs-xs text-uppercase fw-semibold mb-1">Expected Breakdown</div>
+          <div class="d-flex justify-content-between fs-xs mb-1">
+            <span class="text-muted">Daily:</span>
+            <span class="fw-semibold">Rs. {{ upcomingSummary.dailyExpected | number:'1.0-0' }}</span>
+          </div>
+          <div class="d-flex justify-content-between fs-xs mb-1">
+            <span class="text-muted">Weekly:</span>
+            <span class="fw-semibold">Rs. {{ upcomingSummary.weeklyExpected | number:'1.0-0' }}</span>
+          </div>
+          <div class="d-flex justify-content-between fs-xs">
+            <span class="text-muted">Monthly:</span>
+            <span class="fw-semibold">Rs. {{ upcomingSummary.monthlyExpected | number:'1.0-0' }}</span>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Data Table View -->
+    <div class="card border shadow-xs">
+      <div class="table-responsive">
+        <table class="table table-hover align-middle mb-0 lx-report-table">
+          <thead>
+            <tr>
+              <th scope="col" style="width: 110px;">Due Date</th>
+              <th scope="col">Customer</th>
+              <th scope="col" style="width: 120px;">NIC</th>
+              <th scope="col" style="width: 130px;">Loan #</th>
+              <th scope="col" style="width: 90px;">Frequency</th>
+              <th scope="col" class="text-end" style="width: 140px;">Expected Amount</th>
+              <th scope="col" class="text-end" style="width: 140px;">Remaining Bal.</th>
+              <th scope="col" class="text-center" style="width: 100px;">Rem. Inst.</th>
+              <th scope="col" style="width: 100px;">Status</th>
+              <th scope="col" class="text-center" style="width: 80px;">Action</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr *ngFor="let row of paginatedUpcomingRows">
+              <td class="fw-medium text-nowrap text-primary">{{ row.expectedDate }}</td>
+              <td>
+                <div class="fw-bold text-main">{{ row.customerName }}</div>
+                <div class="text-muted fs-xs">{{ row.mobileNumber }}</div>
+              </td>
+              <td class="text-muted text-nowrap">{{ row.nicNumber }}</td>
+              <td class="fw-semibold text-gold text-nowrap">{{ row.loanNumber }}</td>
+              <td><span class="badge bg-surface border text-muted fs-xs">{{ row.loanType }}</span></td>
+              <td class="text-end fw-bold text-main text-nowrap">Rs. {{ row.expectedAmount | number:'1.2-2' }}</td>
+              <td class="text-end fw-semibold text-nowrap">Rs. {{ row.remainingBalance | number:'1.2-2' }}</td>
+              <td class="text-center text-muted">{{ row.remainingInstallments }}</td>
+              <td>
+                <span class="badge" [ngClass]="row.status === 'Due Today' ? 'bg-primary-subtle text-primary' : 'bg-surface border text-muted'">
+                  {{ row.status }}
+                </span>
+              </td>
+              <td class="text-center">
+                <a [routerLink]="['/single-loan', row.loanId]" class="btn btn-xs btn-subtle text-primary" title="View Loan Details">
+                  <i class="bi bi-box-arrow-up-right"></i>
+                </a>
+              </td>
+            </tr>
+            <tr *ngIf="upcomingRows.length === 0 && !isLoading">
+              <td colspan="10" class="text-center py-5">
+                <i class="bi bi-calendar2-x fs-2 text-muted d-block mb-2"></i>
+                <div class="text-muted fw-medium">No upcoming payment obligations scheduled for this period.</div>
+              </td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </ng-container>
+
+  <!-- ========================================================================= -->
+  <!-- REPORT 05: PAYMENT PERFORMANCE REPORT                                     -->
+  <!-- ========================================================================= -->
+  <ng-container *ngIf="activeReportType === 'payment-performance'">
+    <!-- ERP Filter Toolbar -->
+    <div class="card border shadow-xs mb-3">
+      <div class="card-body p-3">
+        <div class="row g-2 align-items-end">
+          <div class="col-12 col-md-4">
+            <label class="lx-filter-label">Search Customer / Loan #</label>
+            <div class="input-group input-group-sm">
+              <span class="input-group-text bg-surface"><i class="bi bi-search"></i></span>
+              <input 
+                type="text" 
+                class="form-control lx-filter-input" 
+                placeholder="Customer Name or Loan Number..." 
+                [(ngModel)]="performanceSearch" 
+                (keyup.enter)="currentPage = 1; loadPaymentPerformance()"
+              >
+            </div>
+          </div>
+
+          <div class="col-6 col-md-2">
+            <label class="lx-filter-label">From Date</label>
+            <input type="date" class="form-control form-control-sm lx-filter-input" [(ngModel)]="performanceDateFrom" (change)="currentPage = 1; loadPaymentPerformance()">
+          </div>
+
+          <div class="col-6 col-md-2">
+            <label class="lx-filter-label">To Date</label>
+            <input type="date" class="form-control form-control-sm lx-filter-input" [(ngModel)]="performanceDateTo" (change)="currentPage = 1; loadPaymentPerformance()">
+          </div>
+
+          <div class="col-6 col-md-2">
+            <label class="lx-filter-label">Frequency Filter</label>
+            <select class="form-select form-select-sm lx-filter-input" [(ngModel)]="performanceLoanType" (change)="currentPage = 1; loadPaymentPerformance()">
+              <option value="all">All Frequencies</option>
+              <option value="daily">Daily Loans</option>
+              <option value="weekly">Weekly Loans</option>
+              <option value="monthly">Monthly Loans</option>
+            </select>
+          </div>
+
+          <div class="col-12 col-md-2 d-flex gap-2 justify-content-end">
+            <button type="button" class="btn btn-sm btn-subtle flex-grow-1" (click)="resetPerformanceFilters()">
+              <i class="bi bi-arrow-counterclockwise me-1"></i> Reset
+            </button>
+            <button 
+              type="button" 
+              class="btn btn-sm btn-excel-gold flex-grow-1" 
+              [disabled]="isExporting || !performanceData"
+              (click)="exportPerformanceToExcel()"
+            >
+              <i *ngIf="!isExporting" class="bi bi-file-earmark-spreadsheet me-1"></i>
+              <span *ngIf="isExporting" class="spinner-border spinner-border-sm me-1"></span>
+              Export .xlsx
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Summary KPI Strip: Expected vs Actual -->
+    <div *ngIf="performanceData" class="row g-2 mb-3">
+      <div class="col-12 col-sm-6 col-md-3">
+        <div class="card border shadow-xs h-100 p-3 lx-kpi-card">
+          <div class="d-flex justify-content-between align-items-center">
+            <div>
+              <div class="text-muted fs-xs text-uppercase fw-semibold">Expected Collection</div>
+              <div class="h4 mb-0 fw-bold text-main mt-1">Rs. {{ performanceData.summary.totalExpected | number:'1.2-2' }}</div>
+            </div>
+            <div class="lx-kpi-icon bg-surface border text-muted"><i class="bi bi-calendar-check"></i></div>
+          </div>
+        </div>
+      </div>
+      <div class="col-12 col-sm-6 col-md-3">
+        <div class="card border shadow-xs h-100 p-3 lx-kpi-card">
+          <div class="d-flex justify-content-between align-items-center">
+            <div>
+              <div class="text-muted fs-xs text-uppercase fw-semibold">Actual Collection</div>
+              <div class="h4 mb-0 fw-bold text-success mt-1">Rs. {{ performanceData.summary.totalActual | number:'1.2-2' }}</div>
+            </div>
+            <div class="lx-kpi-icon bg-success-subtle text-success"><i class="bi bi-cash-stack"></i></div>
+          </div>
+        </div>
+      </div>
+      <div class="col-12 col-sm-6 col-md-3">
+        <div class="card border shadow-xs h-100 p-3 lx-kpi-card">
+          <div class="d-flex justify-content-between align-items-center">
+            <div>
+              <div class="text-muted fs-xs text-uppercase fw-semibold">Collection Difference</div>
+              <div class="h4 mb-0 fw-bold mt-1" [ngClass]="performanceData.summary.totalDifference >= 0 ? 'text-success' : 'text-danger'">
+                {{ performanceData.summary.totalDifference >= 0 ? '+' : '' }}Rs. {{ performanceData.summary.totalDifference | number:'1.2-2' }}
+              </div>
+            </div>
+            <div class="lx-kpi-icon bg-gold-subtle text-gold"><i class="bi bi-arrow-left-right"></i></div>
+          </div>
+        </div>
+      </div>
+      <div class="col-12 col-sm-6 col-md-3">
+        <div class="card border shadow-xs h-100 p-3 lx-kpi-card">
+          <div class="d-flex justify-content-between align-items-center">
+            <div>
+              <div class="text-muted fs-xs text-uppercase fw-semibold">Overall Collection Rate</div>
+              <div class="h4 mb-0 fw-bold text-primary mt-1">{{ performanceData.summary.overallCollectionRate }}%</div>
+            </div>
+            <div class="lx-kpi-icon bg-primary-subtle text-primary"><i class="bi bi-speedometer2"></i></div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Segment Breakdown Table Card -->
+    <div *ngIf="performanceData" class="card border shadow-xs mb-3">
+      <div class="card-header bg-surface py-2 border-bottom">
+        <div class="fs-xs text-uppercase fw-bold text-muted">Portfolio Segment Performance Breakdown</div>
+      </div>
+      <div class="table-responsive">
+        <table class="table table-sm align-middle mb-0">
+          <thead class="table-light">
+            <tr>
+              <th scope="col">Segment</th>
+              <th scope="col" class="text-end">Expected (Rs.)</th>
+              <th scope="col" class="text-end">Actual (Rs.)</th>
+              <th scope="col" class="text-end">Difference (Rs.)</th>
+              <th scope="col" class="text-end">Rate (%)</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td class="fw-semibold text-main">Daily Loans</td>
+              <td class="text-end">Rs. {{ performanceData.summary.daily.expected | number:'1.2-2' }}</td>
+              <td class="text-end text-success fw-medium">Rs. {{ performanceData.summary.daily.actual | number:'1.2-2' }}</td>
+              <td class="text-end fw-medium" [ngClass]="performanceData.summary.daily.difference >= 0 ? 'text-success' : 'text-danger'">
+                {{ performanceData.summary.daily.difference >= 0 ? '+' : '' }}Rs. {{ performanceData.summary.daily.difference | number:'1.2-2' }}
+              </td>
+              <td class="text-end fw-bold text-primary">{{ performanceData.summary.daily.collectionRate }}%</td>
+            </tr>
+            <tr>
+              <td class="fw-semibold text-main">Weekly Loans</td>
+              <td class="text-end">Rs. {{ performanceData.summary.weekly.expected | number:'1.2-2' }}</td>
+              <td class="text-end text-success fw-medium">Rs. {{ performanceData.summary.weekly.actual | number:'1.2-2' }}</td>
+              <td class="text-end fw-medium" [ngClass]="performanceData.summary.weekly.difference >= 0 ? 'text-success' : 'text-danger'">
+                {{ performanceData.summary.weekly.difference >= 0 ? '+' : '' }}Rs. {{ performanceData.summary.weekly.difference | number:'1.2-2' }}
+              </td>
+              <td class="text-end fw-bold text-primary">{{ performanceData.summary.weekly.collectionRate }}%</td>
+            </tr>
+            <tr>
+              <td class="fw-semibold text-main">Monthly Loans</td>
+              <td class="text-end">Rs. {{ performanceData.summary.monthly.expected | number:'1.2-2' }}</td>
+              <td class="text-end text-success fw-medium">Rs. {{ performanceData.summary.monthly.actual | number:'1.2-2' }}</td>
+              <td class="text-end fw-medium" [ngClass]="performanceData.summary.monthly.difference >= 0 ? 'text-success' : 'text-danger'">
+                {{ performanceData.summary.monthly.difference >= 0 ? '+' : '' }}Rs. {{ performanceData.summary.monthly.difference | number:'1.2-2' }}
+              </td>
+              <td class="text-end fw-bold text-primary">{{ performanceData.summary.monthly.collectionRate }}%</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- Sub-Tabs: Periodic Performance vs Actual Payment Details -->
+    <div class="card border shadow-xs">
+      <div class="card-header bg-surface py-2 d-flex justify-content-between align-items-center">
+        <ul class="nav nav-pills card-header-pills fs-sm">
+          <li class="nav-item">
+            <button 
+              type="button" 
+              class="nav-link py-1 px-3" 
+              [class.active]="performanceActiveTab === 'periodic'"
+              (click)="performanceActiveTab = 'periodic'; currentPage = 1"
+            >
+              <i class="bi bi-calendar3 me-1"></i> Periodic Collection Detail
+            </button>
+          </li>
+          <li class="nav-item">
+            <button 
+              type="button" 
+              class="nav-link py-1 px-3" 
+              [class.active]="performanceActiveTab === 'payments'"
+              (click)="performanceActiveTab = 'payments'; currentPage = 1"
+            >
+              <i class="bi bi-list-check me-1"></i> Actual Payments List ({{ performanceData?.paymentRows?.length || 0 }})
+            </button>
+          </li>
+        </ul>
+      </div>
+
+      <!-- Tab 1: Periodic Table -->
+      <div *ngIf="performanceActiveTab === 'periodic'" class="table-responsive">
+        <table class="table table-hover align-middle mb-0 lx-report-table">
+          <thead>
+            <tr>
+              <th scope="col" style="width: 140px;">Period / Date</th>
+              <th scope="col" class="text-end" style="width: 180px;">Expected (Rs.)</th>
+              <th scope="col" class="text-end" style="width: 180px;">Actual Collected (Rs.)</th>
+              <th scope="col" class="text-end" style="width: 180px;">Difference (Rs.)</th>
+              <th scope="col" class="text-end" style="width: 140px;">Collection Rate</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr *ngFor="let row of paginatedPerformancePeriodRows">
+              <td class="fw-semibold text-main">{{ row.periodLabel }}</td>
+              <td class="text-end">Rs. {{ row.expectedAmount | number:'1.2-2' }}</td>
+              <td class="text-end fw-bold text-success">Rs. {{ row.actualCollected | number:'1.2-2' }}</td>
+              <td class="text-end fw-medium" [ngClass]="row.difference >= 0 ? 'text-success' : 'text-danger'">
+                {{ row.difference >= 0 ? '+' : '' }}Rs. {{ row.difference | number:'1.2-2' }}
+              </td>
+              <td class="text-end fw-bold text-primary">{{ row.collectionRate }}%</td>
+            </tr>
+            <tr *ngIf="(!performanceData || performanceData.periodRows.length === 0) && !isLoading">
+              <td colspan="5" class="text-center py-5">
+                <i class="bi bi-inbox fs-2 text-muted d-block mb-2"></i>
+                <div class="text-muted fw-medium">No schedule or collection data for the selected period.</div>
+              </td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+
+      <!-- Tab 2: Actual Payments Table -->
+      <div *ngIf="performanceActiveTab === 'payments'" class="table-responsive">
+        <table class="table table-hover align-middle mb-0 lx-report-table">
+          <thead>
+            <tr>
+              <th scope="col" style="width: 110px;">Date</th>
+              <th scope="col">Customer</th>
+              <th scope="col" style="width: 130px;">Loan #</th>
+              <th scope="col" style="width: 100px;">Frequency</th>
+              <th scope="col" class="text-end" style="width: 150px;">Amount Paid</th>
+              <th scope="col">Remark</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr *ngFor="let row of paginatedPerformancePaymentRows">
+              <td class="fw-medium text-nowrap">{{ row.paidDate }}</td>
+              <td class="fw-bold text-main">{{ row.customerName }}</td>
+              <td class="fw-semibold text-gold text-nowrap">{{ row.loanNumber }}</td>
+              <td><span class="badge bg-surface border text-muted fs-xs">{{ row.loanType }}</span></td>
+              <td class="text-end fw-bold text-success text-nowrap">Rs. {{ row.paidAmount | number:'1.2-2' }}</td>
+              <td class="text-muted text-truncate" style="max-width: 250px;">{{ row.remark }}</td>
+            </tr>
+            <tr *ngIf="(!performanceData || performanceData.paymentRows.length === 0) && !isLoading">
+              <td colspan="6" class="text-center py-5">
+                <i class="bi bi-receipt fs-2 text-muted d-block mb-2"></i>
+                <div class="text-muted fw-medium">No actual payment transactions recorded in this period.</div>
+              </td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </ng-container>
+
+  <!-- ========================================================================= -->
+  <!-- Common Pagination Controls                                                -->
+  <!-- ========================================================================= -->
+  <div *ngIf="totalRowsForActiveReport > 0" class="d-flex flex-wrap justify-content-between align-items-center mt-3 gap-2 px-1">
+    <div class="d-flex align-items-center gap-2">
+      <span class="text-muted fs-xs">Rows per page:</span>
+      <select class="form-select form-select-sm lx-filter-input py-0 px-2" style="width: auto;" [(ngModel)]="pageSize" (change)="onPageSizeChange()">
+        <option *ngFor="let size of pageSizeOptions" [value]="size">{{ size }}</option>
+      </select>
+      <span class="text-muted fs-xs ms-2">
+        Showing {{ pageStartIndex }} to {{ pageEndIndex }} of {{ totalRowsForActiveReport }} entries
+      </span>
+    </div>
+
+    <div class="btn-group btn-group-sm shadow-xs">
+      <button 
+        type="button" 
+        class="btn btn-subtle" 
+        [disabled]="currentPage === 1" 
+        (click)="setPage(currentPage - 1)"
+      >
+        <i class="bi bi-chevron-left me-1"></i> Prev
+      </button>
+
+      <button 
+        type="button" 
+        class="btn btn-subtle px-3 disabled text-main fw-semibold"
+      >
+        Page {{ currentPage }} of {{ totalPages }}
+      </button>
+
+      <button 
+        type="button" 
+        class="btn btn-subtle" 
+        [disabled]="currentPage === totalPages" 
+        (click)="setPage(currentPage + 1)"
+      >
+        Next <i class="bi bi-chevron-right ms-1"></i>
+      </button>
+    </div>
+  </div>
+
+  <!-- Loading State Overlay -->
+  <div *ngIf="isLoading" class="lx-loading-overlay d-flex flex-column justify-content-center align-items-center py-5">
+    <div class="spinner-border text-gold mb-3" style="width: 2.5rem; height: 2.5rem;" role="status">
+      <span class="visually-hidden">Loading...</span>
+    </div>
+    <div class="fs-sm fw-medium text-muted">Generating operational payment report...</div>
+  </div>
+
+  <!-- Error State Alert -->
+  <div *ngIf="errorMessage && !isLoading" class="alert alert-danger shadow-xs mt-3 d-flex align-items-center justify-content-between">
+    <div class="d-flex align-items-center gap-2">
+      <i class="bi bi-exclamation-triangle-fill fs-5"></i>
+      <div>{{ errorMessage }}</div>
+    </div>
+    <button type="button" class="btn btn-sm btn-outline-danger" (click)="loadActiveReport()">
+      <i class="bi bi-arrow-clockwise me-1"></i> Retry
+    </button>
+  </div>
+
+</div>

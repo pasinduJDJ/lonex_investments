@@ -1,0 +1,996 @@
+<div class="lx-reports-container container-fluid px-3 px-md-4 py-3">
+
+  <!-- Breadcrumb & Header -->
+  <div class="lx-report-header mb-3">
+    <div class="d-flex flex-wrap justify-content-between align-items-center gap-2">
+      <div>
+        <nav aria-label="breadcrumb">
+          <ol class="breadcrumb lx-report-breadcrumb mb-1">
+            <li class="breadcrumb-item"><a routerLink="/home">Home</a></li>
+            <li class="breadcrumb-item"><a routerLink="/loan">Loans</a></li>
+            <li class="breadcrumb-item active" aria-current="page">Reports</li>
+            <li class="breadcrumb-item active text-gold fw-semibold" aria-current="page">
+              <span *ngIf="activeReportType === 'loan-history'">Loan History</span>
+              <span *ngIf="activeReportType === 'active-loans'">Active Loans</span>
+              <span *ngIf="activeReportType === 'completed-loans'">Completed Loans</span>
+              <span *ngIf="activeReportType === 'overdue-loans'">Delayed / Overdue</span>
+              <span *ngIf="activeReportType === 'repayment-schedule'">Repayment Schedule</span>
+            </li>
+          </ol>
+        </nav>
+        <h2 class="lx-report-title mb-0">
+          <i class="bi bi-file-earmark-spreadsheet me-2 text-gold"></i>
+          <span *ngIf="activeReportType === 'loan-history'">Loan History Report</span>
+          <span *ngIf="activeReportType === 'active-loans'">Active Loans Report</span>
+          <span *ngIf="activeReportType === 'completed-loans'">Completed Loans Report</span>
+          <span *ngIf="activeReportType === 'overdue-loans'">Delayed / Overdue Loans Report</span>
+          <span *ngIf="activeReportType === 'repayment-schedule'">Repayment Schedule Report</span>
+        </h2>
+      </div>
+
+      <!-- Export Excel Action Button -->
+      <div class="d-flex align-items-center gap-2">
+        <button
+          type="button"
+          class="btn btn-export-excel d-flex align-items-center gap-2"
+          [disabled]="isLoading || isExporting || (activeReportType === 'repayment-schedule' ? !scheduleData : totalItems === 0)"
+          (click)="activeReportType === 'loan-history' ? exportHistoryToExcel() : (activeReportType === 'active-loans' ? exportActiveLoansToExcel() : (activeReportType === 'completed-loans' ? exportCompletedLoansToExcel() : (activeReportType === 'overdue-loans' ? exportOverdueLoansToExcel() : exportScheduleToExcel())))"
+        >
+          <span *ngIf="isExporting" class="spinner-border spinner-border-sm" role="status"></span>
+          <i *ngIf="!isExporting" class="bi bi-file-earmark-excel-fill text-success"></i>
+          <span>{{ isExporting ? 'Preparing Excel file...' : 'Export Excel (.xlsx)' }}</span>
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Odoo-Style Report Switcher Tabs -->
+  <div class="lx-report-tabs mb-3">
+    <div class="nav nav-pills lx-pills-group" role="tablist">
+      <button 
+        type="button" 
+        class="nav-link lx-pill-tab" 
+        [class.active]="activeReportType === 'loan-history'"
+        (click)="switchReport('loan-history')"
+      >
+        <i class="bi bi-clock-history me-1"></i> Loan History
+      </button>
+
+      <button 
+        type="button" 
+        class="nav-link lx-pill-tab" 
+        [class.active]="activeReportType === 'active-loans'"
+        (click)="switchReport('active-loans')"
+      >
+        <i class="bi bi-check-circle me-1"></i> Active Loans
+      </button>
+
+      <button 
+        type="button" 
+        class="nav-link lx-pill-tab" 
+        [class.active]="activeReportType === 'completed-loans'"
+        (click)="switchReport('completed-loans')"
+      >
+        <i class="bi bi-archive me-1"></i> Completed Loans
+      </button>
+
+      <button 
+        type="button" 
+        class="nav-link lx-pill-tab" 
+        [class.active]="activeReportType === 'overdue-loans'"
+        (click)="switchReport('overdue-loans')"
+      >
+        <i class="bi bi-exclamation-triangle-fill me-1 text-danger"></i> Delayed / Overdue
+      </button>
+
+      <button 
+        type="button" 
+        class="nav-link lx-pill-tab" 
+        [class.active]="activeReportType === 'repayment-schedule'"
+        (click)="switchReport('repayment-schedule')"
+      >
+        <i class="bi bi-calendar-range me-1"></i> Repayment Schedule
+      </button>
+    </div>
+  </div>
+
+  <!-- ========================================================================= -->
+  <!-- REPORT 01: LOAN HISTORY REPORT                                            -->
+  <!-- ========================================================================= -->
+  <ng-container *ngIf="activeReportType === 'loan-history'">
+    
+    <!-- Filter Toolbar -->
+    <div class="lx-filter-card mb-3">
+      <div class="row g-2 align-items-end">
+        <div class="col-12 col-md-3">
+          <label class="lx-filter-label">Search Loan / Customer</label>
+          <div class="input-group input-group-sm">
+            <span class="input-group-text lx-input-icon"><i class="bi bi-search"></i></span>
+            <input 
+              type="text" 
+              class="form-control lx-filter-input" 
+              placeholder="Loan #, Name, NIC..."
+              [(ngModel)]="historySearch"
+              (keyup.enter)="loadLoanHistory()"
+            />
+          </div>
+        </div>
+
+        <div class="col-6 col-md-2">
+          <label class="lx-filter-label">Loan Date From</label>
+          <input 
+            type="date" 
+            class="form-control form-control-sm lx-filter-input" 
+            [(ngModel)]="historyDateFrom"
+          />
+        </div>
+
+        <div class="col-6 col-md-2">
+          <label class="lx-filter-label">Loan Date To</label>
+          <input 
+            type="date" 
+            class="form-control form-control-sm lx-filter-input" 
+            [(ngModel)]="historyDateTo"
+          />
+        </div>
+
+        <div class="col-6 col-md-2">
+          <label class="lx-filter-label">Status</label>
+          <select class="form-select form-select-sm lx-filter-input" [(ngModel)]="historyStatus">
+            <option value="all">All Status</option>
+            <option value="active">Active</option>
+            <option value="completed">Completed</option>
+            <option value="overdue">Overdue</option>
+          </select>
+        </div>
+
+        <div class="col-6 col-md-1">
+          <label class="lx-filter-label">Frequency</label>
+          <select class="form-select form-select-sm lx-filter-input" [(ngModel)]="historyLoanType">
+            <option value="all">All</option>
+            <option value="daily">Daily</option>
+            <option value="weekly">Weekly</option>
+            <option value="monthly">Monthly</option>
+          </select>
+        </div>
+
+        <div class="col-12 col-md-2 d-flex gap-2">
+          <button type="button" class="btn btn-sm btn-primary-gold flex-grow-1" (click)="loadLoanHistory()">
+            <i class="bi bi-funnel me-1"></i> Apply
+          </button>
+          <button type="button" class="btn btn-sm btn-outline-secondary" (click)="resetHistoryFilters()" title="Reset Filters">
+            <i class="bi bi-arrow-counterclockwise"></i>
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Summary Banner -->
+    <div class="lx-summary-strip mb-3 flex-wrap">
+      <div class="lx-summary-stat">
+        <span class="lx-stat-label">Total Loans</span>
+        <span class="lx-stat-value">{{ historySummary.totalLoans }}</span>
+      </div>
+      <div class="lx-summary-divider"></div>
+      <div class="lx-summary-stat">
+        <span class="lx-stat-label">Total Principal</span>
+        <span class="lx-stat-value">Rs. {{ historySummary.totalPrincipal | number:'1.2-2' }}</span>
+      </div>
+      <div class="lx-summary-divider"></div>
+      <div class="lx-summary-stat">
+        <span class="lx-stat-label">Total Due</span>
+        <span class="lx-stat-value">Rs. {{ historySummary.totalDue | number:'1.2-2' }}</span>
+      </div>
+      <div class="lx-summary-divider"></div>
+      <div class="lx-summary-stat">
+        <span class="lx-stat-label">Total Collected</span>
+        <span class="lx-stat-value text-success">Rs. {{ historySummary.totalPaid | number:'1.2-2' }}</span>
+      </div>
+      <div class="lx-summary-divider"></div>
+      <div class="lx-summary-stat">
+        <span class="lx-stat-label">Outstanding Balance</span>
+        <span class="lx-stat-value text-danger">Rs. {{ historySummary.totalRemaining | number:'1.2-2' }}</span>
+      </div>
+      <div class="lx-summary-divider"></div>
+      <div class="lx-summary-stat">
+        <span class="lx-stat-label">Status Breakdown</span>
+        <span class="lx-stat-value fs-6">
+          <span class="text-primary">{{ historySummary.activeCount }} Act.</span> ·
+          <span class="text-success">{{ historySummary.completedCount }} Comp.</span> ·
+          <span class="text-danger">{{ historySummary.overdueCount }} Over.</span>
+        </span>
+      </div>
+    </div>
+
+    <!-- Table Container -->
+    <div class="lx-table-wrapper card shadow-sm">
+      <div class="table-responsive">
+        <table class="table table-hover lx-report-table align-middle mb-0">
+          <thead>
+            <tr>
+              <th>Loan Number</th>
+              <th>Customer Name</th>
+              <th>NIC Number</th>
+              <th>Loan Date</th>
+              <th class="text-end">Principal</th>
+              <th class="text-end">Total Due</th>
+              <th class="text-end">Total Paid</th>
+              <th class="text-end">Remaining</th>
+              <th class="text-end">Instalment</th>
+              <th>Type</th>
+              <th class="text-center">Inst. Progress</th>
+              <th>Expected End Date</th>
+              <th class="text-center">Status</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr *ngIf="isLoading">
+              <td colspan="13" class="text-center py-5">
+                <div class="spinner-border spinner-border-sm text-gold me-2" role="status"></div>
+                <span>Generating report...</span>
+              </td>
+            </tr>
+
+            <tr *ngIf="!isLoading && historyRows.length === 0">
+              <td colspan="13" class="text-center py-5">
+                <i class="bi bi-inbox text-muted fs-3 d-block mb-2"></i>
+                <span class="fw-semibold text-muted">No loans found for the selected report criteria.</span>
+              </td>
+            </tr>
+
+            <tr *ngFor="let row of paginatedHistoryRows">
+              <td><span class="badge badge-loan-number">{{ row.loanNumber }}</span></td>
+              <td><span class="fw-semibold">{{ row.customerName }}</span></td>
+              <td><code>{{ row.nicNumber }}</code></td>
+              <td>{{ row.loanDate }}</td>
+              <td class="text-end">Rs. {{ row.principalAmount | number:'1.2-2' }}</td>
+              <td class="text-end fw-semibold">Rs. {{ row.totalAmountDue | number:'1.2-2' }}</td>
+              <td class="text-end text-success">Rs. {{ row.totalPaid | number:'1.2-2' }}</td>
+              <td class="text-end text-danger fw-bold">Rs. {{ row.remainingAmount | number:'1.2-2' }}</td>
+              <td class="text-end">Rs. {{ row.installmentAmount | number:'1.2-2' }}</td>
+              <td><span class="badge bg-light text-dark border">{{ row.loanType }}</span></td>
+              <td class="text-center small">{{ row.paidInstallments }} / {{ row.totalInstallments }}</td>
+              <td>{{ row.expectedEndDate }}</td>
+              <td class="text-center">
+                <span class="badge" [ngClass]="row.status === 'Completed' ? 'bg-success-subtle text-success' : (row.status === 'Overdue' ? 'bg-danger-subtle text-danger' : 'bg-primary-subtle text-primary')">
+                  {{ row.status | uppercase }}
+                </span>
+              </td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+
+      <!-- Pagination Footer -->
+      <div class="lx-pagination-footer p-2 px-3 d-flex flex-wrap justify-content-between align-items-center gap-2" *ngIf="historyRows.length > 0">
+        <div class="d-flex align-items-center gap-2">
+          <span class="text-muted small">Show</span>
+          <select class="form-select form-select-sm lx-page-select" [(ngModel)]="pageSize" (change)="onPageSizeChange()">
+            <option *ngFor="let opt of pageSizeOptions" [value]="opt">{{ opt }}</option>
+          </select>
+          <span class="text-muted small">
+            Showing {{ (currentPage - 1) * pageSize + 1 }} to {{ (currentPage * pageSize > totalItems ? totalItems : currentPage * pageSize) }} of {{ totalItems }} records
+          </span>
+        </div>
+
+        <div class="d-flex align-items-center gap-1">
+          <button class="btn btn-sm btn-outline-secondary" [disabled]="currentPage === 1" (click)="setPage(currentPage - 1)">
+            <i class="bi bi-chevron-left"></i> Prev
+          </button>
+          <span class="px-2 small text-muted">Page {{ currentPage }} of {{ totalPages }}</span>
+          <button class="btn btn-sm btn-outline-secondary" [disabled]="currentPage === totalPages" (click)="setPage(currentPage + 1)">
+            Next <i class="bi bi-chevron-right"></i>
+          </button>
+        </div>
+      </div>
+    </div>
+  </ng-container>
+
+  <!-- ========================================================================= -->
+  <!-- REPORT 02: ACTIVE LOANS REPORT                                            -->
+  <!-- ========================================================================= -->
+  <ng-container *ngIf="activeReportType === 'active-loans'">
+    
+    <!-- Filter Toolbar -->
+    <div class="lx-filter-card mb-3">
+      <div class="row g-2 align-items-end">
+        <div class="col-12 col-md-3">
+          <label class="lx-filter-label">Search Active Loan / Customer</label>
+          <div class="input-group input-group-sm">
+            <span class="input-group-text lx-input-icon"><i class="bi bi-search"></i></span>
+            <input 
+              type="text" 
+              class="form-control lx-filter-input" 
+              placeholder="Loan #, Name, NIC, Mobile..."
+              [(ngModel)]="activeSearch"
+              (keyup.enter)="loadActiveLoans()"
+            />
+          </div>
+        </div>
+
+        <div class="col-6 col-md-2">
+          <label class="lx-filter-label">Loan Date From</label>
+          <input 
+            type="date" 
+            class="form-control form-control-sm lx-filter-input" 
+            [(ngModel)]="activeDateFrom"
+          />
+        </div>
+
+        <div class="col-6 col-md-2">
+          <label class="lx-filter-label">Loan Date To</label>
+          <input 
+            type="date" 
+            class="form-control form-control-sm lx-filter-input" 
+            [(ngModel)]="activeDateTo"
+          />
+        </div>
+
+        <div class="col-6 col-md-2">
+          <label class="lx-filter-label">Overdue Status</label>
+          <select class="form-select form-select-sm lx-filter-input" [(ngModel)]="activeOverdueFilter">
+            <option value="all">All Active Loans</option>
+            <option value="active-only">Standard Active (On-Time)</option>
+            <option value="overdue-only">Overdue Only</option>
+          </select>
+        </div>
+
+        <div class="col-6 col-md-1">
+          <label class="lx-filter-label">Frequency</label>
+          <select class="form-select form-select-sm lx-filter-input" [(ngModel)]="activeLoanType">
+            <option value="all">All</option>
+            <option value="daily">Daily</option>
+            <option value="weekly">Weekly</option>
+            <option value="monthly">Monthly</option>
+          </select>
+        </div>
+
+        <div class="col-12 col-md-2 d-flex gap-2">
+          <button type="button" class="btn btn-sm btn-primary-gold flex-grow-1" (click)="loadActiveLoans()">
+            <i class="bi bi-funnel me-1"></i> Apply
+          </button>
+          <button type="button" class="btn btn-sm btn-outline-secondary" (click)="resetActiveFilters()" title="Reset Filters">
+            <i class="bi bi-arrow-counterclockwise"></i>
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Summary Banner -->
+    <div class="lx-summary-strip mb-3 flex-wrap">
+      <div class="lx-summary-stat">
+        <span class="lx-stat-label">Active Loans</span>
+        <span class="lx-stat-value text-primary">{{ activeSummary.totalActiveLoans }}</span>
+      </div>
+      <div class="lx-summary-divider"></div>
+      <div class="lx-summary-stat">
+        <span class="lx-stat-label">Total Principal</span>
+        <span class="lx-stat-value">Rs. {{ activeSummary.totalPrincipal | number:'1.2-2' }}</span>
+      </div>
+      <div class="lx-summary-divider"></div>
+      <div class="lx-summary-stat">
+        <span class="lx-stat-label">Total Amount Due</span>
+        <span class="lx-stat-value">Rs. {{ activeSummary.totalDue | number:'1.2-2' }}</span>
+      </div>
+      <div class="lx-summary-divider"></div>
+      <div class="lx-summary-stat">
+        <span class="lx-stat-label">Collected To Date</span>
+        <span class="lx-stat-value text-success">Rs. {{ activeSummary.totalPaid | number:'1.2-2' }}</span>
+      </div>
+      <div class="lx-summary-divider"></div>
+      <div class="lx-summary-stat">
+        <span class="lx-stat-label">Outstanding Balance</span>
+        <span class="lx-stat-value text-danger">Rs. {{ activeSummary.totalOutstanding | number:'1.2-2' }}</span>
+      </div>
+      <div class="lx-summary-divider"></div>
+      <div class="lx-summary-stat">
+        <span class="lx-stat-label">Due This Week</span>
+        <span class="lx-stat-value text-warning">{{ activeSummary.dueThisWeekCount }} (Rs. {{ activeSummary.dueThisWeekAmount | number:'1.2-2' }})</span>
+      </div>
+    </div>
+
+    <!-- Table Container -->
+    <div class="lx-table-wrapper card shadow-sm">
+      <div class="table-responsive">
+        <table class="table table-hover lx-report-table align-middle mb-0">
+          <thead>
+            <tr>
+              <th>Loan Number</th>
+              <th>Customer Name</th>
+              <th>NIC Number</th>
+              <th>Mobile</th>
+              <th>Loan Date</th>
+              <th class="text-end">Principal</th>
+              <th class="text-end">Total Due</th>
+              <th class="text-end">Paid</th>
+              <th class="text-end">Remaining</th>
+              <th class="text-end">Instalment</th>
+              <th>Frequency</th>
+              <th>Next Payment Due</th>
+              <th>Expected End Date</th>
+              <th class="text-center">Progress</th>
+              <th class="text-center">Status</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr *ngIf="isLoading">
+              <td colspan="15" class="text-center py-5">
+                <div class="spinner-border spinner-border-sm text-gold me-2" role="status"></div>
+                <span>Generating report...</span>
+              </td>
+            </tr>
+
+            <tr *ngIf="!isLoading && activeRows.length === 0">
+              <td colspan="15" class="text-center py-5">
+                <i class="bi bi-inbox text-muted fs-3 d-block mb-2"></i>
+                <span class="fw-semibold text-muted">No active loans found for the selected report criteria.</span>
+              </td>
+            </tr>
+
+            <tr *ngFor="let row of paginatedActiveRows">
+              <td><span class="badge badge-loan-number">{{ row.loanNumber }}</span></td>
+              <td><span class="fw-semibold">{{ row.customerName }}</span></td>
+              <td><code>{{ row.nicNumber }}</code></td>
+              <td>{{ row.mobileNumber }}</td>
+              <td>{{ row.loanDate }}</td>
+              <td class="text-end">Rs. {{ row.principalAmount | number:'1.2-2' }}</td>
+              <td class="text-end fw-semibold">Rs. {{ row.totalAmountDue | number:'1.2-2' }}</td>
+              <td class="text-end text-success">Rs. {{ row.totalPaid | number:'1.2-2' }}</td>
+              <td class="text-end text-danger fw-bold">Rs. {{ row.remainingAmount | number:'1.2-2' }}</td>
+              <td class="text-end">Rs. {{ row.installmentAmount | number:'1.2-2' }}</td>
+              <td><span class="badge bg-light text-dark border">{{ row.loanType }}</span></td>
+              <td><small class="fw-semibold">{{ row.nextExpectedPaymentDate }}</small></td>
+              <td>{{ row.expectedEndDate }}</td>
+              <td class="text-center">
+                <div class="progress" style="height: 6px; min-width: 60px;">
+                  <div class="progress-bar bg-success" role="progressbar" [style.width.%]="row.progressPercent"></div>
+                </div>
+                <small class="text-muted" style="font-size: 0.7rem;">{{ row.progressPercent }}%</small>
+              </td>
+              <td class="text-center">
+                <span class="badge" [ngClass]="row.isOverdue ? 'bg-danger-subtle text-danger' : 'bg-primary-subtle text-primary'">
+                  {{ row.status | uppercase }}
+                </span>
+              </td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+
+      <!-- Pagination Footer -->
+      <div class="lx-pagination-footer p-2 px-3 d-flex flex-wrap justify-content-between align-items-center gap-2" *ngIf="activeRows.length > 0">
+        <div class="d-flex align-items-center gap-2">
+          <span class="text-muted small">Show</span>
+          <select class="form-select form-select-sm lx-page-select" [(ngModel)]="pageSize" (change)="onPageSizeChange()">
+            <option *ngFor="let opt of pageSizeOptions" [value]="opt">{{ opt }}</option>
+          </select>
+          <span class="text-muted small">
+            Showing {{ (currentPage - 1) * pageSize + 1 }} to {{ (currentPage * pageSize > totalItems ? totalItems : currentPage * pageSize) }} of {{ totalItems }} records
+          </span>
+        </div>
+
+        <div class="d-flex align-items-center gap-1">
+          <button class="btn btn-sm btn-outline-secondary" [disabled]="currentPage === 1" (click)="setPage(currentPage - 1)">
+            <i class="bi bi-chevron-left"></i> Prev
+          </button>
+          <span class="px-2 small text-muted">Page {{ currentPage }} of {{ totalPages }}</span>
+          <button class="btn btn-sm btn-outline-secondary" [disabled]="currentPage === totalPages" (click)="setPage(currentPage + 1)">
+            Next <i class="bi bi-chevron-right"></i>
+          </button>
+        </div>
+      </div>
+    </div>
+  </ng-container>
+
+  <!-- ========================================================================= -->
+  <!-- REPORT 03: COMPLETED LOANS REPORT                                         -->
+  <!-- ========================================================================= -->
+  <ng-container *ngIf="activeReportType === 'completed-loans'">
+    
+    <!-- Filter Toolbar -->
+    <div class="lx-filter-card mb-3">
+      <div class="row g-2 align-items-end">
+        <div class="col-12 col-md-3">
+          <label class="lx-filter-label">Search Completed Loans</label>
+          <div class="input-group input-group-sm">
+            <span class="input-group-text lx-input-icon"><i class="bi bi-search"></i></span>
+            <input 
+              type="text" 
+              class="form-control lx-filter-input" 
+              placeholder="Loan #, Name, NIC..."
+              [(ngModel)]="completedSearch"
+              (keyup.enter)="loadCompletedLoans()"
+            />
+          </div>
+        </div>
+
+        <div class="col-6 col-md-2">
+          <label class="lx-filter-label">Loan Date From</label>
+          <input 
+            type="date" 
+            class="form-control form-control-sm lx-filter-input" 
+            [(ngModel)]="completedDateFrom"
+          />
+        </div>
+
+        <div class="col-6 col-md-2">
+          <label class="lx-filter-label">Loan Date To</label>
+          <input 
+            type="date" 
+            class="form-control form-control-sm lx-filter-input" 
+            [(ngModel)]="completedDateTo"
+          />
+        </div>
+
+        <div class="col-6 col-md-2">
+          <label class="lx-filter-label">Completion Date From</label>
+          <input 
+            type="date" 
+            class="form-control form-control-sm lx-filter-input" 
+            [(ngModel)]="completedDateCompletionFrom"
+          />
+        </div>
+
+        <div class="col-6 col-md-1">
+          <label class="lx-filter-label">Frequency</label>
+          <select class="form-select form-select-sm lx-filter-input" [(ngModel)]="completedLoanType">
+            <option value="all">All</option>
+            <option value="daily">Daily</option>
+            <option value="weekly">Weekly</option>
+            <option value="monthly">Monthly</option>
+          </select>
+        </div>
+
+        <div class="col-12 col-md-2 d-flex gap-2">
+          <button type="button" class="btn btn-sm btn-primary-gold flex-grow-1" (click)="loadCompletedLoans()">
+            <i class="bi bi-funnel me-1"></i> Apply
+          </button>
+          <button type="button" class="btn btn-sm btn-outline-secondary" (click)="resetCompletedFilters()" title="Reset Filters">
+            <i class="bi bi-arrow-counterclockwise"></i>
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Summary Banner -->
+    <div class="lx-summary-strip mb-3 flex-wrap">
+      <div class="lx-summary-stat">
+        <span class="lx-stat-label">Completed Loans</span>
+        <span class="lx-stat-value text-success">{{ completedSummary.totalCompletedLoans }}</span>
+      </div>
+      <div class="lx-summary-divider"></div>
+      <div class="lx-summary-stat">
+        <span class="lx-stat-label">Total Principal</span>
+        <span class="lx-stat-value">Rs. {{ completedSummary.totalPrincipal | number:'1.2-2' }}</span>
+      </div>
+      <div class="lx-summary-divider"></div>
+      <div class="lx-summary-stat">
+        <span class="lx-stat-label">Total Collected & Closed</span>
+        <span class="lx-stat-value text-success">Rs. {{ completedSummary.totalCollected | number:'1.2-2' }}</span>
+      </div>
+      <div class="lx-summary-divider"></div>
+      <div class="lx-summary-stat">
+        <span class="lx-stat-label">Status</span>
+        <span class="lx-stat-value text-muted fs-6">100% Fully Settled</span>
+      </div>
+    </div>
+
+    <!-- Table Container -->
+    <div class="lx-table-wrapper card shadow-sm">
+      <div class="table-responsive">
+        <table class="table table-hover lx-report-table align-middle mb-0">
+          <thead>
+            <tr>
+              <th>Loan Number</th>
+              <th>Customer Name</th>
+              <th>NIC Number</th>
+              <th>Mobile</th>
+              <th>Loan Date</th>
+              <th class="text-end">Principal</th>
+              <th class="text-end">Total Due</th>
+              <th class="text-end">Total Paid</th>
+              <th>Completion Date</th>
+              <th>Original Expected End Date</th>
+              <th>Frequency</th>
+              <th class="text-center">Status</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr *ngIf="isLoading">
+              <td colspan="12" class="text-center py-5">
+                <div class="spinner-border spinner-border-sm text-gold me-2" role="status"></div>
+                <span>Generating report...</span>
+              </td>
+            </tr>
+
+            <tr *ngIf="!isLoading && completedRows.length === 0">
+              <td colspan="12" class="text-center py-5">
+                <i class="bi bi-inbox text-muted fs-3 d-block mb-2"></i>
+                <span class="fw-semibold text-muted">No completed loans found for the selected report criteria.</span>
+              </td>
+            </tr>
+
+            <tr *ngFor="let row of paginatedCompletedRows">
+              <td><span class="badge badge-loan-number">{{ row.loanNumber }}</span></td>
+              <td><span class="fw-semibold">{{ row.customerName }}</span></td>
+              <td><code>{{ row.nicNumber }}</code></td>
+              <td>{{ row.mobileNumber }}</td>
+              <td>{{ row.loanDate }}</td>
+              <td class="text-end">Rs. {{ row.principalAmount | number:'1.2-2' }}</td>
+              <td class="text-end">Rs. {{ row.totalAmountDue | number:'1.2-2' }}</td>
+              <td class="text-end text-success fw-bold">Rs. {{ row.totalPaid | number:'1.2-2' }}</td>
+              <td><span class="badge bg-success-subtle text-success">{{ row.completionDate }}</span></td>
+              <td>{{ row.originalExpectedEndDate }}</td>
+              <td><span class="badge bg-light text-dark border">{{ row.loanType }}</span></td>
+              <td class="text-center">
+                <span class="badge bg-success text-white">COMPLETED</span>
+              </td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+
+      <!-- Pagination Footer -->
+      <div class="lx-pagination-footer p-2 px-3 d-flex flex-wrap justify-content-between align-items-center gap-2" *ngIf="completedRows.length > 0">
+        <div class="d-flex align-items-center gap-2">
+          <span class="text-muted small">Show</span>
+          <select class="form-select form-select-sm lx-page-select" [(ngModel)]="pageSize" (change)="onPageSizeChange()">
+            <option *ngFor="let opt of pageSizeOptions" [value]="opt">{{ opt }}</option>
+          </select>
+          <span class="text-muted small">
+            Showing {{ (currentPage - 1) * pageSize + 1 }} to {{ (currentPage * pageSize > totalItems ? totalItems : currentPage * pageSize) }} of {{ totalItems }} records
+          </span>
+        </div>
+
+        <div class="d-flex align-items-center gap-1">
+          <button class="btn btn-sm btn-outline-secondary" [disabled]="currentPage === 1" (click)="setPage(currentPage - 1)">
+            <i class="bi bi-chevron-left"></i> Prev
+          </button>
+          <span class="px-2 small text-muted">Page {{ currentPage }} of {{ totalPages }}</span>
+          <button class="btn btn-sm btn-outline-secondary" [disabled]="currentPage === totalPages" (click)="setPage(currentPage + 1)">
+            Next <i class="bi bi-chevron-right"></i>
+          </button>
+        </div>
+      </div>
+    </div>
+  </ng-container>
+
+  <!-- ========================================================================= -->
+  <!-- REPORT 04: DELAYED / OVERDUE LOANS REPORT                                 -->
+  <!-- ========================================================================= -->
+  <ng-container *ngIf="activeReportType === 'overdue-loans'">
+    
+    <!-- Filter Toolbar -->
+    <div class="lx-filter-card mb-3">
+      <div class="row g-2 align-items-end">
+        <div class="col-12 col-md-4">
+          <label class="lx-filter-label">Search Overdue Loan / Customer</label>
+          <div class="input-group input-group-sm">
+            <span class="input-group-text lx-input-icon"><i class="bi bi-search"></i></span>
+            <input 
+              type="text" 
+              class="form-control lx-filter-input" 
+              placeholder="Loan #, Customer Name, NIC, Mobile..."
+              [(ngModel)]="overdueSearch"
+              (keyup.enter)="loadOverdueLoans()"
+            />
+          </div>
+        </div>
+
+        <div class="col-6 col-md-3">
+          <label class="lx-filter-label">Overdue Severity</label>
+          <select class="form-select form-select-sm lx-filter-input" [(ngModel)]="overdueSeverity">
+            <option value="all">All Overdue Severities</option>
+            <option value="1-7">1 to 7 Days Late</option>
+            <option value="8-30">8 to 30 Days Overdue</option>
+            <option value="31+">31+ Days Critical Overdue</option>
+          </select>
+        </div>
+
+        <div class="col-6 col-md-2">
+          <label class="lx-filter-label">Frequency</label>
+          <select class="form-select form-select-sm lx-filter-input" [(ngModel)]="overdueLoanType">
+            <option value="all">All</option>
+            <option value="daily">Daily</option>
+            <option value="weekly">Weekly</option>
+            <option value="monthly">Monthly</option>
+          </select>
+        </div>
+
+        <div class="col-12 col-md-3 d-flex gap-2">
+          <button type="button" class="btn btn-sm btn-primary-gold flex-grow-1" (click)="loadOverdueLoans()">
+            <i class="bi bi-funnel me-1"></i> Apply
+          </button>
+          <button type="button" class="btn btn-sm btn-outline-secondary" (click)="resetOverdueFilters()" title="Reset Filters">
+            <i class="bi bi-arrow-counterclockwise"></i>
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Summary Banner -->
+    <div class="lx-summary-strip mb-3 flex-wrap">
+      <div class="lx-summary-stat">
+        <span class="lx-stat-label">Total Overdue Loans</span>
+        <span class="lx-stat-value text-danger">{{ overdueSummary.totalOverdueLoans }}</span>
+      </div>
+      <div class="lx-summary-divider"></div>
+      <div class="lx-summary-stat">
+        <span class="lx-stat-label">Total Overdue Amount</span>
+        <span class="lx-stat-value text-danger">Rs. {{ overdueSummary.totalOverdueAmount | number:'1.2-2' }}</span>
+      </div>
+      <div class="lx-summary-divider"></div>
+      <div class="lx-summary-stat">
+        <span class="lx-stat-label">Total Outstanding Balance</span>
+        <span class="lx-stat-value">Rs. {{ overdueSummary.totalOutstandingBalance | number:'1.2-2' }}</span>
+      </div>
+      <div class="lx-summary-divider"></div>
+      <div class="lx-summary-stat">
+        <span class="lx-stat-label">Severity Breakdown</span>
+        <span class="lx-stat-value fs-6">
+          <span class="text-warning">{{ overdueSummary.count1To7Days }} (1-7d)</span> ·
+          <span class="text-danger">{{ overdueSummary.count8To30Days }} (8-30d)</span> ·
+          <span class="text-danger fw-bold">{{ overdueSummary.count31PlusDays }} (31+d)</span>
+        </span>
+      </div>
+    </div>
+
+    <!-- Table Container -->
+    <div class="lx-table-wrapper card shadow-sm">
+      <div class="table-responsive">
+        <table class="table table-hover lx-report-table align-middle mb-0">
+          <thead>
+            <tr>
+              <th>Loan Number</th>
+              <th>Customer Name</th>
+              <th>NIC Number</th>
+              <th>Mobile</th>
+              <th>Loan Date</th>
+              <th>Frequency</th>
+              <th>Expected Date</th>
+              <th class="text-end">Instalment</th>
+              <th class="text-center">Overdue Inst.</th>
+              <th class="text-end">Overdue Amount</th>
+              <th class="text-end">Remaining Balance</th>
+              <th class="text-center">Days Late</th>
+              <th class="text-center">Status</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr *ngIf="isLoading">
+              <td colspan="13" class="text-center py-5">
+                <div class="spinner-border spinner-border-sm text-gold me-2" role="status"></div>
+                <span>Generating report...</span>
+              </td>
+            </tr>
+
+            <tr *ngIf="!isLoading && overdueRows.length === 0">
+              <td colspan="13" class="text-center py-5">
+                <i class="bi bi-shield-check text-success fs-3 d-block mb-2"></i>
+                <span class="fw-semibold text-success">No overdue loans found! All accounts are currently on schedule.</span>
+              </td>
+            </tr>
+
+            <tr *ngFor="let row of paginatedOverdueRows">
+              <td><span class="badge badge-loan-number">{{ row.loanNumber }}</span></td>
+              <td><span class="fw-semibold">{{ row.customerName }}</span></td>
+              <td><code>{{ row.nicNumber }}</code></td>
+              <td>{{ row.mobileNumber }}</td>
+              <td>{{ row.loanDate }}</td>
+              <td><span class="badge bg-light text-dark border">{{ row.loanType }}</span></td>
+              <td><span class="fw-semibold text-danger">{{ row.expectedPaymentDate }}</span></td>
+              <td class="text-end">Rs. {{ row.expectedInstalmentAmount | number:'1.2-2' }}</td>
+              <td class="text-center fw-bold text-danger">{{ row.overdueInstallments }}</td>
+              <td class="text-end text-danger fw-bold">Rs. {{ row.overdueAmount | number:'1.2-2' }}</td>
+              <td class="text-end">Rs. {{ row.remainingBalance | number:'1.2-2' }}</td>
+              <td class="text-center">
+                <span class="badge" [ngClass]="row.daysLate > 30 ? 'bg-danger text-white' : (row.daysLate > 7 ? 'bg-danger-subtle text-danger' : 'bg-warning-subtle text-warning-emphasis')">
+                  {{ row.daysLate }} days
+                </span>
+              </td>
+              <td class="text-center">
+                <span class="badge bg-danger-subtle text-danger">
+                  {{ row.status | uppercase }}
+                </span>
+              </td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+
+      <!-- Pagination Footer -->
+      <div class="lx-pagination-footer p-2 px-3 d-flex flex-wrap justify-content-between align-items-center gap-2" *ngIf="overdueRows.length > 0">
+        <div class="d-flex align-items-center gap-2">
+          <span class="text-muted small">Show</span>
+          <select class="form-select form-select-sm lx-page-select" [(ngModel)]="pageSize" (change)="onPageSizeChange()">
+            <option *ngFor="let opt of pageSizeOptions" [value]="opt">{{ opt }}</option>
+          </select>
+          <span class="text-muted small">
+            Showing {{ (currentPage - 1) * pageSize + 1 }} to {{ (currentPage * pageSize > totalItems ? totalItems : currentPage * pageSize) }} of {{ totalItems }} records
+          </span>
+        </div>
+
+        <div class="d-flex align-items-center gap-1">
+          <button class="btn btn-sm btn-outline-secondary" [disabled]="currentPage === 1" (click)="setPage(currentPage - 1)">
+            <i class="bi bi-chevron-left"></i> Prev
+          </button>
+          <span class="px-2 small text-muted">Page {{ currentPage }} of {{ totalPages }}</span>
+          <button class="btn btn-sm btn-outline-secondary" [disabled]="currentPage === totalPages" (click)="setPage(currentPage + 1)">
+            Next <i class="bi bi-chevron-right"></i>
+          </button>
+        </div>
+      </div>
+    </div>
+  </ng-container>
+
+  <!-- ========================================================================= -->
+  <!-- REPORT 05: REPAYMENT SCHEDULE REPORT                                      -->
+  <!-- ========================================================================= -->
+  <ng-container *ngIf="activeReportType === 'repayment-schedule'">
+    
+    <!-- Filter Toolbar -->
+    <div class="lx-filter-card mb-3">
+      <div class="row g-2 align-items-end">
+        <div class="col-12 col-md-6">
+          <label class="lx-filter-label">Select Loan Account</label>
+          <select class="form-select form-select-sm lx-filter-input" [(ngModel)]="selectedLoanId" (change)="onSelectLoanChange()">
+            <option value="" disabled>-- Select a loan to view effective schedule --</option>
+            <option *ngFor="let l of allLoansList" [value]="l.id">
+              {{ l.loan_number }} - {{ l.client.first_name }} {{ l.client.last_name }} (Rs. {{ l.principal_amount | number:'1.0-0' }} - {{ l.status | uppercase }})
+            </option>
+          </select>
+        </div>
+
+        <div class="col-12 col-md-6 d-flex gap-2">
+          <button type="button" class="btn btn-sm btn-primary-gold flex-grow-1" (click)="loadRepaymentSchedule()">
+            <i class="bi bi-calendar-check me-1"></i> View Effective Schedule
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Schedule Body -->
+    <div *ngIf="isLoading" class="text-center py-5">
+      <div class="spinner-border spinner-border-sm text-gold me-2" role="status"></div>
+      <span>Generating repayment schedule...</span>
+    </div>
+
+    <div *ngIf="!isLoading && scheduleData" class="lx-schedule-wrapper">
+      
+      <!-- Loan Header Banner -->
+      <div class="card lx-loan-banner-card shadow-sm p-3 mb-3">
+        <div class="d-flex flex-wrap justify-content-between align-items-center gap-3">
+          <div class="d-flex align-items-center gap-3">
+            <div class="lx-loan-avatar">
+              <i class="bi bi-cash-coin"></i>
+            </div>
+            <div>
+              <div class="d-flex align-items-center gap-2 mb-1">
+                <h4 class="mb-0 fw-bold">{{ scheduleData.customerName }}</h4>
+                <span class="badge badge-loan-number">{{ scheduleData.loanNumber }}</span>
+                <span *ngIf="scheduleData.isRescheduled" class="badge bg-warning text-dark border">Rescheduled / Early Settled</span>
+              </div>
+              <div class="d-flex flex-wrap gap-3 small text-muted">
+                <span><i class="bi bi-person-vcard text-gold"></i> NIC: <strong>{{ scheduleData.nicNumber }}</strong></span>
+                <span><i class="bi bi-telephone text-gold"></i> Mobile: <strong>{{ scheduleData.mobileNumber }}</strong></span>
+                <span><i class="bi bi-calendar-event text-gold"></i> Issue Date: <strong>{{ scheduleData.loanDate }}</strong></span>
+                <span><i class="bi bi-calendar-check text-gold"></i> Effective End: <strong>{{ scheduleData.expectedEndDate }}</strong></span>
+              </div>
+            </div>
+          </div>
+          <div>
+            <span class="badge" [ngClass]="scheduleData.status === 'Completed' ? 'bg-success px-3 py-2 text-white' : 'badge-gold px-3 py-2'">
+              Status: {{ scheduleData.status | uppercase }}
+            </span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Financial Metrics Strip -->
+      <div class="lx-summary-strip mb-3 flex-wrap">
+        <div class="lx-summary-stat">
+          <span class="lx-stat-label">Principal</span>
+          <span class="lx-stat-value">Rs. {{ scheduleData.principalAmount | number:'1.2-2' }}</span>
+        </div>
+        <div class="lx-summary-divider"></div>
+        <div class="lx-summary-stat">
+          <span class="lx-stat-label">Total Amount Due</span>
+          <span class="lx-stat-value">Rs. {{ scheduleData.totalAmountDue | number:'1.2-2' }}</span>
+        </div>
+        <div class="lx-summary-divider"></div>
+        <div class="lx-summary-stat">
+          <span class="lx-stat-label">Total Repaid</span>
+          <span class="lx-stat-value text-success">Rs. {{ scheduleData.totalPaid | number:'1.2-2' }}</span>
+        </div>
+        <div class="lx-summary-divider"></div>
+        <div class="lx-summary-stat">
+          <span class="lx-stat-label">Remaining Balance</span>
+          <span class="lx-stat-value text-danger">Rs. {{ scheduleData.remainingAmount | number:'1.2-2' }}</span>
+        </div>
+        <div class="lx-summary-divider"></div>
+        <div class="lx-summary-stat">
+          <span class="lx-stat-label">Per Instalment</span>
+          <span class="lx-stat-value">Rs. {{ scheduleData.installmentAmount | number:'1.2-2' }} ({{ scheduleData.frequency }})</span>
+        </div>
+        <div class="lx-summary-divider"></div>
+        <div class="lx-summary-stat">
+          <span class="lx-stat-label">Instalments</span>
+          <span class="lx-stat-value fs-6">{{ scheduleData.paidInstallments }} of {{ scheduleData.totalInstallments }} Paid</span>
+        </div>
+      </div>
+
+      <!-- Schedule Table -->
+      <div class="card shadow-sm mb-3">
+        <div class="card-header bg-transparent py-2 border-bottom d-flex justify-content-between align-items-center">
+          <h6 class="mb-0 fw-bold"><i class="bi bi-calendar3 text-gold me-2"></i>Effective Repayment Schedule</h6>
+          <span class="badge bg-light text-dark border">{{ scheduleData.scheduleRows.length }} instalments</span>
+        </div>
+        <div class="table-responsive">
+          <table class="table table-hover lx-report-table align-middle mb-0">
+            <thead>
+              <tr>
+                <th style="width: 80px;">Inst. #</th>
+                <th>Expected Due Date</th>
+                <th class="text-end">Expected Amount</th>
+                <th class="text-end">Paid Amount</th>
+                <th class="text-end">Remaining Due</th>
+                <th>Payment Date</th>
+                <th class="text-center">Status</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr *ngFor="let s of scheduleData.scheduleRows">
+                <td><span class="badge bg-secondary-subtle text-secondary">#{{ s.installmentNumber }}</span></td>
+                <td><span class="fw-semibold">{{ s.expectedDate }}</span></td>
+                <td class="text-end">Rs. {{ s.expectedAmount | number:'1.2-2' }}</td>
+                <td class="text-end text-success">Rs. {{ s.paidAmount | number:'1.2-2' }}</td>
+                <td class="text-end" [ngClass]="s.remainingAmount > 0 ? 'text-danger fw-semibold' : 'text-muted'">
+                  Rs. {{ s.remainingAmount | number:'1.2-2' }}
+                </td>
+                <td>{{ s.paymentDate || '-' }}</td>
+                <td class="text-center">
+                  <span class="badge" [ngClass]="s.status === 'Paid' ? 'bg-success-subtle text-success' : (s.status === 'Overdue' ? 'bg-danger-subtle text-danger' : (s.status === 'Partially Paid' ? 'bg-warning-subtle text-warning-emphasis' : 'bg-primary-subtle text-primary'))">
+                    {{ s.status | uppercase }}
+                  </span>
+                </td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+      <!-- Payments Table -->
+      <div class="card shadow-sm">
+        <div class="card-header bg-transparent py-2 border-bottom d-flex justify-content-between align-items-center">
+          <h6 class="mb-0 fw-bold"><i class="bi bi-clock-history text-gold me-2"></i>Repayment Transactions Recorded</h6>
+          <span class="badge bg-light text-dark border">{{ scheduleData.payments.length }} payments</span>
+        </div>
+        <div class="table-responsive">
+          <table class="table table-hover lx-report-table align-middle mb-0">
+            <thead>
+              <tr>
+                <th>Payment Date</th>
+                <th class="text-end">Amount Paid (Rs.)</th>
+                <th>Remark / Method</th>
+                <th>Recorded Date</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr *ngIf="scheduleData.payments.length === 0">
+                <td colspan="4" class="text-center py-4 text-muted">No repayments have been recorded for this loan yet.</td>
+              </tr>
+              <tr *ngFor="let p of scheduleData.payments">
+                <td>{{ p.paid_date }}</td>
+                <td class="text-end text-success fw-bold">Rs. {{ p.paid_amount | number:'1.2-2' }}</td>
+                <td>{{ p.remark || 'Cash' }}</td>
+                <td><small class="text-muted">{{ p.created_at ? (p.created_at.split('T')[0]) : p.paid_date }}</small></td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+    </div>
+  </ng-container>
+
+</div>

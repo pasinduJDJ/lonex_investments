@@ -1,14 +1,23 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { AnalysisComponent } from './analysis.component';
 import { AnalysisService, AnalysisDataBundle } from '../../service/analysis.service';
+import { 
+  AnalysisDashboardService, 
+  DashboardBundle, 
+  DashboardFilterState 
+} from '../../service/analysis-dashboard.service';
+import { ThemeService } from '../../service/theme.service';
 import { Router, ActivatedRoute } from '@angular/router';
-import { of } from 'rxjs';
+import { of, BehaviorSubject } from 'rxjs';
 
 describe('AnalysisComponent', () => {
   let component: AnalysisComponent;
   let fixture: ComponentFixture<AnalysisComponent>;
   let mockAnalysisService: jasmine.SpyObj<AnalysisService>;
+  let mockDashboardService: jasmine.SpyObj<AnalysisDashboardService>;
+  let mockThemeService: any;
   let mockRouter: jasmine.SpyObj<Router>;
+  let queryParamsSubject: BehaviorSubject<any>;
 
   const mockBundle: AnalysisDataBundle = {
     kpis: {
@@ -104,21 +113,83 @@ describe('AnalysisComponent', () => {
     ]
   };
 
+  const mockDashboardBundle: DashboardBundle = {
+    kpis: {
+      activeLoansCount: 5,
+      activeOutstandingAmount: 250000,
+      completedLoansCount: 3,
+      overdueLoansCount: 1,
+      overdueAmount: 10000,
+      outstandingAmount: 250000,
+      collectedAmount: 45000,
+      paymentCount: 1,
+      expectedCollection: 50000,
+      collectionRate: 90
+    },
+    collectionTrend: {
+      labels: ['2026-10-01'],
+      datasets: [{ label: 'Repayments', data: [45000] }]
+    },
+    portfolioDistribution: {
+      labels: ['Active (On Track)', 'Overdue', 'Completed'],
+      counts: [4, 1, 3],
+      percentages: [50, 12.5, 37.5],
+      amounts: [240000, 10000, 0]
+    },
+    collectionPerformance: {
+      labels: ['2026-10-01'],
+      expected: [50000],
+      actual: [45000],
+      differences: [-5000],
+      rates: [90]
+    },
+    frequencyDistribution: {
+      labels: ['Monthly', 'Weekly'],
+      counts: [4, 1],
+      percentages: [80, 20],
+      amounts: [225000, 25000]
+    },
+    issuanceTrend: {
+      labels: ['2026-08'],
+      amounts: [50000],
+      counts: [1]
+    },
+    needsAttention: mockBundle.latePayments,
+    upcomingCollections: mockBundle.upcomingPayments,
+    recentPayments: mockBundle.paymentActivity,
+    filterRange: { from: '2026-10-01', to: '2026-10-31' }
+  };
+
   beforeEach(async () => {
     mockAnalysisService = jasmine.createSpyObj('AnalysisService', ['loadAnalysisData']);
     mockAnalysisService.loadAnalysisData.and.returnValue(of(mockBundle));
 
+    mockDashboardService = jasmine.createSpyObj('AnalysisDashboardService', ['loadDashboard']);
+    mockDashboardService.loadDashboard.and.returnValue(of(mockDashboardBundle));
+
     mockRouter = jasmine.createSpyObj('Router', ['navigate']);
+    (mockRouter as any).url = '/analysis';
+    (mockRouter as any).events = of();
+    queryParamsSubject = new BehaviorSubject<any>({});
+
+    const themeSubject = new BehaviorSubject<'light' | 'dark'>('light');
+    mockThemeService = {
+      theme$: themeSubject.asObservable(),
+      isDarkMode: jasmine.createSpy('isDarkMode').and.returnValue(false)
+    };
 
     await TestBed.configureTestingModule({
       imports: [AnalysisComponent],
       providers: [
         { provide: AnalysisService, useValue: mockAnalysisService },
+        { provide: AnalysisDashboardService, useValue: mockDashboardService },
+        { provide: ThemeService, useValue: mockThemeService },
         { provide: Router, useValue: mockRouter },
         {
           provide: ActivatedRoute,
           useValue: {
-            queryParams: of({ tab: 'late_payments' })
+            queryParams: queryParamsSubject.asObservable(),
+            snapshot: { queryParams: {} }
           }
         }
       ]
@@ -129,17 +200,48 @@ describe('AnalysisComponent', () => {
     fixture.detectChanges();
   });
 
-  it('should create and load data on init', () => {
+  it('should create and load dashboard data on init', () => {
     expect(component).toBeTruthy();
+    expect(mockDashboardService.loadDashboard).toHaveBeenCalled();
     expect(mockAnalysisService.loadAnalysisData).toHaveBeenCalled();
-    expect(component.bundle).toBeDefined();
-    expect(component.bundle?.kpis.activeLoansCount).toBe(5);
+    expect(component.dashboardBundle).toBeDefined();
+    expect(component.dashboardBundle?.kpis.activeLoansCount).toBe(5);
+    expect(component.activeTab).toBe('dashboard');
   });
 
-  it('should switch active tab and navigate with query parameter', () => {
+  it('should switch active tab and navigate to /analysis/operational with query parameter', () => {
     component.setActiveTab('upcoming_payments');
     expect(component.activeTab).toBe('upcoming_payments');
-    expect(mockRouter.navigate).toHaveBeenCalled();
+    expect(mockRouter.navigate).toHaveBeenCalledWith(['/analysis/operational'], {
+      queryParams: { tab: 'upcoming_payments' }
+    });
+  });
+
+  it('should reset dashboard filters and reload dashboard', () => {
+    component.dashboardPeriod = 'today';
+    component.dashboardFrequency = 'daily';
+    component.resetDashboardFilters();
+
+    expect(component.dashboardPeriod).toBe('this_month');
+    expect(component.dashboardFrequency).toBe('all');
+    expect(mockDashboardService.loadDashboard).toHaveBeenCalled();
+  });
+
+  it('should handle drill-down to overdue loans (late payments)', () => {
+    component.navigateToOverdueLoans();
+    expect(component.activeTab).toBe('late_payments');
+    expect(mockRouter.navigate).toHaveBeenCalledWith(['/analysis/operational'], {
+      queryParams: { tab: 'late_payments' }
+    });
+  });
+
+  it('should handle drill-down to active loans', () => {
+    component.navigateToActiveLoans();
+    expect(component.activeTab).toBe('loans');
+    expect(component.loanFilter).toBe('active');
+    expect(mockRouter.navigate).toHaveBeenCalledWith(['/analysis/operational'], {
+      queryParams: { tab: 'loans' }
+    });
   });
 
   it('should filter late payments by search query', () => {

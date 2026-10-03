@@ -367,7 +367,7 @@ export class AnalysisService {
   /**
    * Helper to generate exact installment due dates sequentially
    */
-  private generateInstallmentDueDates(
+  public generateInstallmentDueDates(
     startDateStr: string,
     installmentsCount: number,
     loanType: 'daily' | 'weekly' | 'monthly'
@@ -393,7 +393,7 @@ export class AnalysisService {
   /**
    * Fallback for legacy loans without installments column populated
    */
-  private calculateDefaultInstallments(
+  public calculateDefaultInstallments(
     startDateStr: string,
     endDateStr: string,
     loanType: 'daily' | 'weekly' | 'monthly'

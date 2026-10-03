@@ -350,3 +350,132 @@
     transform: rotate(360deg);
   }
 }
+
+/* ==========================================================================
+   MANAGEMENT DASHBOARD STYLES (ODOO-INSPIRED)
+   ========================================================================== */
+.cursor-pointer {
+  cursor: pointer;
+}
+
+.bg-surface {
+  background-color: var(--lx-bg-card, #ffffff) !important;
+  border-color: var(--lx-border-subtle, #e2e8f0) !important;
+}
+
+.lx-kpi-card {
+  border-radius: 8px;
+  background-color: var(--lx-bg-card, #ffffff);
+  border: 1px solid var(--lx-border-subtle, #e2e8f0);
+  transition: transform 0.15s ease, box-shadow 0.15s ease, border-color 0.15s ease;
+}
+
+.lx-kpi-card:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08) !important;
+  border-color: var(--lx-gold, #D4A437) !important;
+}
+
+.lx-filter-input {
+  background-color: var(--lx-input-bg, #ffffff);
+  border-color: var(--lx-border-subtle, #cbd5e1);
+  color: var(--lx-text-primary, #1e293b);
+  font-size: 0.8125rem;
+}
+
+.lx-filter-input:focus {
+  background-color: var(--lx-input-bg, #ffffff);
+  border-color: var(--lx-gold, #d4a437);
+  box-shadow: 0 0 0 2px rgba(212, 164, 55, 0.2);
+  color: var(--lx-text-primary, #1e293b);
+}
+
+.btn-xs {
+  font-size: 0.75rem;
+  padding: 0.15rem 0.4rem;
+  border-radius: 4px;
+}
+
+/* ==========================================================================
+   DARK THEME OVERRIDES FOR ANALYSIS DASHBOARD
+   ========================================================================== */
+:host-context(.theme-dark) .lx-analysis-container,
+:host-context([data-theme="dark"]) .lx-analysis-container,
+:host-context([data-bs-theme="dark"]) .lx-analysis-container {
+  background: var(--lx-bg-main, #101114);
+  color: var(--lx-text-primary, #f1f5f9);
+}
+
+:host-context(.theme-dark) .bg-surface,
+:host-context([data-theme="dark"]) .bg-surface,
+:host-context([data-bs-theme="dark"]) .bg-surface,
+:host-context(.theme-dark) .card,
+:host-context([data-theme="dark"]) .card,
+:host-context([data-bs-theme="dark"]) .card,
+:host-context(.theme-dark) .odoo-control-panel,
+:host-context([data-theme="dark"]) .odoo-control-panel,
+:host-context([data-bs-theme="dark"]) .odoo-control-panel,
+:host-context(.theme-dark) .odoo-form-sheet,
+:host-context([data-theme="dark"]) .odoo-form-sheet,
+:host-context([data-bs-theme="dark"]) .odoo-form-sheet,
+:host-context(.theme-dark) .lx-kpi-card,
+:host-context([data-theme="dark"]) .lx-kpi-card,
+:host-context([data-bs-theme="dark"]) .lx-kpi-card {
+  background-color: var(--lx-bg-card, #24262B) !important;
+  border-color: var(--lx-border-subtle, #383B40) !important;
+}
+
+:host-context(.theme-dark) .lx-filter-input,
+:host-context([data-theme="dark"]) .lx-filter-input,
+:host-context([data-bs-theme="dark"]) .lx-filter-input {
+  background-color: var(--lx-input-bg, #1B1D22) !important;
+  border-color: var(--lx-border-subtle, #383B40) !important;
+  color: var(--lx-input-text, #ffffff) !important;
+}
+
+:host-context(.theme-dark) .table-light,
+:host-context([data-theme="dark"]) .table-light,
+:host-context([data-bs-theme="dark"]) .table-light,
+:host-context(.theme-dark) .table thead th,
+:host-context([data-theme="dark"]) .table thead th,
+:host-context([data-bs-theme="dark"]) .table thead th {
+  background-color: #1a1c21 !important;
+  color: #94a3b8 !important;
+  border-color: #383B40 !important;
+}
+
+:host-context(.theme-dark) .table tbody td,
+:host-context([data-theme="dark"]) .table tbody td,
+:host-context([data-bs-theme="dark"]) .table tbody td {
+  border-color: #2d3037 !important;
+  color: #e2e8f0 !important;
+  background-color: transparent !important;
+}
+
+:host-context(.theme-dark) .table tbody tr:hover td,
+:host-context([data-theme="dark"]) .table tbody tr:hover td,
+:host-context([data-bs-theme="dark"]) .table tbody tr:hover td {
+  background-color: rgba(255, 255, 255, 0.04) !important;
+}
+
+:host-context(.theme-dark) .badge-gold,
+:host-context([data-theme="dark"]) .badge-gold,
+:host-context([data-bs-theme="dark"]) .badge-gold {
+  background-color: rgba(212, 164, 55, 0.2);
+  color: #f5c45e;
+  border-color: rgba(212, 164, 55, 0.35);
+}
+
+:host-context(.theme-dark) .odoo-tab-nav-btn,
+:host-context([data-theme="dark"]) .odoo-tab-nav-btn,
+:host-context([data-bs-theme="dark"]) .odoo-tab-nav-btn {
+  color: #94a3b8;
+}
+
+:host-context(.theme-dark) .odoo-tab-nav-btn.active,
+:host-context([data-theme="dark"]) .odoo-tab-nav-btn.active,
+:host-context([data-bs-theme="dark"]) .odoo-tab-nav-btn.active {
+  color: var(--lx-gold, #D4A437);
+  border-bottom-color: var(--lx-gold, #D4A437);
+}
+

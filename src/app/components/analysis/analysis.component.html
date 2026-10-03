@@ -10,10 +10,13 @@
           <div class="odoo-breadcrumb-trail d-flex align-items-center">
             <span class="odoo-crumb-link" routerLink="/home">Home</span>
             <span class="odoo-crumb-sep">/</span>
-            <span class="odoo-crumb-current">Analysis</span>
+            <span class="odoo-crumb-link" routerLink="/analysis">Analysis</span>
+            <span class="odoo-crumb-sep">/</span>
+            <span class="odoo-crumb-current text-gold fw-bold" *ngIf="!isOperationalView">Management Dashboard</span>
+            <span class="odoo-crumb-current text-gold fw-bold" *ngIf="isOperationalView">Operational Overview</span>
           </div>
           <span class="badge badge-gold d-none d-sm-inline-flex align-items-center gap-1">
-            <i class="bi bi-shield-check"></i> Operational Intelligence V1
+            <i class="bi bi-shield-check"></i> 100% Read Only Intelligence
           </span>
         </div>
 
@@ -23,11 +26,11 @@
             type="button" 
             class="btn btn-sm btn-outline-secondary d-flex align-items-center gap-2"
             (click)="refreshData()"
-            [disabled]="isLoading || isRefreshing"
-            title="Refresh Analysis Data"
+            [disabled]="isLoading || isRefreshing || isDashboardLoading"
+            title="Refresh Analysis & Dashboard Data"
           >
-            <i class="bi bi-arrow-clockwise" [class.spin-animation]="isRefreshing"></i>
-            <span>{{ isRefreshing ? 'Refreshing...' : 'Refresh Data' }}</span>
+            <i class="bi bi-arrow-clockwise" [class.spin-animation]="isRefreshing || isDashboardLoading"></i>
+            <span>{{ isRefreshing || isDashboardLoading ? 'Refreshing...' : 'Refresh Data' }}</span>
           </button>
         </div>
 
@@ -36,7 +39,7 @@
   </div>
 
   <!-- Loading State -->
-  <div class="container-fluid px-3 px-md-4 py-5" *ngIf="isLoading">
+  <div class="container-fluid px-3 px-md-4 py-5" *ngIf="isLoading && !bundle">
     <div class="text-center py-5">
       <div class="spinner-border text-gold mb-3" style="width: 3rem; height: 3rem;" role="status">
         <span class="visually-hidden">Loading operational data...</span>
@@ -61,114 +64,455 @@
 
   <!-- Main Analysis Content -->
   <div class="container-fluid px-3 px-md-4" *ngIf="!isLoading && bundle">
-    
-    <!-- Top KPI Summary Cards Grid (Compact 6-Card Row) -->
-    <div class="row g-3 mb-4">
-      
-      <!-- 1. Active Loans -->
-      <div class="col-6 col-md-4 col-xl-2">
-        <div class="odoo-kpi-card p-3 rounded h-100">
-          <div class="d-flex justify-content-between align-items-center mb-1">
-            <span class="kpi-label">Active Loans</span>
-            <div class="kpi-icon-badge kpi-gold">
-              <i class="bi bi-file-earmark-text"></i>
+
+    <!-- ===================================================================== -->
+    <!-- SCREEN 1: MANAGEMENT DASHBOARD (ODOO-INSPIRED)                        -->
+    <!-- ===================================================================== -->
+    <div *ngIf="!isOperationalView" class="mb-4">
+
+      <!-- Dashboard Global Filter Toolbar -->
+      <div class="card border mb-3 shadow-sm bg-surface">
+        <div class="card-body p-3">
+          <div class="row g-2 align-items-end">
+            
+            <!-- Period Selector -->
+            <div class="col-12 col-sm-6 col-md-3">
+              <label class="form-label text-muted small fw-semibold text-uppercase mb-1">Period</label>
+              <select class="form-select form-select-sm lx-filter-input" [(ngModel)]="dashboardPeriod" (change)="onDashboardFilterChange()">
+                <option value="this_month">This Month</option>
+                <option value="today">Today</option>
+                <option value="this_week">This Week</option>
+                <option value="last_month">Last Month</option>
+                <option value="last_3_months">Last 3 Months</option>
+                <option value="last_6_months">Last 6 Months</option>
+                <option value="this_year">This Year</option>
+                <option value="custom">Custom Range</option>
+              </select>
             </div>
+
+            <!-- Custom Date Range (when period === 'custom') -->
+            <div *ngIf="dashboardPeriod === 'custom'" class="col-6 col-md-2">
+              <label class="form-label text-muted small fw-semibold text-uppercase mb-1">From Date</label>
+              <input type="date" class="form-control form-control-sm lx-filter-input" [(ngModel)]="dashboardCustomFrom" (change)="onDashboardFilterChange()">
+            </div>
+
+            <div *ngIf="dashboardPeriod === 'custom'" class="col-6 col-md-2">
+              <label class="form-label text-muted small fw-semibold text-uppercase mb-1">To Date</label>
+              <input type="date" class="form-control form-control-sm lx-filter-input" [(ngModel)]="dashboardCustomTo" (change)="onDashboardFilterChange()">
+            </div>
+
+            <!-- Loan Frequency Filter -->
+            <div class="col-12 col-sm-6 col-md-3">
+              <label class="form-label text-muted small fw-semibold text-uppercase mb-1">Loan Frequency</label>
+              <select class="form-select form-select-sm lx-filter-input" [(ngModel)]="dashboardFrequency" (change)="onDashboardFilterChange()">
+                <option value="all">All Frequencies</option>
+                <option value="daily">Daily Loans</option>
+                <option value="weekly">Weekly Loans</option>
+                <option value="monthly">Monthly Loans</option>
+              </select>
+            </div>
+
+            <!-- Range Badge & Reset -->
+            <div class="col-12 col-md-4 ms-auto d-flex justify-content-md-end align-items-center gap-2">
+              <span *ngIf="dashboardBundle" class="badge bg-secondary-subtle text-secondary border px-2 py-1 small">
+                <i class="bi bi-calendar-range me-1"></i>
+                {{ dashboardBundle.filterRange.from }} to {{ dashboardBundle.filterRange.to }}
+              </span>
+              <button type="button" class="btn btn-sm btn-outline-secondary d-flex align-items-center gap-1" (click)="resetDashboardFilters()" title="Reset Filters">
+                <i class="bi bi-arrow-counterclockwise"></i> Reset
+              </button>
+            </div>
+
           </div>
-          <h3 class="kpi-value text-gold mb-0">
-            {{ bundle.kpis.activeLoansCount | number }}
-          </h3>
-          <span class="small text-muted">Currently active portfolio</span>
         </div>
       </div>
 
-      <!-- 2. Completed Loans -->
-      <div class="col-6 col-md-4 col-xl-2">
-        <div class="odoo-kpi-card p-3 rounded h-100">
-          <div class="d-flex justify-content-between align-items-center mb-1">
-            <span class="kpi-label">Completed</span>
-            <div class="kpi-icon-badge kpi-emerald">
-              <i class="bi bi-check2-circle"></i>
+      <!-- ROW 1: 6 PRIMARY KPI CARDS (Clickable Summary Cards) -->
+      <div *ngIf="dashboardBundle" class="row g-3 mb-4">
+        
+        <!-- 1. Active Loans -->
+        <div class="col-6 col-md-4 col-xl-2">
+          <div class="card p-3 border shadow-sm lx-kpi-card bg-surface h-100 cursor-pointer" (click)="navigateToActiveLoans()" title="View Active Loans">
+            <div class="d-flex justify-content-between align-items-center mb-1">
+              <span class="text-muted small fw-bold text-uppercase">Active Loans</span>
+              <i class="bi bi-file-earmark-text text-gold fs-5"></i>
+            </div>
+            <h3 class="h4 mb-0 text-gold fw-bold">
+              {{ dashboardBundle.kpis.activeLoansCount | number }}
+            </h3>
+            <span class="small text-muted mt-1 text-truncate d-block">
+              Rs. {{ dashboardBundle.kpis.activeOutstandingAmount | number:'1.0-0' }} active
+            </span>
+          </div>
+        </div>
+
+        <!-- 2. Completed Loans -->
+        <div class="col-6 col-md-4 col-xl-2">
+          <div class="card p-3 border shadow-sm lx-kpi-card bg-surface h-100 cursor-pointer" (click)="navigateToCompletedLoans()" title="View Completed Loans">
+            <div class="d-flex justify-content-between align-items-center mb-1">
+              <span class="text-muted small fw-bold text-uppercase">Completed</span>
+              <i class="bi bi-check2-circle text-success fs-5"></i>
+            </div>
+            <h3 class="h4 mb-0 text-success fw-bold">
+              {{ dashboardBundle.kpis.completedLoansCount | number }}
+            </h3>
+            <span class="small text-muted mt-1 text-truncate d-block">
+              Fully settled loans
+            </span>
+          </div>
+        </div>
+
+        <!-- 3. Overdue Loans -->
+        <div class="col-6 col-md-4 col-xl-2">
+          <div class="card p-3 border shadow-sm lx-kpi-card bg-surface h-100 cursor-pointer" (click)="navigateToOverdueLoans()" title="View Overdue Loans">
+            <div class="d-flex justify-content-between align-items-center mb-1">
+              <span class="text-muted small fw-bold text-uppercase">Overdue</span>
+              <i class="bi bi-exclamation-octagon text-danger fs-5"></i>
+            </div>
+            <h3 class="h4 mb-0 text-danger fw-bold">
+              {{ dashboardBundle.kpis.overdueLoansCount | number }}
+            </h3>
+            <span class="small text-muted mt-1 text-truncate d-block">
+              Rs. {{ dashboardBundle.kpis.overdueAmount | number:'1.0-0' }} overdue
+            </span>
+          </div>
+        </div>
+
+        <!-- 4. Outstanding Amount -->
+        <div class="col-6 col-md-4 col-xl-2">
+          <div class="card p-3 border shadow-sm lx-kpi-card bg-surface h-100 cursor-pointer" (click)="navigateToOutstanding()" title="View Portfolio Balance">
+            <div class="d-flex justify-content-between align-items-center mb-1">
+              <span class="text-muted small fw-bold text-uppercase">Outstanding</span>
+              <i class="bi bi-cash-stack text-gold fs-5"></i>
+            </div>
+            <h3 class="h5 mb-0 text-gold fw-bold text-truncate">
+              Rs. {{ dashboardBundle.kpis.outstandingAmount | number:'1.0-0' }}
+            </h3>
+            <span class="small text-muted mt-1 text-truncate d-block">
+              Active loan balances
+            </span>
+          </div>
+        </div>
+
+        <!-- 5. Collected Amount (Selected Period) -->
+        <div class="col-6 col-md-4 col-xl-2">
+          <div class="card p-3 border shadow-sm lx-kpi-card bg-surface h-100 cursor-pointer" (click)="navigateToCollected()" title="View Payment Activity">
+            <div class="d-flex justify-content-between align-items-center mb-1">
+              <span class="text-muted small fw-bold text-uppercase">Collected</span>
+              <i class="bi bi-wallet2 text-success fs-5"></i>
+            </div>
+            <h3 class="h5 mb-0 text-success fw-bold text-truncate">
+              Rs. {{ dashboardBundle.kpis.collectedAmount | number:'1.0-0' }}
+            </h3>
+            <span class="small text-muted mt-1 text-truncate d-block">
+              {{ dashboardBundle.kpis.paymentCount }} payments in period
+            </span>
+          </div>
+        </div>
+
+        <!-- 6. Expected Collection (Selected Period) -->
+        <div class="col-6 col-md-4 col-xl-2">
+          <div class="card p-3 border shadow-sm lx-kpi-card bg-surface h-100 cursor-pointer" (click)="navigateToExpected()" title="View Upcoming Obligations">
+            <div class="d-flex justify-content-between align-items-center mb-1">
+              <span class="text-muted small fw-bold text-uppercase">Expected</span>
+              <i class="bi bi-calendar-check text-primary fs-5"></i>
+            </div>
+            <h3 class="h5 mb-0 text-primary fw-bold text-truncate">
+              Rs. {{ dashboardBundle.kpis.expectedCollection | number:'1.0-0' }}
+            </h3>
+            <span class="small text-muted mt-1 text-truncate d-block">
+              Rate: {{ dashboardBundle.kpis.collectionRate !== null ? (dashboardBundle.kpis.collectionRate + '%') : 'N/A' }}
+            </span>
+          </div>
+        </div>
+
+      </div>
+
+      <!-- ROW 2: CHART 1 & CHART 2 -->
+      <div class="row g-3 mb-4">
+        
+        <!-- Chart 1: Collection Trend (Line Chart) -->
+        <div class="col-12 col-xl-8">
+          <div class="card border shadow-sm bg-surface h-100">
+            <div class="card-header bg-transparent border-bottom d-flex justify-content-between align-items-center py-2 px-3">
+              <div class="d-flex align-items-center gap-2">
+                <i class="bi bi-graph-up text-gold"></i>
+                <h6 class="mb-0 fw-bold">Customer Repayment Collection Trend</h6>
+              </div>
+              <span class="badge bg-secondary-subtle text-secondary border small">Actual Payments</span>
+            </div>
+            <div class="card-body p-3" style="min-height: 280px; position: relative;">
+              <canvas id="collectionTrendCanvas"></canvas>
             </div>
           </div>
-          <h3 class="kpi-value text-success mb-0">
-            {{ bundle.kpis.completedLoansCount | number }}
-          </h3>
-          <span class="small text-muted">Fully settled loans</span>
+        </div>
+
+        <!-- Chart 2: Loan Portfolio Status (Donut Chart) -->
+        <div class="col-12 col-xl-4">
+          <div class="card border shadow-sm bg-surface h-100">
+            <div class="card-header bg-transparent border-bottom d-flex justify-content-between align-items-center py-2 px-3">
+              <div class="d-flex align-items-center gap-2">
+                <i class="bi bi-pie-chart-fill text-gold"></i>
+                <h6 class="mb-0 fw-bold">Loan Portfolio Composition</h6>
+              </div>
+              <span class="badge bg-secondary-subtle text-secondary border small">Portfolio Status</span>
+            </div>
+            <div class="card-body p-3 d-flex flex-column justify-content-center align-items-center" style="min-height: 280px; position: relative;">
+              <div style="width: 100%; height: 240px; position: relative;">
+                <canvas id="portfolioStatusCanvas"></canvas>
+              </div>
+            </div>
+          </div>
+        </div>
+
+      </div>
+
+      <!-- ROW 3: CHART 3 & CHART 4 -->
+      <div class="row g-3 mb-4">
+        
+        <!-- Chart 3: Expected vs Actual Collection (Grouped Bar Chart) -->
+        <div class="col-12 col-xl-8">
+          <div class="card border shadow-sm bg-surface h-100">
+            <div class="card-header bg-transparent border-bottom d-flex justify-content-between align-items-center py-2 px-3">
+              <div class="d-flex align-items-center gap-2">
+                <i class="bi bi-bar-chart-line-fill text-primary"></i>
+                <h6 class="mb-0 fw-bold">Expected vs. Actual Collections</h6>
+              </div>
+              <span class="badge bg-secondary-subtle text-secondary border small">Performance Comparison</span>
+            </div>
+            <div class="card-body p-3" style="min-height: 280px; position: relative;">
+              <canvas id="collectionPerformanceCanvas"></canvas>
+            </div>
+          </div>
+        </div>
+
+        <!-- Chart 4: Loan Frequency Distribution (Donut Chart) -->
+        <div class="col-12 col-xl-4">
+          <div class="card border shadow-sm bg-surface h-100">
+            <div class="card-header bg-transparent border-bottom d-flex justify-content-between align-items-center py-2 px-3">
+              <div class="d-flex align-items-center gap-2">
+                <i class="bi bi-clock-history text-gold"></i>
+                <h6 class="mb-0 fw-bold">Active Loans by Frequency</h6>
+              </div>
+              <span class="badge bg-secondary-subtle text-secondary border small">Active Breakdown</span>
+            </div>
+            <div class="card-body p-3 d-flex flex-column justify-content-center align-items-center" style="min-height: 280px; position: relative;">
+              <div style="width: 100%; height: 240px; position: relative;">
+                <canvas id="frequencyDistributionCanvas"></canvas>
+              </div>
+            </div>
+          </div>
+        </div>
+
+      </div>
+
+      <!-- ROW 4: CHART 5 (Loan Issuance Trend) -->
+      <div class="row g-3 mb-4">
+        <div class="col-12">
+          <div class="card border shadow-sm bg-surface">
+            <div class="card-header bg-transparent border-bottom d-flex flex-wrap justify-content-between align-items-center gap-2 py-2 px-3">
+              <div class="d-flex align-items-center gap-2">
+                <i class="bi bi-cash-coin text-warning"></i>
+                <h6 class="mb-0 fw-bold">Loan Disbursement & Issuance Trend</h6>
+              </div>
+              
+              <!-- Metric Toggle -->
+              <div class="btn-group btn-group-sm" role="group">
+                <button 
+                  type="button" 
+                  class="btn btn-sm"
+                  [class.btn-warning]="issuanceMetric === 'amount'"
+                  [class.btn-outline-secondary]="issuanceMetric !== 'amount'"
+                  (click)="toggleIssuanceMetric('amount')"
+                >
+                  Loan Amount (Rs.)
+                </button>
+                <button 
+                  type="button" 
+                  class="btn btn-sm"
+                  [class.btn-warning]="issuanceMetric === 'count'"
+                  [class.btn-outline-secondary]="issuanceMetric !== 'count'"
+                  (click)="toggleIssuanceMetric('count')"
+                >
+                  Loan Count
+                </button>
+              </div>
+            </div>
+            <div class="card-body p-3" style="min-height: 260px; position: relative;">
+              <canvas id="issuanceTrendCanvas"></canvas>
+            </div>
+          </div>
         </div>
       </div>
 
-      <!-- 3. Overdue Loans -->
-      <div class="col-6 col-md-4 col-xl-2">
-        <div class="odoo-kpi-card p-3 rounded h-100">
-          <div class="d-flex justify-content-between align-items-center mb-1">
-            <span class="kpi-label">Overdue</span>
-            <div class="kpi-icon-badge kpi-danger">
-              <i class="bi bi-exclamation-octagon"></i>
+      <!-- ROW 5: MANAGEMENT ATTENTION TABLES (Needs Attention & Upcoming Collections) -->
+      <div *ngIf="dashboardBundle" class="row g-3 mb-4">
+        
+        <!-- Table 1: Needs Attention (Top Overdue Loans) -->
+        <div class="col-12 col-xl-6">
+          <div class="card border shadow-sm bg-surface h-100">
+            <div class="card-header bg-transparent border-bottom d-flex justify-content-between align-items-center py-2 px-3">
+              <div class="d-flex align-items-center gap-2">
+                <i class="bi bi-exclamation-triangle-fill text-danger"></i>
+                <h6 class="mb-0 fw-bold">Needs Immediate Attention (Overdue)</h6>
+              </div>
+              <button type="button" class="btn btn-sm btn-outline-danger py-0 px-2 small" (click)="setActiveTab('late_payments')">
+                View All <i class="bi bi-chevron-right small"></i>
+              </button>
+            </div>
+            <div class="table-responsive">
+              <table class="table table-hover align-middle mb-0 lx-report-table">
+                <thead class="table-light">
+                  <tr>
+                    <th class="ps-3">Customer</th>
+                    <th>Loan #</th>
+                    <th>Mobile</th>
+                    <th class="text-end">Overdue</th>
+                    <th class="text-center">Days Late</th>
+                    <th class="pe-3 text-end">Action</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <tr *ngFor="let item of dashboardBundle.needsAttention">
+                    <td class="ps-3 fw-medium text-truncate" style="max-width: 140px;">{{ item.customerName }}</td>
+                    <td class="font-monospace text-gold small">{{ item.loanNumber }}</td>
+                    <td class="text-muted small">{{ item.customerMobile }}</td>
+                    <td class="text-end font-monospace text-danger fw-bold">Rs. {{ item.overdueAmount | number:'1.2-2' }}</td>
+                    <td class="text-center">
+                      <span class="badge" [ngClass]="item.daysLate <= 7 ? 'badge-amber' : 'badge-danger'">
+                        {{ item.daysLate }} d
+                      </span>
+                    </td>
+                    <td class="pe-3 text-end">
+                      <button type="button" class="btn btn-xs btn-outline-primary py-0 px-2" (click)="viewLoan(item.loanNumber)">
+                        View
+                      </button>
+                    </td>
+                  </tr>
+                  <tr *ngIf="dashboardBundle.needsAttention.length === 0">
+                    <td colspan="6" class="text-center py-4 text-muted small">
+                      <i class="bi bi-shield-check text-success fs-5 d-block mb-1"></i>
+                      All loans are currently on track! Zero overdue loans.
+                    </td>
+                  </tr>
+                </tbody>
+              </table>
             </div>
           </div>
-          <h3 class="kpi-value text-danger mb-0">
-            {{ bundle.kpis.overdueLoansCount | number }}
-          </h3>
-          <span class="small text-muted">Requires recovery action</span>
         </div>
+
+        <!-- Table 2: Upcoming Collections (Top Upcoming Payments) -->
+        <div class="col-12 col-xl-6">
+          <div class="card border shadow-sm bg-surface h-100">
+            <div class="card-header bg-transparent border-bottom d-flex justify-content-between align-items-center py-2 px-3">
+              <div class="d-flex align-items-center gap-2">
+                <i class="bi bi-calendar-event text-primary"></i>
+                <h6 class="mb-0 fw-bold">Upcoming Collections Expected</h6>
+              </div>
+              <button type="button" class="btn btn-sm btn-outline-primary py-0 px-2 small" (click)="setActiveTab('upcoming_payments')">
+                View All <i class="bi bi-chevron-right small"></i>
+              </button>
+            </div>
+            <div class="table-responsive">
+              <table class="table table-hover align-middle mb-0 lx-report-table">
+                <thead class="table-light">
+                  <tr>
+                    <th class="ps-3">Expected Date</th>
+                    <th>Customer</th>
+                    <th>Loan #</th>
+                    <th>Type</th>
+                    <th class="text-end">Expected Amount</th>
+                    <th class="pe-3 text-end">Action</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <tr *ngFor="let item of dashboardBundle.upcomingCollections">
+                    <td class="ps-3 font-monospace small">{{ item.expectedDate }}</td>
+                    <td class="fw-medium text-truncate" style="max-width: 140px;">{{ item.customerName }}</td>
+                    <td class="font-monospace text-gold small">{{ item.loanNumber }}</td>
+                    <td><span class="badge bg-secondary-subtle text-secondary border">{{ item.loanType }}</span></td>
+                    <td class="text-end font-monospace text-primary fw-bold">Rs. {{ item.expectedInstalmentAmount | number:'1.2-2' }}</td>
+                    <td class="pe-3 text-end">
+                      <button type="button" class="btn btn-xs btn-outline-primary py-0 px-2" (click)="viewLoan(item.loanNumber)">
+                        View
+                      </button>
+                    </td>
+                  </tr>
+                  <tr *ngIf="dashboardBundle.upcomingCollections.length === 0">
+                    <td colspan="6" class="text-center py-4 text-muted small">
+                      <i class="bi bi-calendar-check text-muted fs-5 d-block mb-1"></i>
+                      No upcoming obligations in near horizon.
+                    </td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+
       </div>
 
-      <!-- 4. Due This Week -->
-      <div class="col-6 col-md-4 col-xl-2">
-        <div class="odoo-kpi-card p-3 rounded h-100">
-          <div class="d-flex justify-content-between align-items-center mb-1">
-            <span class="kpi-label">Due This Week</span>
-            <div class="kpi-icon-badge kpi-amber">
-              <i class="bi bi-calendar-check"></i>
+      <!-- ROW 6: RECENT PAYMENTS (Recent Customer Repayments Table) -->
+      <div *ngIf="dashboardBundle" class="row g-3 mb-4">
+        <div class="col-12">
+          <div class="card border shadow-sm bg-surface">
+            <div class="card-header bg-transparent border-bottom d-flex justify-content-between align-items-center py-2 px-3">
+              <div class="d-flex align-items-center gap-2">
+                <i class="bi bi-clock-history text-success"></i>
+                <h6 class="mb-0 fw-bold">Latest Customer Repayments Received</h6>
+              </div>
+              <button type="button" class="btn btn-sm btn-outline-success py-0 px-2 small" (click)="setActiveTab('payment_activity')">
+                View All Activity <i class="bi bi-chevron-right small"></i>
+              </button>
+            </div>
+            <div class="table-responsive">
+              <table class="table table-hover align-middle mb-0 lx-report-table">
+                <thead class="table-light">
+                  <tr>
+                    <th class="ps-3">Payment Date</th>
+                    <th>Customer Name</th>
+                    <th>Loan Number</th>
+                    <th class="text-end">Amount Paid</th>
+                    <th>Remark / Reference</th>
+                    <th class="pe-3 text-end">Action</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <tr *ngFor="let item of dashboardBundle.recentPayments">
+                    <td class="ps-3 font-monospace small">{{ item.paidDate }}</td>
+                    <td class="fw-medium">{{ item.customerName }}</td>
+                    <td class="font-monospace text-gold small">{{ item.loanNumber }}</td>
+                    <td class="text-end font-monospace text-success fw-bold">Rs. {{ item.amountPaid | number:'1.2-2' }}</td>
+                    <td class="text-muted small">{{ item.remark || 'Repayment' }}</td>
+                    <td class="pe-3 text-end">
+                      <button type="button" class="btn btn-xs btn-outline-primary py-0 px-2" (click)="viewLoan(item.loanNumber)">
+                        View Loan
+                      </button>
+                    </td>
+                  </tr>
+                  <tr *ngIf="dashboardBundle.recentPayments.length === 0">
+                    <td colspan="6" class="text-center py-4 text-muted small">
+                      <i class="bi bi-cash-stack text-muted fs-5 d-block mb-1"></i>
+                      No repayments recorded yet.
+                    </td>
+                  </tr>
+                </tbody>
+              </table>
             </div>
           </div>
-          <h3 class="kpi-value text-amber mb-0">
-            {{ bundle.kpis.dueThisWeekCount | number }}
-          </h3>
-          <span class="small text-muted">Rs. {{ bundle.kpis.dueThisWeekAmount | number:'1.0-0' }} expected</span>
-        </div>
-      </div>
-
-      <!-- 5. Outstanding Amount -->
-      <div class="col-6 col-md-4 col-xl-2">
-        <div class="odoo-kpi-card p-3 rounded h-100">
-          <div class="d-flex justify-content-between align-items-center mb-1">
-            <span class="kpi-label">Outstanding</span>
-            <div class="kpi-icon-badge kpi-gold">
-              <i class="bi bi-cash-stack"></i>
-            </div>
-          </div>
-          <h3 class="kpi-value text-gold mb-0 fs-6-responsive">
-            Rs. {{ bundle.kpis.outstandingAmount | number:'1.0-0' }}
-          </h3>
-          <span class="small text-muted">Active loan balances</span>
-        </div>
-      </div>
-
-      <!-- 6. Collected This Month -->
-      <div class="col-6 col-md-4 col-xl-2">
-        <div class="odoo-kpi-card p-3 rounded h-100">
-          <div class="d-flex justify-content-between align-items-center mb-1">
-            <span class="kpi-label">This Month</span>
-            <div class="kpi-icon-badge kpi-emerald">
-              <i class="bi bi-wallet2"></i>
-            </div>
-          </div>
-          <h3 class="kpi-value text-success mb-0 fs-6-responsive">
-            Rs. {{ bundle.kpis.collectedThisMonth | number:'1.0-0' }}
-          </h3>
-          <span class="small text-muted">Total receipts this month</span>
         </div>
       </div>
 
     </div>
 
-    <!-- Main Odoo Sheet: Tabbed Tables Section -->
-    <div class="odoo-form-sheet shadow-sm mb-4">
-      
-      <!-- Notebook Tabs Navigation -->
-      <div class="odoo-tabs-header border-bottom mb-3">
-        
+    <!-- ===================================================================== -->
+    <!-- SCREEN 2: OPERATIONAL OVERVIEW                                        -->
+    <!-- Contains: Late Payments, Upcoming Payments, Loans, Payment Activity    -->
+    <!-- ===================================================================== -->
+    <div *ngIf="isOperationalView">
+
+      <!-- Top Operational Navigation Tabs (Odoo ERP Navigation Bar) -->
+      <div class="d-flex align-items-center gap-2 mb-3 border-bottom pb-2 overflow-x-auto">
         <!-- Tab 1: Late Payments -->
         <button 
           type="button" 
@@ -200,14 +544,14 @@
           </span>
         </button>
 
-        <!-- Tab 3: Loan Monitoring -->
+        <!-- Tab 3: Loans -->
         <button 
           type="button" 
           class="odoo-tab-nav-btn" 
           [class.active]="activeTab === 'loans'"
           (click)="setActiveTab('loans')"
         >
-          <i class="bi bi-card-list me-1 text-gold"></i>
+          <i class="bi bi-card-checklist me-1 text-primary"></i>
           <span>Loans</span>
           <span class="badge bg-secondary ms-2 text-white">
             {{ bundle.allLoans.length }}
@@ -221,45 +565,23 @@
           [class.active]="activeTab === 'payment_activity'"
           (click)="setActiveTab('payment_activity')"
         >
-          <i class="bi bi-clock-history me-1 text-info"></i>
+          <i class="bi bi-receipt-cutoff me-1 text-success"></i>
           <span>Payment Activity</span>
           <span class="badge bg-secondary ms-2 text-white">
             {{ bundle.paymentActivity.length }}
           </span>
         </button>
-
       </div>
 
-      <!-- ======================================================== -->
-      <!-- TAB 1: LATE PAYMENTS CONTENT                             -->
-      <!-- ======================================================== -->
-      <div *ngIf="activeTab === 'late_payments'">
-        
-        <!-- Filter Bar -->
-        <div class="row align-items-center g-2 mb-3">
-          <div class="col-12 col-md-6 col-lg-4">
-            <div class="odoo-search-box">
-              <i class="bi bi-search odoo-search-icon"></i>
-              <input 
-                type="text" 
-                class="odoo-search-input" 
-                placeholder="Search by customer, loan #, frequency..." 
-                [(ngModel)]="lateSearch"
-                (ngModelChange)="onLateSearchChange()"
-              />
-              <button 
-                *ngIf="lateSearch" 
-                type="button" 
-                class="btn btn-sm btn-link text-muted p-0 me-2" 
-                (click)="lateSearch = ''; onLateSearchChange()"
-              >
-                <i class="bi bi-x-circle-fill"></i>
-              </button>
-            </div>
-          </div>
-
-          <div class="col-12 col-md-6 col-lg-8 d-flex justify-content-md-end align-items-center gap-2 flex-wrap">
-            <span class="small text-muted me-1">Status:</span>
+      <!-- ===================================================================== -->
+      <!-- TAB 1: LATE PAYMENTS (OPERATIONAL VIEW)                              -->
+      <!-- ===================================================================== -->
+      <div *ngIf="activeTab === 'late_payments'" class="odoo-form-sheet shadow-sm mb-4">
+      <div class="p-3">
+        <!-- Controls: Status Pills & Search Filter -->
+        <div class="d-flex flex-wrap justify-content-between align-items-center gap-3 mb-3">
+          <div class="d-flex align-items-center gap-2 flex-wrap">
+            <span class="small fw-bold text-muted text-uppercase">Severity Filter:</span>
             <div class="btn-group btn-group-sm" role="group">
               <button 
                 type="button" 
@@ -295,48 +617,55 @@
               </button>
             </div>
           </div>
+
+          <div class="d-flex align-items-center gap-2">
+            <div class="input-group input-group-sm" style="max-width: 280px;">
+              <span class="input-group-text bg-transparent text-muted"><i class="bi bi-search"></i></span>
+              <input 
+                type="text" 
+                class="form-control" 
+                placeholder="Search loan #, customer, mobile..." 
+                [(ngModel)]="lateSearch"
+                (input)="onLateSearchChange()"
+              />
+            </div>
+          </div>
         </div>
 
         <!-- Table -->
-        <div class="table-responsive odoo-table-wrapper" *ngIf="filteredLatePayments.length > 0">
-          <table class="table table-hover align-middle odoo-data-table mb-0">
+        <div class="table-responsive">
+          <table class="table table-hover align-middle mb-0 odoo-data-table">
             <thead>
               <tr>
-                <th scope="col">Customer</th>
-                <th scope="col">Loan #</th>
-                <th scope="col">Frequency</th>
-                <th scope="col">Expected Date</th>
-                <th scope="col" class="text-end">Expected Inst.</th>
-                <th scope="col">Progress</th>
-                <th scope="col" class="text-center">Overdue Inst.</th>
-                <th scope="col" class="text-end">Overdue Amt.</th>
-                <th scope="col" class="text-center">Days Late</th>
-                <th scope="col" class="text-end">Remaining</th>
-                <th scope="col" class="text-center">Status</th>
-                <th scope="col" class="text-end">Action</th>
+                <th class="ps-3">Customer</th>
+                <th>Loan #</th>
+                <th>Frequency</th>
+                <th>Oldest Due Date</th>
+                <th class="text-center">Progress</th>
+                <th class="text-center">Overdue Inst.</th>
+                <th class="text-end">Overdue Amount</th>
+                <th class="text-center">Days Late</th>
+                <th class="text-end">Remaining Balance</th>
+                <th class="text-center">Status</th>
+                <th class="text-end pe-3">Actions</th>
               </tr>
             </thead>
             <tbody>
-              <tr *ngFor="let item of paginatedLatePayments" class="odoo-row-hover">
-                <td>
-                  <div class="fw-semibold text-primary-custom">{{ item.customerName }}</div>
-                  <div class="small text-muted"><i class="bi bi-telephone me-1"></i>{{ item.customerMobile }}</div>
+              <tr *ngFor="let item of paginatedLatePayments">
+                <td class="ps-3">
+                  <div class="fw-semibold text-main">{{ item.customerName }}</div>
+                  <div class="small text-muted font-numeric">{{ item.customerMobile }}</div>
                 </td>
                 <td>
-                  <span class="badge badge-loan-number">{{ item.loanNumber }}</span>
+                  <span class="badge badge-gold font-numeric">{{ item.loanNumber }}</span>
                 </td>
                 <td>
-                  <span class="badge badge-secondary text-capitalize">{{ item.loanType }}</span>
+                  <span class="badge badge-secondary text-uppercase">{{ item.loanType }}</span>
                 </td>
-                <td class="font-numeric">
-                  {{ item.expectedPaymentDate }}
-                </td>
-                <td class="text-end font-numeric fw-semibold">
-                  Rs. {{ item.expectedInstalmentAmount | number:'1.2-2' }}
-                </td>
-                <td>
-                  <div class="small text-muted mb-1">{{ item.paidInstallments }} of {{ item.totalInstallments }} paid</div>
-                  <div class="progress" style="height: 5px; width: 90px;">
+                <td class="font-numeric">{{ item.expectedPaymentDate }}</td>
+                <td class="text-center">
+                  <div class="small font-numeric mb-1">{{ item.paidInstallments }} / {{ item.totalInstallments }}</div>
+                  <div class="progress" style="height: 4px; width: 60px; margin: 0 auto;">
                     <div 
                       class="progress-bar bg-warning" 
                       role="progressbar" 
@@ -375,7 +704,7 @@
                     {{ item.status }}
                   </span>
                 </td>
-                <td class="text-end">
+                <td class="text-end pe-3">
                   <button 
                     type="button" 
                     class="btn btn-sm btn-outline-primary"
@@ -386,81 +715,53 @@
                   </button>
                 </td>
               </tr>
+              <tr *ngIf="filteredLatePayments.length === 0">
+                <td colspan="11" class="text-center py-5 text-muted">
+                  <i class="bi bi-shield-check display-6 d-block mb-2 text-success"></i>
+                  No overdue or late loans found matching criteria.
+                </td>
+              </tr>
             </tbody>
           </table>
         </div>
 
-        <!-- Empty State -->
-        <div class="text-center py-5" *ngIf="filteredLatePayments.length === 0">
-          <div class="empty-icon-circle mx-auto mb-3 text-success">
-            <i class="bi bi-check2-all fs-1"></i>
-          </div>
-          <h5 class="fw-semibold">No Late Payments Found</h5>
-          <p class="text-muted small mb-0">
-            {{ lateSearch || lateStatusFilter !== 'all' ? 'Try adjusting your search query or filter.' : 'All loan repayments are up to date according to current repayment schedules!' }}
-          </p>
-        </div>
-
-        <!-- Pagination -->
-        <div class="d-flex justify-content-between align-items-center mt-3 pt-2 border-top flex-wrap gap-2" *ngIf="filteredLatePayments.length > 0">
+        <!-- Pagination Footer -->
+        <div class="d-flex justify-content-between align-items-center mt-3 pt-2 border-top" *ngIf="filteredLatePayments.length > 0">
           <span class="small text-muted">
-            Showing {{ (latePage - 1) * latePageSize + 1 }} to {{ latePage * latePageSize > filteredLatePayments.length ? filteredLatePayments.length : latePage * latePageSize }} of {{ filteredLatePayments.length }} entries
+            Showing {{ ((latePage - 1) * latePageSize) + 1 }} to {{ Math.min(latePage * latePageSize, filteredLatePayments.length) }} of {{ filteredLatePayments.length }} entries
           </span>
-          <div class="btn-group btn-group-sm" *ngIf="totalLatePages > 1">
+          <div class="d-flex align-items-center gap-1">
             <button 
               type="button" 
-              class="btn btn-outline-secondary" 
+              class="btn btn-sm btn-outline-secondary" 
               [disabled]="latePage === 1"
               (click)="latePage = latePage - 1"
             >
               Previous
             </button>
-            <button type="button" class="btn btn-outline-secondary disabled">
-              Page {{ latePage }} of {{ totalLatePages }}
-            </button>
+            <span class="small text-muted px-2">Page {{ latePage }} of {{ totalLatePages }}</span>
             <button 
               type="button" 
-              class="btn btn-outline-secondary" 
-              [disabled]="latePage === totalLatePages"
+              class="btn btn-sm btn-outline-secondary" 
+              [disabled]="latePage >= totalLatePages"
               (click)="latePage = latePage + 1"
             >
               Next
             </button>
           </div>
         </div>
-
       </div>
+    </div>
 
-      <!-- ======================================================== -->
-      <!-- TAB 2: UPCOMING PAYMENTS CONTENT                          -->
-      <!-- ======================================================== -->
-      <div *ngIf="activeTab === 'upcoming_payments'">
-        
-        <!-- Filter Bar -->
-        <div class="row align-items-center g-2 mb-3">
-          <div class="col-12 col-md-5 col-lg-4">
-            <div class="odoo-search-box">
-              <i class="bi bi-search odoo-search-icon"></i>
-              <input 
-                type="text" 
-                class="odoo-search-input" 
-                placeholder="Search upcoming payments..." 
-                [(ngModel)]="upcomingSearch"
-                (ngModelChange)="onUpcomingSearchChange()"
-              />
-              <button 
-                *ngIf="upcomingSearch" 
-                type="button" 
-                class="btn btn-sm btn-link text-muted p-0 me-2" 
-                (click)="upcomingSearch = ''; onUpcomingSearchChange()"
-              >
-                <i class="bi bi-x-circle-fill"></i>
-              </button>
-            </div>
-          </div>
-
-          <div class="col-12 col-md-7 col-lg-8 d-flex justify-content-md-end align-items-center gap-2 flex-wrap">
-            <span class="small text-muted me-1">Window:</span>
+    <!-- ===================================================================== -->
+    <!-- TAB 2: UPCOMING PAYMENTS (OPERATIONAL VIEW)                           -->
+    <!-- ===================================================================== -->
+    <div *ngIf="activeTab === 'upcoming_payments'" class="odoo-form-sheet shadow-sm mb-4">
+      <div class="p-3">
+        <!-- Controls: Time Range & Search Filter -->
+        <div class="d-flex flex-wrap justify-content-between align-items-center gap-3 mb-3">
+          <div class="d-flex align-items-center gap-2 flex-wrap">
+            <span class="small fw-bold text-muted text-uppercase">Time Horizon:</span>
             <div class="btn-group btn-group-sm" role="group">
               <button 
                 type="button" 
@@ -476,7 +777,7 @@
                 [ngClass]="upcomingFilter === 'this_week' ? 'btn-gold' : 'btn-outline-secondary'"
                 (click)="setUpcomingFilter('this_week')"
               >
-                This Week (Default)
+                This Week
               </button>
               <button 
                 type="button" 
@@ -488,157 +789,116 @@
               </button>
             </div>
           </div>
+
+          <div class="d-flex align-items-center gap-2">
+            <div class="input-group input-group-sm" style="max-width: 280px;">
+              <span class="input-group-text bg-transparent text-muted"><i class="bi bi-search"></i></span>
+              <input 
+                type="text" 
+                class="form-control" 
+                placeholder="Search upcoming..." 
+                [(ngModel)]="upcomingSearch"
+                (input)="onUpcomingSearchChange()"
+              />
+            </div>
+          </div>
         </div>
 
         <!-- Table -->
-        <div class="table-responsive odoo-table-wrapper" *ngIf="filteredUpcomingPayments.length > 0">
-          <table class="table table-hover align-middle odoo-data-table mb-0">
+        <div class="table-responsive">
+          <table class="table table-hover align-middle mb-0 odoo-data-table">
             <thead>
               <tr>
-                <th scope="col">Expected Date</th>
-                <th scope="col">Customer</th>
-                <th scope="col">Mobile</th>
-                <th scope="col">Loan #</th>
-                <th scope="col">Frequency</th>
-                <th scope="col" class="text-end">Expected Inst.</th>
-                <th scope="col" class="text-end">Remaining Balance</th>
-                <th scope="col" class="text-center">Remaining Inst.</th>
-                <th scope="col" class="text-center">Status</th>
-                <th scope="col" class="text-end">Actions</th>
+                <th class="ps-3">Customer</th>
+                <th>Loan #</th>
+                <th>Frequency</th>
+                <th>Expected Date</th>
+                <th class="text-end">Expected Amount</th>
+                <th class="text-end">Remaining Balance</th>
+                <th class="text-center">Remaining Inst.</th>
+                <th class="text-center">Status</th>
+                <th class="text-end pe-3">Actions</th>
               </tr>
             </thead>
             <tbody>
-              <tr *ngFor="let item of paginatedUpcomingPayments" class="odoo-row-hover">
-                <td class="font-numeric fw-semibold">
-                  <i class="bi bi-calendar-event me-1 text-gold"></i>
-                  {{ item.expectedDate }}
+              <tr *ngFor="let item of paginatedUpcomingPayments">
+                <td class="ps-3">
+                  <div class="fw-semibold text-main">{{ item.customerName }}</div>
+                  <div class="small text-muted font-numeric">{{ item.customerMobile }}</div>
                 </td>
-                <td class="fw-semibold text-primary-custom">
-                  {{ item.customerName }}
-                </td>
-                <td class="font-numeric small text-muted">
-                  {{ item.customerMobile }}
-                </td>
-                <td>
-                  <span class="badge badge-loan-number">{{ item.loanNumber }}</span>
-                </td>
-                <td>
-                  <span class="badge badge-secondary text-capitalize">{{ item.loanType }}</span>
-                </td>
-                <td class="text-end font-numeric fw-bold text-amber">
+                <td><span class="badge badge-gold font-numeric">{{ item.loanNumber }}</span></td>
+                <td><span class="badge badge-secondary text-uppercase">{{ item.loanType }}</span></td>
+                <td class="font-numeric fw-semibold">{{ item.expectedDate }}</td>
+                <td class="text-end font-numeric text-primary fw-bold">
                   Rs. {{ item.expectedInstalmentAmount | number:'1.2-2' }}
                 </td>
-                <td class="text-end font-numeric fw-semibold">
+                <td class="text-end font-numeric text-muted">
                   Rs. {{ item.remainingBalance | number:'1.2-2' }}
                 </td>
-                <td class="text-center font-numeric">
-                  <span class="badge bg-secondary-subtle text-secondary fw-semibold">
-                    {{ item.remainingInstallments }}
-                  </span>
-                </td>
+                <td class="text-center font-numeric">{{ item.remainingInstallments }}</td>
                 <td class="text-center">
-                  <span 
-                    class="badge"
-                    [ngClass]="item.status === 'Due Today' ? 'badge-gold' : 'badge-emerald'"
-                  >
+                  <span class="badge" [ngClass]="item.status === 'Due Today' ? 'badge-amber' : 'badge-gold'">
                     {{ item.status }}
                   </span>
                 </td>
-                <td class="text-end">
-                  <div class="d-inline-flex gap-1">
-                    <button 
-                      type="button" 
-                      class="btn btn-sm btn-outline-primary"
-                      (click)="viewLoan(item.loanNumber)"
-                      title="View Loan Details"
-                    >
-                      <i class="bi bi-eye"></i>
-                    </button>
-                    <button 
-                      type="button" 
-                      class="btn btn-sm btn-gold d-inline-flex align-items-center gap-1"
-                      (click)="recordPayment(item.loanNumber)"
-                      title="Record Payment via Add Payment"
-                    >
-                      <i class="bi bi-cash-stack"></i>
-                      <span class="d-none d-lg-inline">Record Payment</span>
-                    </button>
-                  </div>
+                <td class="text-end pe-3">
+                  <button 
+                    type="button" 
+                    class="btn btn-sm btn-outline-primary"
+                    (click)="viewLoan(item.loanNumber)"
+                    title="View Loan Details"
+                  >
+                    <i class="bi bi-eye me-1"></i> View Loan
+                  </button>
+                </td>
+              </tr>
+              <tr *ngIf="filteredUpcomingPayments.length === 0">
+                <td colspan="9" class="text-center py-5 text-muted">
+                  <i class="bi bi-calendar-check display-6 d-block mb-2 text-muted"></i>
+                  No upcoming payment obligations found for this period.
                 </td>
               </tr>
             </tbody>
           </table>
         </div>
 
-        <!-- Empty State -->
-        <div class="text-center py-5" *ngIf="filteredUpcomingPayments.length === 0">
-          <div class="empty-icon-circle mx-auto mb-3 text-muted">
-            <i class="bi bi-calendar-x fs-1"></i>
-          </div>
-          <h5 class="fw-semibold">No Upcoming Payments Found</h5>
-          <p class="text-muted small mb-0">No loan installments are due in the selected timeframe ({{ upcomingFilter }}).</p>
-        </div>
-
-        <!-- Pagination -->
-        <div class="d-flex justify-content-between align-items-center mt-3 pt-2 border-top flex-wrap gap-2" *ngIf="filteredUpcomingPayments.length > 0">
+        <!-- Pagination Footer -->
+        <div class="d-flex justify-content-between align-items-center mt-3 pt-2 border-top" *ngIf="filteredUpcomingPayments.length > 0">
           <span class="small text-muted">
-            Showing {{ (upcomingPage - 1) * upcomingPageSize + 1 }} to {{ upcomingPage * upcomingPageSize > filteredUpcomingPayments.length ? filteredUpcomingPayments.length : upcomingPage * upcomingPageSize }} of {{ filteredUpcomingPayments.length }} entries
+            Showing {{ ((upcomingPage - 1) * upcomingPageSize) + 1 }} to {{ Math.min(upcomingPage * upcomingPageSize, filteredUpcomingPayments.length) }} of {{ filteredUpcomingPayments.length }} entries
           </span>
-          <div class="btn-group btn-group-sm" *ngIf="totalUpcomingPages > 1">
+          <div class="d-flex align-items-center gap-1">
             <button 
               type="button" 
-              class="btn btn-outline-secondary" 
+              class="btn btn-sm btn-outline-secondary" 
               [disabled]="upcomingPage === 1"
               (click)="upcomingPage = upcomingPage - 1"
             >
               Previous
             </button>
-            <button type="button" class="btn btn-outline-secondary disabled">
-              Page {{ upcomingPage }} of {{ totalUpcomingPages }}
-            </button>
+            <span class="small text-muted px-2">Page {{ upcomingPage }} of {{ totalUpcomingPages }}</span>
             <button 
               type="button" 
-              class="btn btn-outline-secondary" 
-              [disabled]="upcomingPage === totalUpcomingPages"
+              class="btn btn-sm btn-outline-secondary" 
+              [disabled]="upcomingPage >= totalUpcomingPages"
               (click)="upcomingPage = upcomingPage + 1"
             >
               Next
             </button>
           </div>
         </div>
-
       </div>
+    </div>
 
-      <!-- ======================================================== -->
-      <!-- TAB 3: LOANS MONITORING CONTENT                           -->
-      <!-- ======================================================== -->
-      <div *ngIf="activeTab === 'loans'">
-        
-        <!-- Filter Bar -->
-        <div class="row align-items-center g-2 mb-3">
-          <div class="col-12 col-md-5 col-lg-4">
-            <div class="odoo-search-box">
-              <i class="bi bi-search odoo-search-icon"></i>
-              <input 
-                type="text" 
-                class="odoo-search-input" 
-                placeholder="Search by loan #, customer, type..." 
-                [(ngModel)]="loanSearch"
-                (ngModelChange)="onLoanSearchChange()"
-              />
-              <button 
-                *ngIf="loanSearch" 
-                type="button" 
-                class="btn btn-sm btn-link text-muted p-0 me-2" 
-                (click)="loanSearch = ''; onLoanSearchChange()"
-              >
-                <i class="bi bi-x-circle-fill"></i>
-              </button>
-            </div>
-          </div>
-
-          <div class="col-12 col-md-7 col-lg-8 d-flex justify-content-md-end align-items-center gap-2 flex-wrap">
-            <span class="small text-muted me-1">Portfolio:</span>
+    <!-- ===================================================================== -->
+    <!-- TAB 3: LOANS MONITORING (OPERATIONAL VIEW)                           -->
+    <!-- ===================================================================== -->
+    <div *ngIf="activeTab === 'loans'" class="odoo-form-sheet shadow-sm mb-4">
+      <div class="p-3">
+        <!-- Controls: Status Filter & Search -->
+        <div class="d-flex flex-wrap justify-content-between align-items-center gap-3 mb-3">
+          <div class="d-flex align-items-center gap-2 flex-wrap">
+            <span class="small fw-bold text-muted text-uppercase">Status Filter:</span>
             <div class="btn-group btn-group-sm" role="group">
               <button 
                 type="button" 
@@ -664,303 +924,235 @@
               >
                 Overdue
               </button>
-              <button 
-                type="button" 
-                class="btn" 
-                [ngClass]="loanFilter === 'all' ? 'btn-gold' : 'btn-outline-secondary'"
-                (click)="setLoanFilter('all')"
-              >
-                All ({{ bundle.allLoans.length }})
-              </button>
+            </div>
+          </div>
+
+          <div class="d-flex align-items-center gap-2">
+            <div class="input-group input-group-sm" style="max-width: 280px;">
+              <span class="input-group-text bg-transparent text-muted"><i class="bi bi-search"></i></span>
+              <input 
+                type="text" 
+                class="form-control" 
+                placeholder="Search loan #, customer..." 
+                [(ngModel)]="loanSearch"
+                (input)="onLoanSearchChange()"
+              />
             </div>
           </div>
         </div>
 
         <!-- Table -->
-        <div class="table-responsive odoo-table-wrapper" *ngIf="filteredLoans.length > 0">
-          <table class="table table-hover align-middle odoo-data-table mb-0">
+        <div class="table-responsive">
+          <table class="table table-hover align-middle mb-0 odoo-data-table">
             <thead>
               <tr>
-                <th scope="col">Loan #</th>
-                <th scope="col">Customer</th>
-                <th scope="col">Type</th>
-                <th scope="col" class="text-end">Principal</th>
-                <th scope="col" class="text-end">Total Due</th>
-                <th scope="col" class="text-end">Total Paid</th>
-                <th scope="col" class="text-end">Remaining</th>
-                <th scope="col" class="text-center">Inst. Progress</th>
-                <th scope="col">Progress</th>
-                <th scope="col" class="text-center">Status</th>
-                <th scope="col">Start Date</th>
-                <th scope="col">End Date</th>
-                <th scope="col" class="text-end">Action</th>
+                <th class="ps-3">Customer</th>
+                <th>Loan #</th>
+                <th>Frequency</th>
+                <th class="text-end">Principal</th>
+                <th class="text-end">Total Due</th>
+                <th class="text-end">Total Paid</th>
+                <th class="text-end">Remaining</th>
+                <th class="text-center">Progress</th>
+                <th class="text-center">Status</th>
+                <th class="text-end pe-3">Actions</th>
               </tr>
             </thead>
             <tbody>
-              <tr *ngFor="let loan of paginatedLoans" class="odoo-row-hover">
-                <td>
-                  <span class="badge badge-loan-number">{{ loan.loanNumber }}</span>
+              <tr *ngFor="let item of paginatedLoans">
+                <td class="ps-3 fw-semibold text-main">{{ item.customerName }}</td>
+                <td><span class="badge badge-gold font-numeric">{{ item.loanNumber }}</span></td>
+                <td><span class="badge badge-secondary text-uppercase">{{ item.loanType }}</span></td>
+                <td class="text-end font-numeric">Rs. {{ item.principal | number:'1.2-2' }}</td>
+                <td class="text-end font-numeric text-muted">Rs. {{ item.totalDue | number:'1.2-2' }}</td>
+                <td class="text-end font-numeric text-success fw-semibold">Rs. {{ item.totalPaid | number:'1.2-2' }}</td>
+                <td class="text-end font-numeric fw-bold" [ngClass]="item.remaining > 0 ? 'text-primary' : 'text-muted'">
+                  Rs. {{ item.remaining | number:'1.2-2' }}
                 </td>
-                <td class="fw-semibold text-primary-custom">
-                  {{ loan.customerName }}
-                </td>
-                <td>
-                  <span class="badge badge-secondary text-capitalize">{{ loan.loanType }}</span>
-                </td>
-                <td class="text-end font-numeric">
-                  Rs. {{ loan.principal | number:'1.2-2' }}
-                </td>
-                <td class="text-end font-numeric fw-semibold">
-                  Rs. {{ loan.totalDue | number:'1.2-2' }}
-                </td>
-                <td class="text-end font-numeric text-success">
-                  Rs. {{ loan.totalPaid | number:'1.2-2' }}
-                </td>
-                <td class="text-end font-numeric fw-bold" [ngClass]="loan.remaining > 0 ? 'text-danger' : 'text-muted'">
-                  Rs. {{ loan.remaining | number:'1.2-2' }}
-                </td>
-                <td class="text-center font-numeric small">
-                  {{ loan.paidInstallments }} / {{ loan.paidInstallments + loan.remainingInstallments }}
-                </td>
-                <td>
-                  <div class="d-flex align-items-center gap-2" style="min-width: 90px;">
-                    <div class="progress flex-grow-1" style="height: 6px;">
-                      <div 
-                        class="progress-bar" 
-                        [ngClass]="loan.progressPercent >= 100 ? 'bg-success' : 'bg-primary-gold'"
-                        role="progressbar" 
-                        [style.width.%]="loan.progressPercent"
-                      ></div>
-                    </div>
-                    <span class="small font-numeric text-muted">{{ loan.progressPercent }}%</span>
+                <td class="text-center">
+                  <div class="small font-numeric mb-1">{{ item.progressPercent }}%</div>
+                  <div class="progress" style="height: 4px; width: 60px; margin: 0 auto;">
+                    <div 
+                      class="progress-bar bg-success" 
+                      role="progressbar" 
+                      [style.width.%]="item.progressPercent"
+                    ></div>
                   </div>
                 </td>
                 <td class="text-center">
                   <span 
-                    class="badge"
+                    class="badge" 
                     [ngClass]="{
-                      'badge-emerald': loan.status === 'Completed',
-                      'badge-danger': loan.status === 'Overdue',
-                      'badge-gold': loan.status === 'Active'
+                      'badge-emerald': item.status === 'Completed',
+                      'badge-gold': item.status === 'Active',
+                      'badge-danger': item.status === 'Overdue'
                     }"
                   >
-                    {{ loan.status }}
+                    {{ item.status }}
                   </span>
                 </td>
-                <td class="font-numeric small text-muted">
-                  {{ loan.startDate }}
-                </td>
-                <td class="font-numeric small text-muted">
-                  {{ loan.expectedEndDate }}
-                </td>
-                <td class="text-end">
+                <td class="text-end pe-3">
                   <button 
                     type="button" 
                     class="btn btn-sm btn-outline-primary"
-                    (click)="viewLoan(loan.loanNumber)"
+                    (click)="viewLoan(item.loanNumber)"
                     title="View Loan Details"
                   >
-                    <i class="bi bi-eye me-1"></i> View Loan
+                    <i class="bi bi-eye me-1"></i> View
                   </button>
+                </td>
+              </tr>
+              <tr *ngIf="filteredLoans.length === 0">
+                <td colspan="10" class="text-center py-5 text-muted">
+                  <i class="bi bi-card-checklist display-6 d-block mb-2 text-muted"></i>
+                  No loans found matching the selected filter.
                 </td>
               </tr>
             </tbody>
           </table>
         </div>
 
-        <!-- Empty State -->
-        <div class="text-center py-5" *ngIf="filteredLoans.length === 0">
-          <div class="empty-icon-circle mx-auto mb-3 text-muted">
-            <i class="bi bi-folder-x fs-1"></i>
-          </div>
-          <h5 class="fw-semibold">No Loans Found</h5>
-          <p class="text-muted small mb-0">No loans match the current filter ({{ loanFilter }}).</p>
-        </div>
-
-        <!-- Pagination -->
-        <div class="d-flex justify-content-between align-items-center mt-3 pt-2 border-top flex-wrap gap-2" *ngIf="filteredLoans.length > 0">
+        <!-- Pagination Footer -->
+        <div class="d-flex justify-content-between align-items-center mt-3 pt-2 border-top" *ngIf="filteredLoans.length > 0">
           <span class="small text-muted">
-            Showing {{ (loanPage - 1) * loanPageSize + 1 }} to {{ loanPage * loanPageSize > filteredLoans.length ? filteredLoans.length : loanPage * loanPageSize }} of {{ filteredLoans.length }} entries
+            Showing {{ ((loanPage - 1) * loanPageSize) + 1 }} to {{ Math.min(loanPage * loanPageSize, filteredLoans.length) }} of {{ filteredLoans.length }} entries
           </span>
-          <div class="btn-group btn-group-sm" *ngIf="totalLoanPages > 1">
+          <div class="d-flex align-items-center gap-1">
             <button 
               type="button" 
-              class="btn btn-outline-secondary" 
+              class="btn btn-sm btn-outline-secondary" 
               [disabled]="loanPage === 1"
               (click)="loanPage = loanPage - 1"
             >
               Previous
             </button>
-            <button type="button" class="btn btn-outline-secondary disabled">
-              Page {{ loanPage }} of {{ totalLoanPages }}
-            </button>
+            <span class="small text-muted px-2">Page {{ loanPage }} of {{ totalLoanPages }}</span>
             <button 
               type="button" 
-              class="btn btn-outline-secondary" 
-              [disabled]="loanPage === totalLoanPages"
+              class="btn btn-sm btn-outline-secondary" 
+              [disabled]="loanPage >= totalLoanPages"
               (click)="loanPage = loanPage + 1"
             >
               Next
             </button>
           </div>
         </div>
-
       </div>
+    </div>
 
-      <!-- ======================================================== -->
-      <!-- TAB 4: PAYMENT ACTIVITY CONTENT                           -->
-      <!-- ======================================================== -->
-      <div *ngIf="activeTab === 'payment_activity'">
-        
-        <!-- Filter Bar -->
-        <div class="row align-items-center g-2 mb-3">
-          <div class="col-12 col-md-5 col-lg-4">
-            <div class="odoo-search-box">
-              <i class="bi bi-search odoo-search-icon"></i>
-              <input 
-                type="text" 
-                class="odoo-search-input" 
-                placeholder="Search payment activity..." 
-                [(ngModel)]="paymentSearch"
-                (ngModelChange)="onPaymentFilterChange()"
-              />
-              <button 
-                *ngIf="paymentSearch" 
-                type="button" 
-                class="btn btn-sm btn-link text-muted p-0 me-2" 
-                (click)="paymentSearch = ''; onPaymentFilterChange()"
-              >
-                <i class="bi bi-x-circle-fill"></i>
-              </button>
+    <!-- ===================================================================== -->
+    <!-- TAB 4: PAYMENT ACTIVITY (OPERATIONAL VIEW)                           -->
+    <!-- ===================================================================== -->
+    <div *ngIf="activeTab === 'payment_activity'" class="odoo-form-sheet shadow-sm mb-4">
+      <div class="p-3">
+        <!-- Controls: Date Range & Search -->
+        <div class="d-flex flex-wrap justify-content-between align-items-center gap-3 mb-3">
+          <div class="d-flex align-items-center gap-2 flex-wrap">
+            <div class="input-group input-group-sm" style="max-width: 170px;">
+              <span class="input-group-text bg-transparent text-muted">From</span>
+              <input type="date" class="form-control" [(ngModel)]="paymentDateFrom" (change)="onPaymentFilterChange()" />
             </div>
+            <div class="input-group input-group-sm" style="max-width: 170px;">
+              <span class="input-group-text bg-transparent text-muted">To</span>
+              <input type="date" class="form-control" [(ngModel)]="paymentDateTo" (change)="onPaymentFilterChange()" />
+            </div>
+            <button 
+              *ngIf="paymentDateFrom || paymentDateTo"
+              type="button" 
+              class="btn btn-sm btn-outline-secondary"
+              (click)="clearPaymentDateFilter()"
+            >
+              Clear
+            </button>
           </div>
 
-          <div class="col-12 col-md-7 col-lg-8 d-flex justify-content-md-end align-items-center gap-2 flex-wrap">
-            <div class="d-flex align-items-center gap-2">
-              <div class="odoo-date-input-group d-flex align-items-center">
-                <span class="odoo-date-label">From</span>
-                <input 
-                  type="date" 
-                  class="odoo-date-input" 
-                  [(ngModel)]="paymentDateFrom"
-                  (change)="onPaymentFilterChange()"
-                  title="Payment Date From"
-                />
-              </div>
-              <div class="odoo-date-input-group d-flex align-items-center">
-                <span class="odoo-date-label">To</span>
-                <input 
-                  type="date" 
-                  class="odoo-date-input" 
-                  [(ngModel)]="paymentDateTo"
-                  (change)="onPaymentFilterChange()"
-                  title="Payment Date To"
-                />
-              </div>
-              <button 
-                *ngIf="paymentDateFrom || paymentDateTo" 
-                type="button" 
-                class="btn btn-sm btn-outline-danger"
-                (click)="clearPaymentDateFilter()"
-                title="Clear date filters"
-              >
-                <i class="bi bi-x-circle"></i>
-              </button>
+          <div class="d-flex align-items-center gap-2">
+            <div class="input-group input-group-sm" style="max-width: 280px;">
+              <span class="input-group-text bg-transparent text-muted"><i class="bi bi-search"></i></span>
+              <input 
+                type="text" 
+                class="form-control" 
+                placeholder="Search payment activity..." 
+                [(ngModel)]="paymentSearch"
+                (input)="onPaymentFilterChange()"
+              />
             </div>
           </div>
         </div>
 
         <!-- Table -->
-        <div class="table-responsive odoo-table-wrapper" *ngIf="filteredPaymentActivity.length > 0">
-          <table class="table table-hover align-middle odoo-data-table mb-0">
+        <div class="table-responsive">
+          <table class="table table-hover align-middle mb-0 odoo-data-table">
             <thead>
               <tr>
-                <th scope="col">Payment Date</th>
-                <th scope="col">Customer</th>
-                <th scope="col">Loan #</th>
-                <th scope="col" class="text-end">Amount Paid</th>
-                <th scope="col">Remark / Notes</th>
-                <th scope="col">Recorded On</th>
-                <th scope="col" class="text-end">Action</th>
+                <th class="ps-3">Payment Date</th>
+                <th>Customer</th>
+                <th>Loan #</th>
+                <th class="text-end">Amount Paid</th>
+                <th>Remark / Note</th>
+                <th class="text-end pe-3">Actions</th>
               </tr>
             </thead>
             <tbody>
-              <tr *ngFor="let p of paginatedPaymentActivity" class="odoo-row-hover">
-                <td class="font-numeric fw-semibold">
-                  <i class="bi bi-calendar-check me-1 text-success"></i>
-                  {{ p.paidDate }}
+              <tr *ngFor="let item of paginatedPaymentActivity">
+                <td class="ps-3 font-numeric">{{ item.paidDate }}</td>
+                <td class="fw-semibold text-main">{{ item.customerName }}</td>
+                <td><span class="badge badge-gold font-numeric">{{ item.loanNumber }}</span></td>
+                <td class="text-end font-numeric text-success fw-bold">
+                  Rs. {{ item.amountPaid | number:'1.2-2' }}
                 </td>
-                <td class="fw-semibold text-primary-custom">
-                  {{ p.customerName }}
-                </td>
-                <td>
-                  <span class="badge badge-loan-number">{{ p.loanNumber }}</span>
-                </td>
-                <td class="text-end font-numeric fw-bold text-success">
-                  Rs. {{ p.amountPaid | number:'1.2-2' }}
-                </td>
-                <td class="small text-muted text-truncate" style="max-width: 250px;">
-                  {{ p.remark || '-' }}
-                </td>
-                <td class="font-numeric small text-muted">
-                  {{ p.recordedOn }}
-                </td>
-                <td class="text-end">
+                <td class="text-muted small">{{ item.remark || '-' }}</td>
+                <td class="text-end pe-3">
                   <button 
                     type="button" 
                     class="btn btn-sm btn-outline-primary"
-                    (click)="viewLoan(p.loanNumber)"
+                    (click)="viewLoan(item.loanNumber)"
                     title="View Loan Details"
                   >
                     <i class="bi bi-eye me-1"></i> View Loan
                   </button>
                 </td>
               </tr>
+              <tr *ngIf="filteredPaymentActivity.length === 0">
+                <td colspan="6" class="text-center py-5 text-muted">
+                  <i class="bi bi-cash-stack display-6 d-block mb-2 text-muted"></i>
+                  No payment activity records found for this period.
+                </td>
+              </tr>
             </tbody>
           </table>
         </div>
 
-        <!-- Empty State -->
-        <div class="text-center py-5" *ngIf="filteredPaymentActivity.length === 0">
-          <div class="empty-icon-circle mx-auto mb-3 text-muted">
-            <i class="bi bi-cash-stack fs-1"></i>
-          </div>
-          <h5 class="fw-semibold">No Payment Activity Found</h5>
-          <p class="text-muted small mb-0">No payment records found matching the specified search or date criteria.</p>
-        </div>
-
-        <!-- Pagination -->
-        <div class="d-flex justify-content-between align-items-center mt-3 pt-2 border-top flex-wrap gap-2" *ngIf="filteredPaymentActivity.length > 0">
+        <!-- Pagination Footer -->
+        <div class="d-flex justify-content-between align-items-center mt-3 pt-2 border-top" *ngIf="filteredPaymentActivity.length > 0">
           <span class="small text-muted">
-            Showing {{ (paymentPage - 1) * paymentPageSize + 1 }} to {{ paymentPage * paymentPageSize > filteredPaymentActivity.length ? filteredPaymentActivity.length : paymentPage * paymentPageSize }} of {{ filteredPaymentActivity.length }} entries
+            Showing {{ ((paymentPage - 1) * paymentPageSize) + 1 }} to {{ Math.min(paymentPage * paymentPageSize, filteredPaymentActivity.length) }} of {{ filteredPaymentActivity.length }} entries
           </span>
-          <div class="btn-group btn-group-sm" *ngIf="totalPaymentPages > 1">
+          <div class="d-flex align-items-center gap-1">
             <button 
               type="button" 
-              class="btn btn-outline-secondary" 
+              class="btn btn-sm btn-outline-secondary" 
               [disabled]="paymentPage === 1"
               (click)="paymentPage = paymentPage - 1"
             >
               Previous
             </button>
-            <button type="button" class="btn btn-outline-secondary disabled">
-              Page {{ paymentPage }} of {{ totalPaymentPages }}
-            </button>
+            <span class="small text-muted px-2">Page {{ paymentPage }} of {{ totalPaymentPages }}</span>
             <button 
               type="button" 
-              class="btn btn-outline-secondary" 
-              [disabled]="paymentPage === totalPaymentPages"
+              class="btn btn-sm btn-outline-secondary" 
+              [disabled]="paymentPage >= totalPaymentPages"
               (click)="paymentPage = paymentPage + 1"
             >
               Next
             </button>
           </div>
         </div>
-
       </div>
-
     </div>
 
-  </div>
+    </div> <!-- End Screen 2: Operational Overview -->
 
-</div>
+  </div> <!-- End !isLoading && bundle -->
+
+</div> <!-- End lx-analysis-container -->

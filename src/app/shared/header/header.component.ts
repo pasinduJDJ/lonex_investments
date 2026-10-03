@@ -5,10 +5,18 @@ import { ThemeService } from '../../service/theme.service';
 import { filter } from 'rxjs/operators';
 import { Subscription } from 'rxjs';
 
+export interface HeaderNavTabChild {
+  label: string;
+  url: string;
+  icon?: string;
+}
+
 export interface HeaderNavTab {
   label: string;
   url: string;
   icon?: string;
+  isDropdown?: boolean;
+  children?: HeaderNavTabChild[];
 }
 
 @Component({
@@ -30,6 +38,7 @@ export class HeaderComponent implements OnInit, OnDestroy {
   
   isUserDropdownOpen: boolean = false;
   isNotificationsOpen: boolean = false;
+  isReportsDropdownOpen: boolean = false;
   unreadNotificationsCount: number = 0; // Note: Notifications backend integration pending in Stage 2
 
   private routerSub!: Subscription;
@@ -52,6 +61,7 @@ export class HeaderComponent implements OnInit, OnDestroy {
         this.updateActiveModule(this.currentUrl);
         this.isUserDropdownOpen = false;
         this.isNotificationsOpen = false;
+        this.isReportsDropdownOpen = false;
       });
   }
 
@@ -84,7 +94,19 @@ export class HeaderComponent implements OnInit, OnDestroy {
       this.activeModuleAccentClass = 'odoo-badge-customers';
       this.activeModuleTabs = [
         { label: 'All Customers', url: '/member', icon: 'bi-people' },
-        { label: 'Add Customer', url: '/add-member', icon: 'bi-person-plus' }
+        { label: 'Add Customer', url: '/add-member', icon: 'bi-person-plus' },
+        {
+          label: 'Reports',
+          url: '/member/reports',
+          icon: 'bi-file-earmark-spreadsheet',
+          isDropdown: true,
+          children: [
+            { label: 'Customer Master Report', url: '/member/reports/customer-master', icon: 'bi-person-lines-fill' },
+            { label: 'Customer Loan Summary', url: '/member/reports/loan-summary', icon: 'bi-cash-stack' },
+            { label: 'Customer Statement', url: '/member/reports/statement', icon: 'bi-person-badge' },
+            { label: 'Guarantor Report', url: '/member/reports/guarantor', icon: 'bi-shield-check' }
+          ]
+        }
       ];
     } else if (url.startsWith('/loan') || url.startsWith('/add-loan') || url.startsWith('/single-loan') || url.startsWith('/add-payments')) {
       this.activeModuleTitle = 'Loans';
@@ -93,23 +115,64 @@ export class HeaderComponent implements OnInit, OnDestroy {
       this.activeModuleTabs = [
         { label: 'All Loans', url: '/loan', icon: 'bi-card-list' },
         { label: 'Issue Loan', url: '/add-loan', icon: 'bi-plus-circle' },
-        { label: 'Add Payment', url: '/add-payments', icon: 'bi-cash-stack' }
+        { label: 'Add Payment', url: '/add-payments', icon: 'bi-cash-stack' },
+        {
+          label: 'Reports',
+          url: '/loan/reports',
+          icon: 'bi-file-earmark-spreadsheet',
+          isDropdown: true,
+          children: [
+            { label: 'Loan History Report', url: '/loan/reports/loan-history', icon: 'bi-clock-history' },
+            { label: 'Active Loans Report', url: '/loan/reports/active-loans', icon: 'bi-lightning-charge' },
+            { label: 'Completed Loans Report', url: '/loan/reports/completed-loans', icon: 'bi-check2-circle' },
+            { label: 'Delayed / Overdue Loans Report', url: '/loan/reports/overdue-loans', icon: 'bi-exclamation-triangle' },
+            { label: 'Repayment Schedule Report', url: '/loan/reports/repayment-schedule', icon: 'bi-calendar-week' }
+          ]
+        }
       ];
-    } else if (url.startsWith('/profit') || url.startsWith('/transactions') || url.startsWith('/accounts')) {
+    } else if (url.startsWith('/profit') || url.startsWith('/transactions') || url.startsWith('/accounts') || url.startsWith('/finance')) {
       this.activeModuleTitle = 'Finance';
       this.activeModuleIcon = 'bi-wallet2';
       this.activeModuleAccentClass = 'odoo-badge-finance';
       this.activeModuleTabs = [
         { label: 'Overview', url: '/profit', icon: 'bi-grid-1x2-fill' },
         { label: 'Transactions', url: '/transactions', icon: 'bi-journal-text' },
-        { label: 'Accounts', url: '/accounts', icon: 'bi-bank2' }
+        { label: 'Accounts', url: '/accounts', icon: 'bi-bank2' },
+        {
+          label: 'Reports',
+          url: '/finance/reports',
+          icon: 'bi-file-earmark-spreadsheet',
+          isDropdown: true,
+          children: [
+            { label: 'Account History Report', url: '/finance/reports/account-history', icon: 'bi-bank' },
+            { label: 'Transaction History Report', url: '/finance/reports/transaction-history', icon: 'bi-journal-text' },
+            { label: 'Income & Expense Report', url: '/finance/reports/income-expense', icon: 'bi-graph-up-arrow' },
+            { label: 'Capital History Report', url: '/finance/reports/capital-history', icon: 'bi-cash-stack' },
+            { label: 'Expense Report', url: '/finance/reports/expense', icon: 'bi-receipt' },
+            { label: 'Cash / Account Movement Report', url: '/finance/reports/cash-movement', icon: 'bi-arrow-left-right' }
+          ]
+        }
       ];
     } else if (url.startsWith('/analysis')) {
       this.activeModuleTitle = 'Analysis';
       this.activeModuleIcon = 'bi-bar-chart-line-fill';
       this.activeModuleAccentClass = 'odoo-badge-analysis';
       this.activeModuleTabs = [
-        { label: 'Operational Overview', url: '/analysis', icon: 'bi-speedometer2' }
+        { label: 'Management Dashboard', url: '/analysis', icon: 'bi-speedometer2' },
+        { label: 'Operational Overview', url: '/analysis/operational', icon: 'bi-grid-1x2-fill' },
+        {
+          label: 'Reports',
+          url: '/analysis/reports',
+          icon: 'bi-file-earmark-spreadsheet',
+          isDropdown: true,
+          children: [
+            { label: 'Payment History Report', url: '/analysis/reports/payment-history', icon: 'bi-clock-history' },
+            { label: 'Delayed Payment Report', url: '/analysis/reports/delayed-payments', icon: 'bi-exclamation-triangle' },
+            { label: 'Collection Report', url: '/analysis/reports/collection', icon: 'bi-cash-coin' },
+            { label: 'Upcoming Payments Report', url: '/analysis/reports/upcoming-payments', icon: 'bi-calendar-check' },
+            { label: 'Payment Performance Report', url: '/analysis/reports/payment-performance', icon: 'bi-graph-up-arrow' }
+          ]
+        }
       ];
     } else if (url.startsWith('/profile')) {
       this.activeModuleTitle = 'Settings';
@@ -131,7 +194,8 @@ export class HeaderComponent implements OnInit, OnDestroy {
   }
 
   isTabActive(tabUrl: string): boolean {
-    return this.currentUrl === tabUrl;
+    const currentPath = this.currentUrl.split('?')[0];
+    return currentPath === tabUrl;
   }
 
   toggleTheme(): void {
@@ -158,9 +222,21 @@ export class HeaderComponent implements OnInit, OnDestroy {
     }
   }
 
+  toggleReportsDropdown(event?: MouseEvent): void {
+    if (event) {
+      event.stopPropagation();
+    }
+    this.isReportsDropdownOpen = !this.isReportsDropdownOpen;
+    if (this.isReportsDropdownOpen) {
+      this.isUserDropdownOpen = false;
+      this.isNotificationsOpen = false;
+    }
+  }
+
   closeDropdowns(): void {
     this.isUserDropdownOpen = false;
     this.isNotificationsOpen = false;
+    this.isReportsDropdownOpen = false;
   }
 
   @HostListener('document:click', ['$event'])

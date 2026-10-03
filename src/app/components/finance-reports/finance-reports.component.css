@@ -1,0 +1,238 @@
+/* ==========================================================================
+   FINANCE REPORTS COMPONENT STYLES (ODOO-INSPIRED ERP DESIGN)
+   ========================================================================== */
+
+:host {
+  display: block;
+  width: 100%;
+}
+
+.lx-finance-reports-container {
+  min-height: calc(100vh - 120px);
+  background: var(--lx-bg-main, #f8f9fb);
+  color: var(--lx-text-primary, #1e293b);
+  transition: background-color 0.25s ease, color 0.25s ease;
+}
+
+/* Breadcrumb & Title */
+.lx-report-breadcrumb {
+  font-size: 0.8125rem;
+  font-family: var(--lx-font-subtitles, 'Manrope', sans-serif);
+}
+
+.lx-report-title {
+  font-family: var(--lx-font-titles, 'Poppins', sans-serif);
+  font-weight: 700;
+  letter-spacing: -0.02em;
+  color: var(--lx-text-primary, #0f172a);
+}
+
+/* Card & Surface Defaults */
+.bg-surface {
+  background-color: var(--lx-bg-card, #ffffff) !important;
+  border-color: var(--lx-border-subtle, #e2e8f0) !important;
+}
+
+.card {
+  background-color: var(--lx-bg-card, #ffffff);
+  border-color: var(--lx-border-subtle, #e2e8f0);
+}
+
+/* Navigation Tabs */
+.lx-report-nav-tabs {
+  background: var(--lx-bg-card, #ffffff);
+  border-color: var(--lx-border-subtle, #e2e8f0) !important;
+}
+
+.lx-report-nav-tabs .btn {
+  font-size: 0.8125rem;
+  font-weight: 600;
+  border-radius: 6px;
+  padding: 0.35rem 0.75rem;
+  white-space: nowrap;
+  transition: all 0.15s ease-in-out;
+}
+
+.btn-warning {
+  background-color: var(--lx-gold, #d4a437) !important;
+  border-color: var(--lx-gold, #d4a437) !important;
+  color: #1a1c20 !important;
+  box-shadow: 0 1px 3px rgba(212, 164, 55, 0.3);
+}
+
+/* Filter Controls */
+.lx-filter-input {
+  background-color: var(--lx-input-bg, #ffffff);
+  border-color: var(--lx-border-subtle, #cbd5e1);
+  color: var(--lx-text-primary, #1e293b);
+  font-size: 0.8125rem;
+}
+
+.lx-filter-input:focus {
+  background-color: var(--lx-input-bg, #ffffff);
+  border-color: var(--lx-gold, #d4a437);
+  box-shadow: 0 0 0 2px rgba(212, 164, 55, 0.2);
+  color: var(--lx-text-primary, #1e293b);
+}
+
+.input-group-text {
+  background-color: var(--lx-input-bg, #f8fafc) !important;
+  border-color: var(--lx-border-subtle, #cbd5e1) !important;
+  color: var(--lx-text-secondary, #64748b) !important;
+}
+
+/* KPI Summary Cards */
+.lx-kpi-card {
+  border-radius: 8px;
+  transition: transform 0.15s ease, box-shadow 0.15s ease;
+}
+
+.lx-kpi-card:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.06) !important;
+}
+
+/* Data Table */
+.lx-report-table {
+  font-family: var(--lx-font-body, 'Inter', sans-serif);
+  font-size: 0.8125rem;
+}
+
+.lx-report-table thead th {
+  font-family: var(--lx-font-subtitles, 'Manrope', sans-serif);
+  font-size: 0.725rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.03em;
+  color: var(--lx-text-secondary, #64748b);
+  border-bottom: 1px solid var(--lx-border-subtle, #e2e8f0);
+  background-color: var(--lx-table-head-bg, #f8fafc);
+  padding: 0.75rem 0.85rem;
+}
+
+.lx-report-table tbody td {
+  padding: 0.7rem 0.85rem;
+  border-bottom: 1px solid var(--lx-border-subtle, #f1f5f9);
+}
+
+/* Badges */
+.badge {
+  font-weight: 600;
+  font-size: 0.7rem;
+  padding: 0.25rem 0.5rem;
+  letter-spacing: 0.02em;
+}
+
+/* ==========================================================================
+   DARK THEME OVERRIDES (:host-context)
+   ========================================================================== */
+:host-context(.theme-dark) .lx-finance-reports-container,
+:host-context([data-theme="dark"]) .lx-finance-reports-container,
+:host-context([data-bs-theme="dark"]) .lx-finance-reports-container {
+  background: var(--lx-bg-main, #101114);
+  color: var(--lx-text-primary, #f1f5f9);
+}
+
+:host-context(.theme-dark) .lx-report-title,
+:host-context([data-theme="dark"]) .lx-report-title,
+:host-context([data-bs-theme="dark"]) .lx-report-title {
+  color: #ffffff;
+}
+
+:host-context(.theme-dark) .bg-surface,
+:host-context([data-theme="dark"]) .bg-surface,
+:host-context([data-bs-theme="dark"]) .bg-surface,
+:host-context(.theme-dark) .card,
+:host-context([data-theme="dark"]) .card,
+:host-context([data-bs-theme="dark"]) .card,
+:host-context(.theme-dark) .lx-kpi-card,
+:host-context([data-theme="dark"]) .lx-kpi-card,
+:host-context([data-bs-theme="dark"]) .lx-kpi-card,
+:host-context(.theme-dark) .lx-report-nav-tabs,
+:host-context([data-theme="dark"]) .lx-report-nav-tabs,
+:host-context([data-bs-theme="dark"]) .lx-report-nav-tabs,
+:host-context(.theme-dark) .table-responsive,
+:host-context([data-theme="dark"]) .table-responsive,
+:host-context([data-bs-theme="dark"]) .table-responsive {
+  background-color: var(--lx-bg-card, #24262B) !important;
+  border-color: var(--lx-border-subtle, #383B40) !important;
+}
+
+:host-context(.theme-dark) .lx-filter-input,
+:host-context([data-theme="dark"]) .lx-filter-input,
+:host-context([data-bs-theme="dark"]) .lx-filter-input {
+  background-color: var(--lx-input-bg, #1B1D22) !important;
+  border-color: var(--lx-border-subtle, #383B40) !important;
+  color: var(--lx-input-text, #ffffff) !important;
+}
+
+:host-context(.theme-dark) .lx-filter-input:focus,
+:host-context([data-theme="dark"]) .lx-filter-input:focus,
+:host-context([data-bs-theme="dark"]) .lx-filter-input:focus {
+  background-color: #20232a !important;
+  border-color: var(--lx-gold, #d4a437) !important;
+  color: #ffffff !important;
+}
+
+:host-context(.theme-dark) .input-group-text,
+:host-context([data-theme="dark"]) .input-group-text,
+:host-context([data-bs-theme="dark"]) .input-group-text {
+  background-color: var(--lx-input-bg, #1B1D22) !important;
+  border-color: var(--lx-border-subtle, #383B40) !important;
+  color: #94a3b8 !important;
+}
+
+:host-context(.theme-dark) .btn-light,
+:host-context([data-theme="dark"]) .btn-light,
+:host-context([data-bs-theme="dark"]) .btn-light {
+  background-color: #2d3037 !important;
+  border-color: #383B40 !important;
+  color: #cbd5e1 !important;
+}
+
+:host-context(.theme-dark) .btn-light:hover,
+:host-context([data-theme="dark"]) .btn-light:hover,
+:host-context([data-bs-theme="dark"]) .btn-light:hover {
+  background-color: #383b44 !important;
+  color: #ffffff !important;
+}
+
+:host-context(.theme-dark) .lx-report-table thead,
+:host-context([data-theme="dark"]) .lx-report-table thead,
+:host-context([data-bs-theme="dark"]) .lx-report-table thead,
+:host-context(.theme-dark) .lx-report-table thead th,
+:host-context([data-theme="dark"]) .lx-report-table thead th,
+:host-context([data-bs-theme="dark"]) .lx-report-table thead th {
+  background-color: #1a1c21 !important;
+  color: #94a3b8 !important;
+  border-color: #383B40 !important;
+}
+
+:host-context(.theme-dark) .lx-report-table tbody td,
+:host-context([data-theme="dark"]) .lx-report-table tbody td,
+:host-context([data-bs-theme="dark"]) .lx-report-table tbody td {
+  border-color: #2d3037 !important;
+  color: #e2e8f0 !important;
+  background-color: transparent !important;
+}
+
+:host-context(.theme-dark) .lx-report-table tbody tr:hover td,
+:host-context([data-theme="dark"]) .lx-report-table tbody tr:hover td,
+:host-context([data-bs-theme="dark"]) .lx-report-table tbody tr:hover td {
+  background-color: rgba(255, 255, 255, 0.04) !important;
+}
+
+:host-context(.theme-dark) .card-footer,
+:host-context([data-theme="dark"]) .card-footer,
+:host-context([data-bs-theme="dark"]) .card-footer {
+  background-color: #1f2126 !important;
+  border-color: #383B40 !important;
+}
+
+:host-context(.theme-dark) .badge.bg-secondary-subtle,
+:host-context([data-theme="dark"]) .badge.bg-secondary-subtle,
+:host-context([data-bs-theme="dark"]) .badge.bg-secondary-subtle {
+  background-color: #2d3037 !important;
+  color: #cbd5e1 !important;
+  border-color: #383B40 !important;
+}

@@ -1,0 +1,321 @@
+/* ==========================================================================
+   PAYMENT & COLLECTION REPORTS STYLES (ODOO-INSPIRED ERP DESIGN)
+   ========================================================================== */
+
+:host {
+  display: block;
+  width: 100%;
+}
+
+.lx-reports-container {
+  min-height: calc(100vh - 120px);
+  background-color: var(--lx-bg-main, #f8f9fb);
+  color: var(--lx-text-primary, #1e293b);
+  transition: background-color 0.25s ease, color 0.25s ease;
+}
+
+/* Typography & Accent Colors */
+.text-gold {
+  color: var(--lx-gold, #d4a437) !important;
+}
+
+.bg-gold-subtle {
+  background-color: rgba(212, 164, 55, 0.12) !important;
+}
+
+.bg-surface {
+  background-color: var(--lx-bg-card, #ffffff) !important;
+}
+
+.text-main {
+  color: var(--lx-text-primary, #0f172a) !important;
+}
+
+.fs-xs {
+  font-size: 0.75rem !important;
+}
+
+.fs-sm {
+  font-size: 0.875rem !important;
+}
+
+/* Quick Switcher Button Group */
+.lx-report-nav-tabs {
+  background-color: var(--lx-bg-card, #ffffff);
+  border: 1px solid var(--lx-border-subtle, #e2e8f0);
+}
+
+.lx-report-nav-tabs .btn {
+  font-family: var(--lx-font-subtitles, 'Manrope', sans-serif);
+  font-size: 0.8125rem;
+  font-weight: 600;
+  border-radius: 6px;
+  padding: 0.35rem 0.75rem;
+  transition: all 0.15s ease;
+}
+
+.btn-primary-gold {
+  background: var(--lx-gold, #d4a437) !important;
+  color: #1e1e2d !important;
+  font-weight: 700;
+  border: 1px solid var(--lx-gold, #d4a437) !important;
+}
+
+.btn-primary-gold:hover {
+  background: #c59328 !important;
+  color: #1e1e2d !important;
+}
+
+.btn-subtle {
+  background: transparent;
+  color: var(--lx-text-secondary, #64748b);
+  border: 1px solid transparent;
+}
+
+.btn-subtle:hover {
+  background: rgba(212, 164, 55, 0.08);
+  color: var(--lx-gold, #d4a437);
+}
+
+/* Excel Export Button */
+.btn-excel-gold {
+  background: linear-gradient(135deg, #15803d, #166534);
+  color: #ffffff !important;
+  font-weight: 600;
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  box-shadow: 0 2px 4px rgba(22, 101, 52, 0.2);
+  transition: all 0.2s ease;
+}
+
+.btn-excel-gold:hover:not(:disabled) {
+  background: linear-gradient(135deg, #16a34a, #15803d);
+  color: #ffffff !important;
+  box-shadow: 0 4px 8px rgba(22, 101, 52, 0.3);
+  transform: translateY(-1px);
+}
+
+.btn-excel-gold:disabled {
+  opacity: 0.55;
+  cursor: not-allowed;
+  box-shadow: none;
+}
+
+/* Filter Labels & Inputs */
+.lx-filter-label {
+  font-size: 0.6875rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  color: var(--lx-text-secondary, #64748b);
+  margin-bottom: 0.2rem;
+  display: block;
+}
+
+.lx-filter-input {
+  font-size: 0.8125rem;
+  background-color: var(--lx-input-bg, #ffffff);
+  border-color: var(--lx-input-border, #d0d5dd);
+  color: var(--lx-input-text, #0f172a);
+  border-radius: 6px;
+}
+
+.lx-filter-input:focus {
+  border-color: var(--lx-gold, #d4a437);
+  box-shadow: 0 0 0 2px rgba(212, 164, 55, 0.2);
+}
+
+.input-group-text {
+  background-color: var(--lx-input-bg, #ffffff);
+  border-color: var(--lx-input-border, #d0d5dd);
+  color: var(--lx-text-secondary, #64748b);
+}
+
+/* Cards & KPI Summary Cards */
+.card {
+  background-color: var(--lx-bg-card, #ffffff);
+  border-color: var(--lx-border-subtle, #e2e8f0);
+  color: var(--lx-text-primary, #0f172a);
+}
+
+.lx-kpi-card {
+  background-color: var(--lx-bg-card, #ffffff) !important;
+  border-color: var(--lx-border-subtle, #e2e8f0) !important;
+  border-radius: 8px;
+  transition: transform 0.15s ease, box-shadow 0.15s ease;
+}
+
+.lx-kpi-card:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
+}
+
+.lx-kpi-icon {
+  width: 40px;
+  height: 40px;
+  border-radius: 8px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.25rem;
+}
+
+/* Tables */
+.table-responsive {
+  background-color: var(--lx-bg-card, #ffffff);
+  border-color: var(--lx-border-subtle, #e2e8f0);
+}
+
+.lx-report-table {
+  font-size: 0.8125rem;
+  color: var(--lx-text-primary, #0f172a);
+}
+
+.lx-report-table thead th {
+  background-color: var(--lx-table-header-bg, #f1f5f9);
+  color: var(--lx-text-secondary, #475569);
+  font-weight: 700;
+  font-size: 0.725rem;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  padding: 0.55rem 0.75rem;
+  border-bottom: 2px solid var(--lx-border-subtle, #cbd5e1);
+  white-space: nowrap;
+}
+
+.lx-report-table tbody td {
+  padding: 0.5rem 0.75rem;
+  border-bottom: 1px solid var(--lx-border-subtle, #e2e8f0);
+  background-color: transparent;
+  color: inherit;
+}
+
+.lx-report-table tbody tr:hover {
+  background-color: var(--lx-table-row-hover, rgba(212, 164, 55, 0.04));
+}
+
+.btn-xs {
+  padding: 0.2rem 0.45rem;
+  font-size: 0.75rem;
+  border-radius: 4px;
+}
+
+/* Orange Subtle Badge */
+.bg-orange-subtle {
+  background-color: rgba(249, 115, 22, 0.12) !important;
+}
+
+.text-orange {
+  color: #ea580c !important;
+}
+
+/* Loading Overlay */
+.lx-loading-overlay {
+  min-height: 240px;
+}
+
+/* ==========================================================================
+   DARK THEME OVERRIDES (COMPATIBLE WITH :host-context)
+   ========================================================================== */
+:host-context(.theme-dark),
+:host-context([data-theme="dark"]),
+:host-context([data-bs-theme="dark"]) {
+
+  .lx-reports-container {
+    background-color: var(--lx-bg-main, #101114) !important;
+    color: var(--lx-text-primary, #ffffff) !important;
+  }
+
+  .bg-surface,
+  .card,
+  .lx-kpi-card,
+  .lx-report-nav-tabs,
+  .table-responsive {
+    background-color: var(--lx-bg-card, #24262B) !important;
+    border-color: var(--lx-border-subtle, #383B40) !important;
+    color: var(--lx-text-primary, #ffffff) !important;
+  }
+
+  .card-header.bg-surface {
+    background-color: var(--lx-bg-card, #24262B) !important;
+    border-bottom-color: var(--lx-border-subtle, #383B40) !important;
+  }
+
+  .lx-filter-input,
+  .input-group-text {
+    background-color: var(--lx-input-bg, #1B1D22) !important;
+    border-color: var(--lx-input-border, #383B40) !important;
+    color: var(--lx-input-text, #ffffff) !important;
+  }
+
+  .lx-filter-input::placeholder {
+    color: var(--lx-input-placeholder, #667085) !important;
+  }
+
+  .lx-filter-input option {
+    background-color: var(--lx-input-bg, #1B1D22) !important;
+    color: var(--lx-input-text, #ffffff) !important;
+  }
+
+  .lx-filter-label {
+    color: var(--lx-text-secondary, #98A2B3) !important;
+  }
+
+  .text-main {
+    color: var(--lx-text-primary, #ffffff) !important;
+  }
+
+  .text-muted {
+    color: var(--lx-text-secondary, #98A2B3) !important;
+  }
+
+  .btn-subtle {
+    color: var(--lx-text-secondary, #98A2B3) !important;
+  }
+
+  .btn-subtle:hover {
+    background-color: rgba(245, 196, 94, 0.12) !important;
+    color: var(--lx-gold, #f5c45e) !important;
+  }
+
+  .lx-report-table {
+    color: var(--lx-text-primary, #ffffff) !important;
+  }
+
+  .lx-report-table thead th {
+    background-color: var(--lx-table-header-bg, #1B1D22) !important;
+    color: var(--lx-table-header-text, #CBD5E1) !important;
+    border-bottom-color: var(--lx-border-subtle, #383B40) !important;
+  }
+
+  .lx-report-table tbody td {
+    background-color: transparent !important;
+    color: var(--lx-text-primary, #ffffff) !important;
+    border-bottom-color: var(--lx-border-subtle, #383B40) !important;
+  }
+
+  .lx-report-table tbody tr:hover {
+    background-color: var(--lx-table-row-hover, rgba(245, 196, 94, 0.08)) !important;
+  }
+
+  .table-light,
+  .table thead.table-light th {
+    background-color: var(--lx-table-header-bg, #1B1D22) !important;
+    color: var(--lx-table-header-text, #CBD5E1) !important;
+    border-color: var(--lx-border-subtle, #383B40) !important;
+  }
+
+  .lx-kpi-icon.bg-surface {
+    background-color: rgba(255, 255, 255, 0.05) !important;
+    border-color: var(--lx-border-subtle, #383B40) !important;
+    color: var(--lx-text-secondary, #98A2B3) !important;
+  }
+
+  .nav-pills .nav-link {
+    color: var(--lx-text-secondary, #98A2B3) !important;
+  }
+
+  .nav-pills .nav-link.active {
+    background-color: var(--lx-primary-accent, #d4a437) !important;
+    color: #17191d !important;
+  }
+}
