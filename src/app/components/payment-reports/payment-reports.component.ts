@@ -192,6 +192,44 @@ export class PaymentReportsComponent implements OnInit, OnDestroy {
     }
   }
 
+  exportActiveReportToExcel(): void {
+    switch (this.activeReportType) {
+      case 'payment-history':
+        this.exportPaymentHistoryToExcel();
+        break;
+      case 'delayed-payments':
+        this.exportDelayedPaymentsToExcel();
+        break;
+      case 'collection':
+        this.exportCollectionToExcel();
+        break;
+      case 'upcoming-payments':
+        this.exportUpcomingPaymentsToExcel();
+        break;
+      case 'payment-performance':
+        this.exportPerformanceToExcel();
+        break;
+    }
+  }
+
+  isExportDisabled(): boolean {
+    if (this.isLoading || this.isExporting) return true;
+    switch (this.activeReportType) {
+      case 'payment-history':
+        return this.historyRows.length === 0;
+      case 'delayed-payments':
+        return this.delayedRows.length === 0;
+      case 'collection':
+        return this.collectionRows.length === 0;
+      case 'upcoming-payments':
+        return this.upcomingRows.length === 0;
+      case 'payment-performance':
+        return !this.performanceData;
+      default:
+        return false;
+    }
+  }
+
   // -------------------------------------------------------------------------
   // Report 01: Payment History
   // -------------------------------------------------------------------------

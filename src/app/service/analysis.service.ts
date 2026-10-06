@@ -42,6 +42,8 @@ export interface UpcomingPaymentItem {
   loanType: string;
   expectedDate: string;
   expectedInstalmentAmount: number;
+  paidTowardObligation?: number;
+  remainingDue?: number;
   remainingBalance: number;
   remainingInstallments: number;
   status: 'Due Today' | 'Upcoming';
@@ -266,6 +268,12 @@ export class AnalysisService {
             const dateDiff = Math.floor((nextDueDate.getTime() - today.getTime()) / (1000 * 3600 * 24));
             const paymentStatus: 'Due Today' | 'Upcoming' = dateDiff === 0 ? 'Due Today' : 'Upcoming';
 
+            const paidTowardObligation = (loan.total_paid || 0) % installmentAmount;
+            const remainingDue = Math.min(
+              loan.remaining_amount,
+              installmentAmount - paidTowardObligation
+            );
+
             upcomingPayments.push({
               loanId: loan.id,
               loanNumber: loan.loan_number,
@@ -275,6 +283,8 @@ export class AnalysisService {
               loanType: loan.loan_type,
               expectedDate: formatLocalIsoDate(nextDueDate),
               expectedInstalmentAmount: installmentAmount,
+              paidTowardObligation,
+              remainingDue,
               remainingBalance: loan.remaining_amount,
               remainingInstallments,
               status: paymentStatus

@@ -1,20 +1,32 @@
 <div class="odoo-launcher-canvas">
-  <div class="odoo-apps-grid">
-    <div 
-      *ngFor="let mod of modules" 
-      class="odoo-app-item"
-      (click)="navigateTo(mod.route)"
-      [routerLink]="mod.route"
-      tabindex="0"
-      role="button"
-      (keydown.enter)="navigateTo(mod.route)"
-      (keydown.space)="navigateTo(mod.route); $event.preventDefault()"
-      [attr.aria-label]="mod.name"
-    >
-      <div class="odoo-app-icon" [ngClass]="mod.accentClass">
-        <i [class]="'bi ' + mod.icon"></i>
+  <!-- Subtle decorative ambient background elements (matching login) -->
+  <div class="lx-home-ambient lx-ambient-gold" aria-hidden="true"></div>
+  <div class="lx-home-ambient lx-ambient-neutral" aria-hidden="true"></div>
+
+  <div class="lx-home-wrapper">
+    <!-- Brand Logo Section above Module Icons -->
+    <div class="lx-home-brand text-center">
+      <img src="assets/logo.png" alt="Lonex Investments" class="lx-home-logo" />
+    </div>
+
+    <!-- Odoo Apps Grid -->
+    <div class="odoo-apps-grid">
+      <div 
+        *ngFor="let mod of modules" 
+        class="odoo-app-item"
+        (click)="navigateTo(mod.route)"
+        [routerLink]="mod.route"
+        tabindex="0"
+        role="button"
+        (keydown.enter)="navigateTo(mod.route)"
+        (keydown.space)="navigateTo(mod.route); $event.preventDefault()"
+        [attr.aria-label]="mod.name"
+      >
+        <div class="odoo-app-icon" [ngClass]="mod.accentClass">
+          <i [class]="'bi ' + mod.icon"></i>
+        </div>
+        <span class="odoo-app-label">{{ mod.name }}</span>
       </div>
-      <span class="odoo-app-label">{{ mod.name }}</span>
     </div>
   </div>
 </div>

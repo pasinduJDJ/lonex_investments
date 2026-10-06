@@ -2,6 +2,7 @@ import { Component, OnInit, OnDestroy, HostListener, ElementRef } from '@angular
 import { Router, NavigationEnd, RouterModule } from '@angular/router';
 import { CommonModule } from '@angular/common';
 import { ThemeService } from '../../service/theme.service';
+import { PaymentNotificationService, DuePaymentNotification } from '../../service/payment-notification.service';
 import { filter } from 'rxjs/operators';
 import { Subscription } from 'rxjs';
 
@@ -39,20 +40,46 @@ export class HeaderComponent implements OnInit, OnDestroy {
   isUserDropdownOpen: boolean = false;
   isNotificationsOpen: boolean = false;
   isReportsDropdownOpen: boolean = false;
-  unreadNotificationsCount: number = 0; // Note: Notifications backend integration pending in Stage 2
+  unreadNotificationsCount: number = 0;
+
+  duePayments: DuePaymentNotification[] = [];
+  dueCount: number = 0;
+  isLoadingNotifications: boolean = false;
+  notificationError: string | null = null;
 
   private routerSub!: Subscription;
+  private notificationSub!: Subscription;
+  private notifLoadingSub!: Subscription;
+  private notifErrorSub!: Subscription;
 
   constructor(
     private router: Router,
     public themeService: ThemeService,
-    private elementRef: ElementRef
+    private elementRef: ElementRef,
+    public notificationService: PaymentNotificationService
   ) {}
 
   ngOnInit(): void {
     this.currentUrl = this.router.url;
     this.updateActiveModule(this.currentUrl);
     this.loadUserData();
+
+    this.notificationSub = this.notificationService.duePayments$.subscribe(items => {
+      this.duePayments = items;
+      this.dueCount = items.length;
+      this.unreadNotificationsCount = items.length;
+    });
+
+    this.notifLoadingSub = this.notificationService.isLoading$.subscribe(loading => {
+      this.isLoadingNotifications = loading;
+    });
+
+    this.notifErrorSub = this.notificationService.error$.subscribe(err => {
+      this.notificationError = err;
+    });
+
+    // Initial read-only load for authenticated user
+    this.notificationService.loadDuePayments();
 
     this.routerSub = this.router.events
       .pipe(filter(event => event instanceof NavigationEnd))
@@ -66,9 +93,10 @@ export class HeaderComponent implements OnInit, OnDestroy {
   }
 
   ngOnDestroy(): void {
-    if (this.routerSub) {
-      this.routerSub.unsubscribe();
-    }
+    if (this.routerSub) this.routerSub.unsubscribe();
+    if (this.notificationSub) this.notificationSub.unsubscribe();
+    if (this.notifLoadingSub) this.notifLoadingSub.unsubscribe();
+    if (this.notifErrorSub) this.notifErrorSub.unsubscribe();
   }
 
   private loadUserData(): void {
@@ -219,7 +247,48 @@ export class HeaderComponent implements OnInit, OnDestroy {
     this.isNotificationsOpen = !this.isNotificationsOpen;
     if (this.isNotificationsOpen) {
       this.isUserDropdownOpen = false;
+      this.isReportsDropdownOpen = false;
+      // Refresh read-only due payments whenever user opens the dropdown
+      this.notificationService.loadDuePayments(true);
     }
+  }
+
+  refreshNotifications(event?: MouseEvent): void {
+    if (event) {
+      event.stopPropagation();
+    }
+    this.notificationService.refresh();
+  }
+
+  viewLoan(loanNumber: string, event?: MouseEvent): void {
+    if (event) {
+      event.stopPropagation();
+    }
+    this.closeDropdowns();
+    this.router.navigate(['/single-loan', loanNumber]);
+  }
+
+  addPayment(loanNumber: string, event?: MouseEvent): void {
+    if (event) {
+      event.stopPropagation();
+    }
+    this.closeDropdowns();
+    this.router.navigate(['/add-payments'], { queryParams: { loan_number: loanNumber } });
+  }
+
+  viewAllDuePayments(event?: MouseEvent): void {
+    if (event) {
+      event.stopPropagation();
+    }
+    this.closeDropdowns();
+    this.router.navigate(['/analysis/operational'], {
+      queryParams: { tab: 'upcoming_payments', filter: 'today' }
+    });
+  }
+
+  @HostListener('document:keydown.escape')
+  onEscapeKey(): void {
+    this.closeDropdowns();
   }
 
   toggleReportsDropdown(event?: MouseEvent): void {

@@ -188,6 +188,14 @@ export class AnalysisComponent implements OnInit, OnDestroy, AfterViewInit {
       } else {
         this.activeTab = 'late_payments';
       }
+
+      const filterParam = (this.route && this.route.snapshot && this.route.snapshot.queryParams)
+        ? this.route.snapshot.queryParams['filter']
+        : null;
+      if (filterParam === 'today' || filterParam === 'this_week' || filterParam === 'next_week') {
+        this.upcomingFilter = filterParam;
+      }
+
       this.destroyCharts();
     } else {
       this.activeTab = 'dashboard';

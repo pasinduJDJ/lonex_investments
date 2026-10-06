@@ -20,44 +20,96 @@
   font-family: var(--lx-font-subtitles, 'Manrope', sans-serif);
 }
 
+.lx-report-breadcrumb a {
+  color: var(--lx-text-secondary, #64748b);
+  text-decoration: none;
+  transition: color 0.15s ease;
+}
+
+.lx-report-breadcrumb a:hover {
+  color: var(--lx-gold, #d4a437);
+}
+
 .lx-report-title {
   font-family: var(--lx-font-titles, 'Poppins', sans-serif);
   font-weight: 700;
+  font-size: 1.35rem;
   letter-spacing: -0.02em;
   color: var(--lx-text-primary, #0f172a);
 }
 
-/* Card & Surface Defaults */
-.bg-surface {
-  background-color: var(--lx-bg-card, #ffffff) !important;
-  border-color: var(--lx-border-subtle, #e2e8f0) !important;
+.text-gold {
+  color: var(--lx-gold, #d4a437) !important;
 }
 
-.card {
-  background-color: var(--lx-bg-card, #ffffff);
-  border-color: var(--lx-border-subtle, #e2e8f0);
-}
-
-/* Navigation Tabs */
-.lx-report-nav-tabs {
-  background: var(--lx-bg-card, #ffffff);
-  border-color: var(--lx-border-subtle, #e2e8f0) !important;
-}
-
-.lx-report-nav-tabs .btn {
-  font-size: 0.8125rem;
+/* Export Excel Action Button */
+.btn-export-excel {
+  background: linear-gradient(135deg, #15803d, #166534);
+  color: #ffffff;
+  font-family: var(--lx-font-subtitles, 'Manrope', sans-serif);
   font-weight: 600;
+  font-size: 0.8125rem;
+  padding: 0.45rem 1rem;
   border-radius: 6px;
-  padding: 0.35rem 0.75rem;
-  white-space: nowrap;
-  transition: all 0.15s ease-in-out;
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  box-shadow: 0 2px 4px rgba(22, 101, 52, 0.2);
+  transition: all 0.2s ease;
 }
 
-.btn-warning {
-  background-color: var(--lx-gold, #d4a437) !important;
-  border-color: var(--lx-gold, #d4a437) !important;
-  color: #1a1c20 !important;
-  box-shadow: 0 1px 3px rgba(212, 164, 55, 0.3);
+.btn-export-excel:hover:not(:disabled) {
+  background: linear-gradient(135deg, #16a34a, #15803d);
+  color: #ffffff;
+  box-shadow: 0 4px 8px rgba(22, 101, 52, 0.3);
+  transform: translateY(-1px);
+}
+
+.btn-export-excel:disabled {
+  opacity: 0.55;
+  cursor: not-allowed;
+  box-shadow: none;
+}
+
+/* Odoo-Style Report Switcher Tabs */
+.lx-report-tabs {
+  border-bottom: 1px solid var(--lx-border-subtle, #e2e8f0);
+  padding-bottom: 0.25rem;
+  overflow-x: auto;
+}
+
+.lx-pills-group {
+  gap: 0.35rem;
+  flex-wrap: nowrap;
+}
+
+@media (min-width: 992px) {
+  .lx-pills-group {
+    flex-wrap: wrap;
+  }
+}
+
+.lx-pill-tab {
+  font-family: var(--lx-font-subtitles, 'Manrope', sans-serif);
+  font-size: 0.825rem;
+  font-weight: 600;
+  color: var(--lx-text-secondary, #64748b);
+  background: transparent;
+  border: 1px solid transparent;
+  border-radius: 6px;
+  padding: 0.4rem 0.85rem;
+  transition: all 0.18s ease;
+  white-space: nowrap;
+}
+
+.lx-pill-tab:hover {
+  background: rgba(212, 164, 55, 0.08);
+  color: var(--lx-gold, #d4a437);
+}
+
+.lx-pill-tab.active {
+  background: var(--lx-gold, #d4a437) !important;
+  color: #17191d !important;
+  box-shadow: 0 2px 5px rgba(212, 164, 55, 0.25);
+  font-weight: 700;
 }
 
 /* Filter Controls */
@@ -156,6 +208,33 @@
 :host-context([data-bs-theme="dark"]) .table-responsive {
   background-color: var(--lx-bg-card, #24262B) !important;
   border-color: var(--lx-border-subtle, #383B40) !important;
+}
+
+:host-context(.theme-dark) .lx-report-tabs,
+:host-context([data-theme="dark"]) .lx-report-tabs,
+:host-context([data-bs-theme="dark"]) .lx-report-tabs {
+  border-bottom-color: rgba(255, 255, 255, 0.08);
+}
+
+:host-context(.theme-dark) .lx-pill-tab,
+:host-context([data-theme="dark"]) .lx-pill-tab,
+:host-context([data-bs-theme="dark"]) .lx-pill-tab {
+  color: #98A2B3;
+}
+
+:host-context(.theme-dark) .lx-pill-tab:hover,
+:host-context([data-theme="dark"]) .lx-pill-tab:hover,
+:host-context([data-bs-theme="dark"]) .lx-pill-tab:hover {
+  background: rgba(245, 196, 94, 0.12);
+  color: #F5C45E;
+}
+
+:host-context(.theme-dark) .lx-pill-tab.active,
+:host-context([data-theme="dark"]) .lx-pill-tab.active,
+:host-context([data-bs-theme="dark"]) .lx-pill-tab.active {
+  background: #F5C45E !important;
+  color: #17191D !important;
+  font-weight: 700;
 }
 
 :host-context(.theme-dark) .lx-filter-input,

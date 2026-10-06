@@ -16,12 +16,18 @@ export class LoginComponent {
   password = '';
   error = '';
   loading = false;
+  showPassword = false;
 
   constructor(private supabase: SupabaseService, private router: Router) {
     localStorage.setItem('userLog', 'false');
   }
 
+  togglePasswordVisibility(): void {
+    this.showPassword = !this.showPassword;
+  }
+
   async login() {
+    if (this.loading) return;
     this.loading = true;
     this.error = '';
     const { error } = await this.supabase.getClient().auth.signInWithPassword({

@@ -39,26 +39,98 @@
   font-size: 0.875rem !important;
 }
 
-/* Quick Switcher Button Group */
-.lx-report-nav-tabs {
-  background-color: var(--lx-bg-card, #ffffff);
-  border: 1px solid var(--lx-border-subtle, #e2e8f0);
-}
-
-.lx-report-nav-tabs .btn {
-  font-family: var(--lx-font-subtitles, 'Manrope', sans-serif);
+/* Breadcrumb & Title */
+.lx-report-breadcrumb {
   font-size: 0.8125rem;
-  font-weight: 600;
-  border-radius: 6px;
-  padding: 0.35rem 0.75rem;
-  transition: all 0.15s ease;
+  font-family: var(--lx-font-subtitles, 'Manrope', sans-serif);
 }
 
-.btn-primary-gold {
-  background: var(--lx-gold, #d4a437) !important;
-  color: #1e1e2d !important;
+.lx-report-breadcrumb a {
+  color: var(--lx-text-secondary, #64748b);
+  text-decoration: none;
+  transition: color 0.15s ease;
+}
+
+.lx-report-breadcrumb a:hover {
+  color: var(--lx-gold, #d4a437);
+}
+
+.lx-report-title {
+  font-family: var(--lx-font-titles, 'Poppins', sans-serif);
   font-weight: 700;
-  border: 1px solid var(--lx-gold, #d4a437) !important;
+  font-size: 1.35rem;
+  letter-spacing: -0.02em;
+  color: var(--lx-text-primary, #0f172a);
+}
+
+/* Export Excel Action Button */
+.btn-export-excel {
+  background: linear-gradient(135deg, #15803d, #166534);
+  color: #ffffff;
+  font-family: var(--lx-font-subtitles, 'Manrope', sans-serif);
+  font-weight: 600;
+  font-size: 0.8125rem;
+  padding: 0.45rem 1rem;
+  border-radius: 6px;
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  box-shadow: 0 2px 4px rgba(22, 101, 52, 0.2);
+  transition: all 0.2s ease;
+}
+
+.btn-export-excel:hover:not(:disabled) {
+  background: linear-gradient(135deg, #16a34a, #15803d);
+  color: #ffffff;
+  box-shadow: 0 4px 8px rgba(22, 101, 52, 0.3);
+  transform: translateY(-1px);
+}
+
+.btn-export-excel:disabled {
+  opacity: 0.55;
+  cursor: not-allowed;
+  box-shadow: none;
+}
+
+/* Odoo-Style Report Switcher Tabs */
+.lx-report-tabs {
+  border-bottom: 1px solid var(--lx-border-subtle, #e2e8f0);
+  padding-bottom: 0.25rem;
+  overflow-x: auto;
+}
+
+.lx-pills-group {
+  gap: 0.35rem;
+  flex-wrap: nowrap;
+}
+
+@media (min-width: 992px) {
+  .lx-pills-group {
+    flex-wrap: wrap;
+  }
+}
+
+.lx-pill-tab {
+  font-family: var(--lx-font-subtitles, 'Manrope', sans-serif);
+  font-size: 0.825rem;
+  font-weight: 600;
+  color: var(--lx-text-secondary, #64748b);
+  background: transparent;
+  border: 1px solid transparent;
+  border-radius: 6px;
+  padding: 0.4rem 0.85rem;
+  transition: all 0.18s ease;
+  white-space: nowrap;
+}
+
+.lx-pill-tab:hover {
+  background: rgba(212, 164, 55, 0.08);
+  color: var(--lx-gold, #d4a437);
+}
+
+.lx-pill-tab.active {
+  background: var(--lx-gold, #d4a437) !important;
+  color: #17191d !important;
+  box-shadow: 0 2px 5px rgba(212, 164, 55, 0.25);
+  font-weight: 700;
 }
 
 .btn-primary-gold:hover {
@@ -308,6 +380,14 @@
     background-color: rgba(255, 255, 255, 0.05) !important;
     border-color: var(--lx-border-subtle, #383B40) !important;
     color: var(--lx-text-secondary, #98A2B3) !important;
+  }
+
+  .lx-report-tabs {
+    border-bottom-color: rgba(255, 255, 255, 0.08) !important;
+  }
+
+  .lx-report-title {
+    color: #ffffff !important;
   }
 
   .nav-pills .nav-link {

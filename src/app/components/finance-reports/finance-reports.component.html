@@ -1,25 +1,58 @@
 <div class="lx-finance-reports-container container-fluid px-3 px-lg-4 py-3">
   
-  <!-- Header & Title Bar -->
-  <div class="d-flex flex-column flex-md-row justify-content-between align-items-start align-items-md-center gap-3 mb-3">
-    <div>
-      <div class="lx-report-breadcrumb text-muted mb-1">
-        <a routerLink="/profit" class="text-decoration-none">Finance</a>
-        <span class="mx-1 text-muted">/</span>
-        <span class="text-muted">Reports</span>
-        <span class="mx-1 text-muted">•</span>
-        <span class="badge bg-secondary-subtle text-secondary border px-2 py-0">100% Read Only</span>
+  <!-- Breadcrumb & Page Header -->
+  <div class="lx-report-header mb-3">
+    <div class="d-flex flex-wrap justify-content-between align-items-center gap-2">
+      <div>
+        <nav aria-label="breadcrumb">
+          <ol class="breadcrumb lx-report-breadcrumb mb-1">
+            <li class="breadcrumb-item"><a routerLink="/home">Home</a></li>
+            <li class="breadcrumb-item"><a routerLink="/profit">Finance</a></li>
+            <li class="breadcrumb-item active" aria-current="page">Reports</li>
+            <li class="breadcrumb-item active text-gold fw-semibold" aria-current="page">
+              <span *ngIf="activeReportType === 'account-history'">Account History</span>
+              <span *ngIf="activeReportType === 'transaction-history'">Central Transactions</span>
+              <span *ngIf="activeReportType === 'income-expense'">Income & Expense</span>
+              <span *ngIf="activeReportType === 'capital-history'">Capital History</span>
+              <span *ngIf="activeReportType === 'expense'">Expense Report</span>
+              <span *ngIf="activeReportType === 'cash-movement'">Cash Movement</span>
+            </li>
+          </ol>
+        </nav>
+        <h2 class="lx-report-title mb-0">
+          <i class="bi bi-file-earmark-spreadsheet me-2 text-gold"></i>
+          <span *ngIf="activeReportType === 'account-history'">Account History Report</span>
+          <span *ngIf="activeReportType === 'transaction-history'">Central Transactions Report</span>
+          <span *ngIf="activeReportType === 'income-expense'">Income & Expense Statement</span>
+          <span *ngIf="activeReportType === 'capital-history'">Capital History Report</span>
+          <span *ngIf="activeReportType === 'expense'">Operating Expense Report</span>
+          <span *ngIf="activeReportType === 'cash-movement'">Cash Account Movement</span>
+        </h2>
       </div>
-      <h1 class="lx-report-title h3 mb-0">Financial & Accounting Reports</h1>
-    </div>
 
-    <!-- Quick Report Navigation Tabs -->
-    <div class="d-flex align-items-center gap-1 p-1 bg-surface border rounded shadow-sm lx-report-nav-tabs overflow-x-auto">
+      <!-- Export Excel Action Button -->
+      <div class="d-flex align-items-center gap-2">
+        <button
+          type="button"
+          class="btn btn-export-excel d-flex align-items-center gap-2"
+          [disabled]="isLoading || isExporting || getActiveRowCount() === 0"
+          (click)="exportReportToExcel()"
+        >
+          <span *ngIf="isExporting" class="spinner-border spinner-border-sm" role="status"></span>
+          <i *ngIf="!isExporting" class="bi bi-file-earmark-excel-fill text-success"></i>
+          <span>{{ isExporting ? 'Preparing Excel file...' : 'Export Excel (.xlsx)' }}</span>
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Odoo-Style Report Switcher Tabs -->
+  <div class="lx-report-tabs mb-3">
+    <div class="nav nav-pills lx-pills-group" role="tablist">
       <button 
         type="button" 
-        class="btn btn-sm"
-        [class.btn-warning]="activeReportType === 'account-history'"
-        [class.btn-light]="activeReportType !== 'account-history'"
+        class="nav-link lx-pill-tab" 
+        [class.active]="activeReportType === 'account-history'"
         (click)="switchReportType('account-history')"
       >
         <i class="bi bi-bank me-1"></i> Account History
@@ -27,9 +60,8 @@
 
       <button 
         type="button" 
-        class="btn btn-sm"
-        [class.btn-warning]="activeReportType === 'transaction-history'"
-        [class.btn-light]="activeReportType !== 'transaction-history'"
+        class="nav-link lx-pill-tab" 
+        [class.active]="activeReportType === 'transaction-history'"
         (click)="switchReportType('transaction-history')"
       >
         <i class="bi bi-journal-text me-1"></i> Central Transactions
@@ -37,9 +69,8 @@
 
       <button 
         type="button" 
-        class="btn btn-sm"
-        [class.btn-warning]="activeReportType === 'income-expense'"
-        [class.btn-light]="activeReportType !== 'income-expense'"
+        class="nav-link lx-pill-tab" 
+        [class.active]="activeReportType === 'income-expense'"
         (click)="switchReportType('income-expense')"
       >
         <i class="bi bi-graph-up-arrow me-1"></i> Income & Expense
@@ -47,9 +78,8 @@
 
       <button 
         type="button" 
-        class="btn btn-sm"
-        [class.btn-warning]="activeReportType === 'capital-history'"
-        [class.btn-light]="activeReportType !== 'capital-history'"
+        class="nav-link lx-pill-tab" 
+        [class.active]="activeReportType === 'capital-history'"
         (click)="switchReportType('capital-history')"
       >
         <i class="bi bi-cash-stack me-1"></i> Capital History
@@ -57,9 +87,8 @@
 
       <button 
         type="button" 
-        class="btn btn-sm"
-        [class.btn-warning]="activeReportType === 'expense'"
-        [class.btn-light]="activeReportType !== 'expense'"
+        class="nav-link lx-pill-tab" 
+        [class.active]="activeReportType === 'expense'"
         (click)="switchReportType('expense')"
       >
         <i class="bi bi-receipt me-1"></i> Expense Report
@@ -67,9 +96,8 @@
 
       <button 
         type="button" 
-        class="btn btn-sm"
-        [class.btn-warning]="activeReportType === 'cash-movement'"
-        [class.btn-light]="activeReportType !== 'cash-movement'"
+        class="nav-link lx-pill-tab" 
+        [class.active]="activeReportType === 'cash-movement'"
         (click)="switchReportType('cash-movement')"
       >
         <i class="bi bi-arrow-left-right me-1"></i> Cash Movement
@@ -309,16 +337,6 @@
       <div class="d-flex justify-content-end align-items-center gap-2 mt-3 pt-2 border-top">
         <button type="button" class="btn btn-sm btn-outline-secondary d-flex align-items-center gap-1" (click)="resetFilters()">
           <i class="bi bi-arrow-counterclockwise"></i> Reset Filters
-        </button>
-
-        <button 
-          type="button" 
-          class="btn btn-sm btn-success d-flex align-items-center gap-1 px-3" 
-          (click)="exportReportToExcel()"
-          [disabled]="isExporting || getActiveRowCount() === 0"
-        >
-          <i class="bi bi-file-earmark-excel-fill"></i>
-          <span>{{ isExporting ? 'Exporting...' : 'Export .xlsx' }}</span>
         </button>
       </div>
 

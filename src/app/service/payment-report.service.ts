@@ -610,7 +610,7 @@ export class PaymentReportService {
             loanType: (up.loanType || 'monthly').toUpperCase(),
             expectedDate: up.expectedDate,
             expectedAmount: up.expectedInstalmentAmount,
-            remainingDue: up.expectedInstalmentAmount,
+            remainingDue: up.remainingDue ?? up.expectedInstalmentAmount,
             remainingBalance: up.remainingBalance,
             remainingInstallments: up.remainingInstallments,
             status: up.status

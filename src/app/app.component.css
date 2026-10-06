@@ -22,7 +22,15 @@ main {
   padding: 0;
   display: flex;
   flex-direction: column;
-  justify-content: flex-start;
+  flex: 1;
+  min-height: 0;
+  overflow: hidden;
+}
+
+@media (max-width: 768px) {
+  .lx-main-home {
+    overflow-y: auto;
+  }
 }
 
 @media (max-width: 576px) {

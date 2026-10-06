@@ -5,6 +5,7 @@ import { Router, RouterModule, ActivatedRoute } from '@angular/router';
 import { LoanManageService, LoanWithClient, Payment } from '../../service/loan-manage.service';
 import { SupabaseService } from '../../service/supabase.service';
 import { ProfitManageService } from '../../service/profit-manage.service';
+import { PaymentNotificationService } from '../../service/payment-notification.service';
 
 @Component({
   selector: 'app-add-payments',
@@ -36,7 +37,8 @@ export class AddPaymentsComponent implements OnInit {
     private supabaseService: SupabaseService,
     private router: Router,
     private profitService: ProfitManageService,
-    private route: ActivatedRoute
+    private route: ActivatedRoute,
+    private notificationService: PaymentNotificationService
   ) {
     this.setDefaultPaymentDate();
   }
@@ -192,6 +194,8 @@ export class AddPaymentsComponent implements OnInit {
           this.resetPaymentForm();
           // Refresh loan data to show updated amounts
           this.searchLoan();
+          // Refresh header due payments notifications (derived read-only)
+          this.notificationService.refresh();
           setTimeout(() => {
             this.successMessage = '';
           }, 3000);
@@ -204,6 +208,8 @@ export class AddPaymentsComponent implements OnInit {
           this.successMessage = successMsg;
           this.resetPaymentForm();
           this.searchLoan();
+          // Refresh header due payments notifications (derived read-only)
+          this.notificationService.refresh();
           setTimeout(() => {
             this.successMessage = '';
           }, 3000);

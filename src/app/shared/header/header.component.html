@@ -95,29 +95,137 @@
           class="lx-header-icon-btn position-relative" 
           (click)="toggleNotifications($event)"
           [class.active]="isNotificationsOpen"
-          title="Notifications"
-          aria-label="View notifications"
+          title="Payments Due Today"
+          aria-label="View payments due today"
           [attr.aria-expanded]="isNotificationsOpen"
         >
           <i class="bi bi-bell-fill"></i>
-          <span *ngIf="unreadNotificationsCount > 0" class="lx-notification-badge">
-            {{ unreadNotificationsCount }}
+          <span *ngIf="dueCount > 0 && !notificationError" class="lx-notification-badge">
+            {{ dueCount > 99 ? '99+' : dueCount }}
           </span>
         </button>
 
-        <!-- Notifications Dropdown Popover -->
+        <!-- Notifications Dropdown Popover (Odoo-Inspired) -->
         <div *ngIf="isNotificationsOpen" class="lx-popover lx-notifications-popover shadow-lg" (click)="$event.stopPropagation()">
+          
+          <!-- Popover Header -->
           <div class="lx-popover-header d-flex justify-content-between align-items-center">
-            <span class="fw-bold" style="font-family: var(--lx-font-subtitles); font-size: 0.875rem;">Notifications</span>
-            <span class="badge badge-secondary" style="font-size: 0.7rem;">Stage 1</span>
-          </div>
-          <div class="lx-popover-body text-center py-4 px-3">
-            <div class="lx-notification-empty-icon mb-2">
-              <i class="bi bi-bell-slash text-muted" style="font-size: 1.75rem;"></i>
+            <div>
+              <div class="d-flex align-items-center gap-2">
+                <span class="lx-notif-title">Payments Due Today</span>
+                <span *ngIf="!isLoadingNotifications && !notificationError" class="badge lx-badge-due-count">
+                  {{ dueCount }} Due
+                </span>
+              </div>
+              <p class="lx-notif-subtitle mb-0">Today's expected collections</p>
             </div>
-            <p class="mb-1 fw-semibold" style="font-size: 0.875rem; color: var(--lx-text-primary);">All caught up!</p>
-            <p class="text-muted mb-0" style="font-size: 0.775rem;">No unread system alerts or pending notifications.</p>
+            <button 
+              type="button" 
+              class="btn btn-sm lx-btn-notif-refresh" 
+              (click)="refreshNotifications($event)" 
+              title="Refresh today's collections"
+              [disabled]="isLoadingNotifications"
+            >
+              <i class="bi bi-arrow-clockwise" [class.lx-spin]="isLoadingNotifications"></i>
+            </button>
           </div>
+
+          <!-- Popover Body (Scrollable Cards) -->
+          <div class="lx-notif-body">
+            
+            <!-- Loading Skeleton State -->
+            <div *ngIf="isLoadingNotifications" class="p-4 text-center">
+              <div class="spinner-border spinner-border-sm text-gold mb-2" role="status"></div>
+              <p class="small text-muted mb-0">Loading today's payments...</p>
+            </div>
+
+            <!-- Error State -->
+            <div *ngIf="!isLoadingNotifications && notificationError" class="p-4 text-center">
+              <i class="bi bi-exclamation-triangle-fill text-danger mb-2" style="font-size: 1.75rem;"></i>
+              <h6 class="fw-semibold mb-1" style="font-size: 0.875rem; color: var(--lx-text-primary);">
+                Unable to load today's payments
+              </h6>
+              <p class="small text-muted mb-3">Please check connection and try again.</p>
+              <button type="button" class="btn btn-sm btn-outline-warning" (click)="refreshNotifications($event)">
+                <i class="bi bi-arrow-clockwise me-1"></i>Retry
+              </button>
+            </div>
+
+            <!-- Empty State -->
+            <div *ngIf="!isLoadingNotifications && !notificationError && duePayments.length === 0" class="p-4 text-center">
+              <div class="lx-notif-empty-icon mb-2">
+                <i class="bi bi-check-circle-fill text-success" style="font-size: 2rem;"></i>
+              </div>
+              <h6 class="fw-bold mb-1" style="font-size: 0.9rem; color: var(--lx-text-primary);">No payments due today</h6>
+              <p class="text-muted mb-0" style="font-size: 0.775rem; line-height: 1.45;">
+                You're all caught up for today's scheduled collections.
+              </p>
+            </div>
+
+            <!-- Compact Cards List -->
+            <div *ngIf="!isLoadingNotifications && !notificationError && duePayments.length > 0" class="lx-notif-cards-list p-2">
+              <div *ngFor="let item of duePayments" class="lx-notif-card">
+                
+                <!-- Card Header: Customer Name & Loan Type -->
+                <div class="d-flex justify-content-between align-items-start mb-1">
+                  <div class="lx-notif-customer-col pe-2">
+                    <div class="lx-notif-customer-name" [title]="item.customerName">{{ item.customerName }}</div>
+                    <div class="lx-notif-loan-number">Loan #{{ item.loanNumber }}</div>
+                  </div>
+                  <span class="badge lx-badge-frequency">
+                    {{ item.loanType | titlecase }}
+                  </span>
+                </div>
+
+                <!-- Financial Row: Due Today & Mobile -->
+                <div class="lx-notif-info-row d-flex justify-content-between align-items-center my-2 pt-2 border-top">
+                  <div>
+                    <span class="lx-notif-label">Due Today</span>
+                    <div class="lx-notif-amount">Rs. {{ item.remainingDue | number: '1.2-2' }}</div>
+                  </div>
+                  <div *ngIf="item.customerMobile" class="text-end">
+                    <span class="lx-notif-label">Mobile</span>
+                    <div class="lx-notif-mobile">
+                      <i class="bi bi-telephone-fill me-1 small"></i>{{ item.customerMobile }}
+                    </div>
+                  </div>
+                </div>
+
+                <!-- Card Actions -->
+                <div class="lx-notif-actions d-flex gap-2 mt-2">
+                  <button 
+                    type="button" 
+                    class="btn btn-sm lx-btn-view-loan flex-grow-1"
+                    (click)="viewLoan(item.loanNumber, $event)"
+                  >
+                    <i class="bi bi-box-arrow-up-right me-1"></i>View Loan
+                  </button>
+                  <button 
+                    type="button" 
+                    class="btn btn-sm lx-btn-add-payment flex-grow-1"
+                    (click)="addPayment(item.loanNumber, $event)"
+                  >
+                    <i class="bi bi-plus-circle me-1"></i>Add Payment
+                  </button>
+                </div>
+
+              </div>
+            </div>
+
+          </div>
+
+          <!-- Dropdown Footer: View All Due Payments -->
+          <div class="lx-popover-footer p-2 border-top">
+            <button 
+              type="button" 
+              class="btn btn-sm lx-btn-view-all w-100 d-flex align-items-center justify-content-center gap-1"
+              (click)="viewAllDuePayments($event)"
+            >
+              <span>View All Due Payments</span>
+              <i class="bi bi-arrow-right"></i>
+            </button>
+          </div>
+
         </div>
       </div>
 

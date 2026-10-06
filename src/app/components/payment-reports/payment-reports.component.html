@@ -1,61 +1,92 @@
-<div class="lx-reports-container container-fluid py-3">
+<div class="lx-reports-container container-fluid px-3 px-md-4 py-3">
 
-  <!-- ========================================================================= -->
-  <!-- Top Navigation & Reports Header                                           -->
-  <!-- ========================================================================= -->
-  <div class="d-flex flex-wrap justify-content-between align-items-center mb-3 gap-2">
-    <div>
-      <div class="d-flex align-items-center gap-2">
-        <span class="badge bg-gold-subtle text-gold px-2 py-1 fs-xs fw-semibold">Analysis &bull; Reports</span>
-        <span class="text-muted fs-xs">&bull;</span>
-        <span class="text-secondary fs-xs fw-medium">100% Read-Only</span>
+  <!-- Breadcrumb & Page Header -->
+  <div class="lx-report-header mb-3">
+    <div class="d-flex flex-wrap justify-content-between align-items-center gap-2">
+      <div>
+        <nav aria-label="breadcrumb">
+          <ol class="breadcrumb lx-report-breadcrumb mb-1">
+            <li class="breadcrumb-item"><a routerLink="/home">Home</a></li>
+            <li class="breadcrumb-item"><a routerLink="/analysis">Analysis</a></li>
+            <li class="breadcrumb-item active" aria-current="page">Reports</li>
+            <li class="breadcrumb-item active text-gold fw-semibold" aria-current="page">
+              <span *ngIf="activeReportType === 'payment-history'">Payment History</span>
+              <span *ngIf="activeReportType === 'delayed-payments'">Delayed Payments</span>
+              <span *ngIf="activeReportType === 'collection'">Collections</span>
+              <span *ngIf="activeReportType === 'upcoming-payments'">Upcoming Payments</span>
+              <span *ngIf="activeReportType === 'payment-performance'">Payment Performance</span>
+            </li>
+          </ol>
+        </nav>
+        <h2 class="lx-report-title mb-0">
+          <i class="bi bi-file-earmark-spreadsheet me-2 text-gold"></i>
+          <span *ngIf="activeReportType === 'payment-history'">Payment History Report</span>
+          <span *ngIf="activeReportType === 'delayed-payments'">Delayed Payments Report</span>
+          <span *ngIf="activeReportType === 'collection'">Collections Report</span>
+          <span *ngIf="activeReportType === 'upcoming-payments'">Upcoming Payments Report</span>
+          <span *ngIf="activeReportType === 'payment-performance'">Payment Performance Report</span>
+        </h2>
       </div>
-      <h1 class="h4 mb-0 fw-bold text-main mt-1">Payment & Collection Reports</h1>
-    </div>
 
-    <!-- Quick Switcher Tabs -->
-    <div class="lx-report-nav-tabs btn-group shadow-xs p-1 bg-surface rounded-3 border">
+      <!-- Export Excel Action Button -->
+      <div class="d-flex align-items-center gap-2">
+        <button
+          type="button"
+          class="btn btn-export-excel d-flex align-items-center gap-2"
+          [disabled]="isExportDisabled()"
+          (click)="exportActiveReportToExcel()"
+        >
+          <span *ngIf="isExporting" class="spinner-border spinner-border-sm" role="status"></span>
+          <i *ngIf="!isExporting" class="bi bi-file-earmark-excel-fill text-success"></i>
+          <span>{{ isExporting ? 'Preparing Excel file...' : 'Export Excel (.xlsx)' }}</span>
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Odoo-Style Report Switcher Tabs -->
+  <div class="lx-report-tabs mb-3">
+    <div class="nav nav-pills lx-pills-group" role="tablist">
       <button 
         type="button" 
-        class="btn btn-sm"
-        [class.btn-primary-gold]="activeReportType === 'payment-history'"
-        [class.btn-subtle]="activeReportType !== 'payment-history'"
+        class="nav-link lx-pill-tab" 
+        [class.active]="activeReportType === 'payment-history'"
         (click)="switchReport('payment-history')"
       >
         <i class="bi bi-clock-history me-1"></i> Payment History
       </button>
+
       <button 
         type="button" 
-        class="btn btn-sm"
-        [class.btn-primary-gold]="activeReportType === 'delayed-payments'"
-        [class.btn-subtle]="activeReportType !== 'delayed-payments'"
+        class="nav-link lx-pill-tab" 
+        [class.active]="activeReportType === 'delayed-payments'"
         (click)="switchReport('delayed-payments')"
       >
         <i class="bi bi-exclamation-triangle me-1"></i> Delayed Payments
       </button>
+
       <button 
         type="button" 
-        class="btn btn-sm"
-        [class.btn-primary-gold]="activeReportType === 'collection'"
-        [class.btn-subtle]="activeReportType !== 'collection'"
+        class="nav-link lx-pill-tab" 
+        [class.active]="activeReportType === 'collection'"
         (click)="switchReport('collection')"
       >
         <i class="bi bi-cash-coin me-1"></i> Collections
       </button>
+
       <button 
         type="button" 
-        class="btn btn-sm"
-        [class.btn-primary-gold]="activeReportType === 'upcoming-payments'"
-        [class.btn-subtle]="activeReportType !== 'upcoming-payments'"
+        class="nav-link lx-pill-tab" 
+        [class.active]="activeReportType === 'upcoming-payments'"
         (click)="switchReport('upcoming-payments')"
       >
         <i class="bi bi-calendar-check me-1"></i> Upcoming
       </button>
+
       <button 
         type="button" 
-        class="btn btn-sm"
-        [class.btn-primary-gold]="activeReportType === 'payment-performance'"
-        [class.btn-subtle]="activeReportType !== 'payment-performance'"
+        class="nav-link lx-pill-tab" 
+        [class.active]="activeReportType === 'payment-performance'"
         (click)="switchReport('payment-performance')"
       >
         <i class="bi bi-graph-up-arrow me-1"></i> Performance
@@ -114,19 +145,9 @@
             </select>
           </div>
 
-          <div class="col-12 col-md-2 d-flex gap-2 justify-content-end">
-            <button type="button" class="btn btn-sm btn-subtle flex-grow-1" (click)="resetHistoryFilters()">
+          <div class="col-12 col-md-2 d-flex justify-content-end">
+            <button type="button" class="btn btn-sm btn-subtle px-3" (click)="resetHistoryFilters()">
               <i class="bi bi-arrow-counterclockwise me-1"></i> Reset
-            </button>
-            <button 
-              type="button" 
-              class="btn btn-sm btn-excel-gold flex-grow-1" 
-              [disabled]="isExporting || historyRows.length === 0"
-              (click)="exportPaymentHistoryToExcel()"
-            >
-              <i *ngIf="!isExporting" class="bi bi-file-earmark-spreadsheet me-1"></i>
-              <span *ngIf="isExporting" class="spinner-border spinner-border-sm me-1"></span>
-              Export .xlsx
             </button>
           </div>
         </div>
@@ -260,19 +281,9 @@
             </select>
           </div>
 
-          <div class="col-12 col-md-2 d-flex gap-2 justify-content-end">
-            <button type="button" class="btn btn-sm btn-subtle flex-grow-1" (click)="resetDelayedFilters()">
+          <div class="col-12 col-md-2 d-flex justify-content-end">
+            <button type="button" class="btn btn-sm btn-subtle px-3" (click)="resetDelayedFilters()">
               <i class="bi bi-arrow-counterclockwise me-1"></i> Reset
-            </button>
-            <button 
-              type="button" 
-              class="btn btn-sm btn-excel-gold flex-grow-1" 
-              [disabled]="isExporting || delayedRows.length === 0"
-              (click)="exportDelayedPaymentsToExcel()"
-            >
-              <i *ngIf="!isExporting" class="bi bi-file-earmark-spreadsheet me-1"></i>
-              <span *ngIf="isExporting" class="spinner-border spinner-border-sm me-1"></span>
-              Export .xlsx
             </button>
           </div>
         </div>
@@ -433,19 +444,9 @@
             </select>
           </div>
 
-          <div class="col-12 col-md-2 d-flex gap-2 justify-content-end">
-            <button type="button" class="btn btn-sm btn-subtle flex-grow-1" (click)="resetCollectionFilters()">
+          <div class="col-12 col-md-2 d-flex justify-content-end">
+            <button type="button" class="btn btn-sm btn-subtle px-3" (click)="resetCollectionFilters()">
               <i class="bi bi-arrow-counterclockwise me-1"></i> Reset
-            </button>
-            <button 
-              type="button" 
-              class="btn btn-sm btn-excel-gold flex-grow-1" 
-              [disabled]="isExporting || collectionRows.length === 0"
-              (click)="exportCollectionToExcel()"
-            >
-              <i *ngIf="!isExporting" class="bi bi-file-earmark-spreadsheet me-1"></i>
-              <span *ngIf="isExporting" class="spinner-border spinner-border-sm me-1"></span>
-              Export .xlsx
             </button>
           </div>
         </div>
@@ -624,19 +625,9 @@
             </select>
           </div>
 
-          <div class="col-6 col-md-2 d-flex gap-2 justify-content-end">
-            <button type="button" class="btn btn-sm btn-subtle flex-grow-1" (click)="resetUpcomingFilters()">
+          <div class="col-6 col-md-2 d-flex justify-content-end">
+            <button type="button" class="btn btn-sm btn-subtle px-3" (click)="resetUpcomingFilters()">
               <i class="bi bi-arrow-counterclockwise me-1"></i> Reset
-            </button>
-            <button 
-              type="button" 
-              class="btn btn-sm btn-excel-gold flex-grow-1" 
-              [disabled]="isExporting || upcomingRows.length === 0"
-              (click)="exportUpcomingPaymentsToExcel()"
-            >
-              <i *ngIf="!isExporting" class="bi bi-file-earmark-spreadsheet me-1"></i>
-              <span *ngIf="isExporting" class="spinner-border spinner-border-sm me-1"></span>
-              Export .xlsx
             </button>
           </div>
         </div>
@@ -793,19 +784,9 @@
             </select>
           </div>
 
-          <div class="col-12 col-md-2 d-flex gap-2 justify-content-end">
-            <button type="button" class="btn btn-sm btn-subtle flex-grow-1" (click)="resetPerformanceFilters()">
+          <div class="col-12 col-md-2 d-flex justify-content-end">
+            <button type="button" class="btn btn-sm btn-subtle px-3" (click)="resetPerformanceFilters()">
               <i class="bi bi-arrow-counterclockwise me-1"></i> Reset
-            </button>
-            <button 
-              type="button" 
-              class="btn btn-sm btn-excel-gold flex-grow-1" 
-              [disabled]="isExporting || !performanceData"
-              (click)="exportPerformanceToExcel()"
-            >
-              <i *ngIf="!isExporting" class="bi bi-file-earmark-spreadsheet me-1"></i>
-              <span *ngIf="isExporting" class="spinner-border spinner-border-sm me-1"></span>
-              Export .xlsx
             </button>
           </div>
         </div>

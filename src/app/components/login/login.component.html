@@ -1,22 +1,93 @@
-<div class="login-bg">
-  <div class="login-container">
-    <div class="login-card">
-      <img src="assets/logo.png" alt="Lonex Logo" class="login-logo" style="width: 80px; margin-bottom: 1rem;" />
-      <h2 class="login-title mb-5">Lonex Investment Login</h2>
-      <form (ngSubmit)="login()" #loginForm="ngForm" autocomplete="off">
-        <div class="form-group">
-          <label for="email">Email</label>
-          <input id="email" type="email" [(ngModel)]="email" name="email" required placeholder="Enter your email" />
+<div class="lx-login-viewport">
+  <!-- Subtle decorative ambient background elements -->
+  <div class="lx-login-ambient lx-ambient-gold" aria-hidden="true"></div>
+  <div class="lx-login-ambient lx-ambient-neutral" aria-hidden="true"></div>
+
+  <!-- Centered Login Card Area -->
+  <div class="lx-login-card-container">
+    <div class="lx-login-card">
+      
+      <!-- Brand Section -->
+      <div class="lx-login-header text-center">
+        <img src="assets/logo.png" alt="Lonex Investments Logo" class="lx-login-logo" />
+        <h1 class="lx-login-title">Welcome to Lonex</h1>
+        <p class="lx-login-subtitle mb-0">Sign in to continue to Lonex Investments</p>
+        <div class="lx-gold-divider" aria-hidden="true"></div>
+      </div>
+
+      <!-- Error Alert Message -->
+      <div *ngIf="error" class="lx-login-alert d-flex align-items-center mb-3" role="alert" aria-live="assertive">
+        <i class="bi bi-exclamation-circle-fill me-2 flex-shrink-0"></i>
+        <span>{{ error }}</span>
+      </div>
+
+      <!-- Login Form -->
+      <form (ngSubmit)="login()" #loginForm="ngForm" autocomplete="off" novalidate>
+        
+        <!-- Email Input Group -->
+        <div class="lx-form-group mb-3">
+          <label for="email" class="lx-form-label">Email</label>
+          <div class="lx-input-group">
+            <span class="lx-input-icon lx-input-icon-left" aria-hidden="true">
+              <i class="bi bi-envelope"></i>
+            </span>
+            <input 
+              id="email" 
+              type="email" 
+              [(ngModel)]="email" 
+              name="email" 
+              required 
+              email
+              class="lx-form-input" 
+              placeholder="Enter your email" 
+              [disabled]="loading"
+              autofocus
+            />
+          </div>
         </div>
-        <div class="form-group">
-          <label for="password">Password</label>
-          <input id="password" type="password" [(ngModel)]="password" name="password" required placeholder="Enter your password" />
+
+        <!-- Password Input Group -->
+        <div class="lx-form-group mb-4">
+          <label for="password" class="lx-form-label">Password</label>
+          <div class="lx-input-group">
+            <span class="lx-input-icon lx-input-icon-left" aria-hidden="true">
+              <i class="bi bi-lock"></i>
+            </span>
+            <input 
+              id="password" 
+              [type]="showPassword ? 'text' : 'password'" 
+              [(ngModel)]="password" 
+              name="password" 
+              required 
+              class="lx-form-input lx-has-action-right" 
+              placeholder="Enter your password" 
+              [disabled]="loading"
+            />
+            <button 
+              type="button" 
+              class="lx-input-action-btn" 
+              (click)="togglePasswordVisibility()" 
+              [attr.aria-label]="showPassword ? 'Hide password' : 'Show password'"
+              tabindex="-1"
+            >
+              <i class="bi" [ngClass]="showPassword ? 'bi-eye-slash' : 'bi-eye'"></i>
+            </button>
+          </div>
         </div>
-        <button class="login-btn" type="submit" [disabled]="loading || !loginForm.form.valid">
-          {{ loading ? 'Logging in...' : 'Login' }}
+
+        <!-- Submit Button -->
+        <button 
+          class="lx-login-btn d-flex align-items-center justify-content-center gap-2" 
+          type="submit" 
+          [disabled]="loading || !loginForm.form.valid"
+        >
+          <span *ngIf="loading" class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span>
+          <span>{{ loading ? 'Signing in...' : 'Login' }}</span>
+          <i *ngIf="!loading" class="bi bi-arrow-right-short fs-5" aria-hidden="true"></i>
         </button>
-        <div *ngIf="error" class="login-error">{{ error }}</div>
+
       </form>
+
     </div>
   </div>
 </div>

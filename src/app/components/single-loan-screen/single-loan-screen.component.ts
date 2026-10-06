@@ -458,7 +458,7 @@ export class SingleLoanScreenComponent implements OnInit {
       const arrayBuffer = await blob.arrayBuffer();
       logoImage = new (ImageRun as any)({
         data: arrayBuffer,
-        transformation: { width: 48, height: 48 },
+        transformation: { width: 140, height: 48 },
       });
     } catch (e) {
       // If logo not found, skip
