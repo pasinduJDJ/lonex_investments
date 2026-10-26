@@ -5,6 +5,7 @@ import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { RouterModule } from '@angular/router';
 import { DatePipe } from '@angular/common';
+import { AuditLogService } from '../../service/audit-log.service';
 
 @Component({
   selector: 'app-profits-manage-screen',
@@ -45,7 +46,8 @@ export class ProfitsManageScreenComponent implements OnInit {
   constructor(
     private profitService: ProfitManageService,
     private fb: FormBuilder,
-    private datePipe: DatePipe
+    private datePipe: DatePipe,
+    private auditLogService: AuditLogService
   ) {
     this.addCapitalForm = this.fb.group({
       amount: [null, [Validators.required, Validators.min(1)]],
@@ -227,8 +229,19 @@ export class ProfitsManageScreenComponent implements OnInit {
     
     this.addCapitalSuccess = false;
     this.addCapitalError = '';
+    const capitalAmount = Number(this.addCapitalForm.value.amount);
+    const activityKey = this.auditLogService.createIdempotencyKey();
     this.profitService.addMoneyToCapital(this.addCapitalForm.value).subscribe({
       next: () => {
+        void this.auditLogService.logActivity({
+          action: 'Capital Deposit',
+          module: 'Finance',
+          recordReference: `CAP-${new Date().toISOString().split('T')[0]}`,
+          description: 'Capital deposit recorded successfully.',
+          amount: capitalAmount,
+          details: {},
+          idempotencyKey: activityKey
+        });
         this.addCapitalSuccess = true;
         this.addCapitalForm.reset({
           amount: null,
@@ -265,9 +278,19 @@ export class ProfitsManageScreenComponent implements OnInit {
       remark: this.addExpenseForm.value.remark,
       expense_date: new Date().toISOString().split('T')[0] // Today's date
     };
+    const activityKey = this.auditLogService.createIdempotencyKey();
     
     this.profitService.addExpenseAndUpdateCapital(expenseData).subscribe({
       next: () => {
+        void this.auditLogService.logActivity({
+          action: 'Expense Recorded',
+          module: 'Finance',
+          recordReference: `EXP-${expenseData.expense_date}`,
+          description: 'Expense recorded successfully.',
+          amount: Number(expenseData.amount),
+          details: {},
+          idempotencyKey: activityKey
+        });
         this.addExpenseSuccess = true;
         this.addExpenseForm.reset({
           amount: null,

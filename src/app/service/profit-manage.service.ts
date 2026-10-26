@@ -285,21 +285,25 @@ export class ProfitManageService {
     );
   }
 
-  // 10. Get total document charges by date range
+  // 10. Get total document charges by date range (excludes cancelled/voided loans)
   getTotalDocumentCharges(startDate?: string, endDate?: string): Observable<number> {
     const supabase = this.supabaseService.getClient();
     let query = supabase
       .from('loans')
-      .select('document_charge');
-    
+      .select('document_charge, status');
+
     if (startDate && endDate) {
       query = query.gte('start_date', startDate).lte('start_date', endDate);
     }
-    
+
     return from(query).pipe(
       map(res => {
-        const loans = res.data as any[];
-        return loans.reduce((sum, loan) => sum + (loan.document_charge || 0), 0);
+        const loans = (res.data as any[]) || [];
+        // Exclude cancelled/voided loans — consistent with getAssetsBalance() and FinanceTransactionService.
+        return loans.reduce((sum, loan) => {
+          const isGenuine = loan.status !== 'cancelled' && loan.status !== 'voided';
+          return sum + (isGenuine ? (Number(loan.document_charge) || 0) : 0);
+        }, 0);
       })
     );
   }

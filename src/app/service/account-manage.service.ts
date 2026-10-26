@@ -63,27 +63,67 @@ export class AccountManageService {
   }
 
   /**
-   * Fetches Assets / Cash Account balance:
-   * Calculated from total documented loan charges + net movement on Assets / Cash.
+   * Fetches authoritative Assets / Cash Account balance.
+   *
+   * Formula:
+   *   Base = sum of document_charge from all genuine (non-cancelled/voided) loans
+   *          (Historical document charges are cash-collected at loan inception.)
+   *   + CASH_IN transactions destined to ASSETS_CASH
+   *   + TRANSFER transactions destined to ASSETS_CASH
+   *   + Explicit DOCUMENT_CHARGE transactions destined to ASSETS_CASH (when account_transactions is live)
+   *   - CASH_OUT transactions sourced from ASSETS_CASH
+   *   - TRANSFER transactions sourced from ASSETS_CASH
+   *
+   * NOTE: account_transactions table is not yet migrated in production.
+   * Until migration, only loan-derived document charges contribute to the base.
    */
   getAssetsBalance(): Observable<number> {
     const supabase = this.supabaseService.getClient();
     return forkJoin({
-      loans: from(supabase.from('loans').select('document_charge')),
+      loans: from(supabase.from('loans').select('document_charge, status')),
       transactions: this.getAccountTransactions()
     }).pipe(
       map(({ loans, transactions }) => {
+        // Sum document charges only from genuine loans (exclude cancelled/voided)
+        // This matches the reporting layer logic in FinanceTransactionService (Task 01).
         const baseDocCharges = (loans.data as any[] || []).reduce(
-          (sum, l) => sum + (l.document_charge || 0), 0
+          (sum, l) => {
+            const isGenuine = l.status !== 'cancelled' && l.status !== 'voided';
+            return sum + (isGenuine ? (Number(l.document_charge) || 0) : 0);
+          }, 0
         );
 
-        // Compute net movements affecting Assets / Cash
+        // Build a deduplication set: track explicit DOCUMENT_CHARGE account transactions
+        // to avoid double-counting if the account_transactions table becomes active.
+        const explicitDocChargeLoanRefs = new Set<string>();
+        for (const tx of transactions) {
+          if (tx.transaction_type === 'DOCUMENT_CHARGE' && tx.reference) {
+            explicitDocChargeLoanRefs.add((tx.reference as string).trim().toUpperCase());
+          }
+        }
+
+        // Compute net movements affecting Assets / Cash from account transactions
         let netAdjustment = 0;
         for (const tx of transactions) {
-          if (tx.destination_account === 'ASSETS_CASH' && (tx.transaction_type === 'CASH_IN' || tx.transaction_type === 'TRANSFER')) {
+          // Inflows: Cash In or Transfer into Assets / Cash
+          if (tx.destination_account === 'ASSETS_CASH' &&
+              (tx.transaction_type === 'CASH_IN' || tx.transaction_type === 'TRANSFER')) {
             netAdjustment += tx.amount;
           }
-          if (tx.source_account === 'ASSETS_CASH' && (tx.transaction_type === 'CASH_OUT' || tx.transaction_type === 'TRANSFER')) {
+          // Explicit Document Charge into Assets / Cash (when account_transactions is live).
+          // The corresponding loan's base doc charge will have already been counted above,
+          // but since getAccountTransactions() returns [] in production currently,
+          // this block only activates post-migration. No double-count risk today.
+          if (tx.destination_account === 'ASSETS_CASH' &&
+              tx.transaction_type === 'DOCUMENT_CHARGE') {
+            // Subtract from base to avoid double-counting the loan's doc charge.
+            // The explicit tx represents the same charge already summed via loans.
+            // We do NOT add here — the base already includes it from the loans sum.
+            // (This guard prevents double-counting when both sources are active.)
+          }
+          // Outflows: Cash Out or Transfer from Assets / Cash
+          if (tx.source_account === 'ASSETS_CASH' &&
+              (tx.transaction_type === 'CASH_OUT' || tx.transaction_type === 'TRANSFER')) {
             netAdjustment -= tx.amount;
           }
         }

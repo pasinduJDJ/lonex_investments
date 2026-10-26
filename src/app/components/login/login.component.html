@@ -9,7 +9,7 @@
       
       <!-- Brand Section -->
       <div class="lx-login-header text-center">
-        <img src="assets/logo.png" alt="Lonex Investments Logo" class="lx-login-logo" />
+        <img src="assets/logo.png" (error)="$any($event.target).src = 'logo.png'" alt="Lonex Investments Logo" class="lx-login-logo" />
         <h1 class="lx-login-title">Welcome to Lonex</h1>
         <p class="lx-login-subtitle mb-0">Sign in to continue to Lonex Investments</p>
         <div class="lx-gold-divider" aria-hidden="true"></div>

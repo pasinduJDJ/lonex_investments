@@ -6,6 +6,7 @@ import { Observable, of, BehaviorSubject } from 'rxjs';
 import { map } from 'rxjs/operators';
 import { FormsModule } from '@angular/forms';
 import { RouterModule } from '@angular/router';
+import { AuditLogService } from '../../service/audit-log.service';
 
 @Component({
   selector: 'app-single-member-screen',
@@ -24,7 +25,11 @@ export class SingleMemberScreenComponent implements OnInit {
   
   private clientSubject = new BehaviorSubject<Client | undefined>(undefined);
 
-  constructor(private route: ActivatedRoute, private loanService: LoanManageService) {}
+  constructor(
+    private route: ActivatedRoute,
+    private loanService: LoanManageService,
+    private auditLogService: AuditLogService
+  ) {}
 
   ngOnInit() {
     const register_number = Number(this.route.snapshot.paramMap.get('register_number'));
@@ -89,6 +94,17 @@ export class SingleMemberScreenComponent implements OnInit {
     this.loanService.updateClient(client.client_id, updateData).subscribe({
       next: (updatedClient) => {
         console.log('Client updated successfully:', updatedClient);
+        const changedFields = Object.keys(updateData).filter(key =>
+          (client as any)[key] !== (updatedClient as any)[key]
+        );
+        const reference = String(updatedClient.register_number || client.register_number || '').padStart(6, '0');
+        void this.auditLogService.logActivity({
+          action: 'Member Updated',
+          module: 'Members',
+          recordReference: reference,
+          description: `Member ${reference} updated successfully.`,
+          details: { changed_fields: changedFields }
+        });
         this.isEditing = false;
         this.isSaving = false;
         // Update the observable with the new data from the database

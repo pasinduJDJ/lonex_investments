@@ -1,0 +1,30 @@
+.lx-audit-container { min-height: calc(100vh - 120px); padding-bottom: 3rem; }
+.odoo-form-sheet { background: var(--lx-bg-card); border: 1px solid var(--lx-border-subtle); border-radius: 12px; padding: 1.5rem; color: var(--lx-text-primary); }
+.odoo-sheet-title { font-family: var(--lx-font-titles); font-size: 1.55rem; font-weight: 700; color: var(--lx-text-primary); }
+.audit-header-icon { width: 48px; height: 48px; display: grid; place-items: center; border-radius: 12px; color: #fff; font-size: 1.35rem; background: linear-gradient(135deg, #D4A437, #B8860B); }
+.audit-tabs { display: flex; gap: .25rem; overflow-x: auto; border-bottom: 1px solid var(--lx-border-subtle); }
+.audit-tab { border: 0; border-bottom: 2px solid transparent; color: var(--lx-text-secondary); background: transparent; padding: .65rem .85rem; white-space: nowrap; font-size: .82rem; font-weight: 600; }
+.audit-tab.active { color: var(--lx-primary-accent); border-bottom-color: var(--lx-primary-accent); }
+.odoo-toolbar { background: var(--lx-bg-subtle); border-color: var(--lx-border-subtle) !important; }
+.form-control, .form-select, .input-group-text { background-color: var(--lx-input-bg); border-color: var(--lx-border-subtle); color: var(--lx-text-primary); }
+.odoo-table-wrapper { border: 1px solid var(--lx-border-subtle); border-radius: 8px; overflow: auto; }
+.odoo-data-table { color: var(--lx-text-primary); font-size: .82rem; }
+.odoo-data-table th { background: var(--lx-bg-subtle); color: var(--lx-text-secondary); font-size: .72rem; text-transform: uppercase; letter-spacing: .035em; white-space: nowrap; padding: .75rem; }
+.odoo-data-table td { background: var(--lx-bg-card); border-color: var(--lx-border-subtle); padding: .75rem; }
+.odoo-row-hover:hover td { background: rgba(212, 164, 55, .05); }
+.description-cell { min-width: 220px; max-width: 420px; }
+.badge-reference { background: var(--lx-bg-subtle); color: var(--lx-text-primary); border: 1px solid var(--lx-border-subtle); font-family: monospace; }
+.module-badge { border: 1px solid transparent; }
+.module-members { color: #0284c7; background: rgba(2, 132, 199, .12); border-color: rgba(2, 132, 199, .25); }
+.module-loans { color: #b8860b; background: rgba(212, 164, 55, .14); border-color: rgba(212, 164, 55, .28); }
+.module-payments { color: #159a74; background: rgba(21, 154, 116, .12); border-color: rgba(21, 154, 116, .25); }
+.module-settlement { color: #7c3aed; background: rgba(124, 58, 237, .12); border-color: rgba(124, 58, 237, .25); }
+.module-finance { color: #dc2626; background: rgba(220, 38, 38, .1); border-color: rgba(220, 38, 38, .22); }
+.page-size-select { width: auto; }
+.audit-modal-backdrop { position: fixed; inset: 0; z-index: 1050; background: rgba(0, 0, 0, .55); }
+.audit-modal { position: fixed; inset: 0; z-index: 1055; overflow-y: auto; padding: 1rem; }
+.audit-modal .modal-content { background: var(--lx-bg-card); color: var(--lx-text-primary); border-color: var(--lx-border-subtle); }
+.audit-modal .modal-header, .audit-modal .modal-footer { border-color: var(--lx-border-subtle); }
+.detail-label { color: var(--lx-text-muted); font-size: .72rem; font-weight: 700; text-transform: uppercase; margin-bottom: .2rem; }
+.detail-key { width: 35%; color: var(--lx-text-secondary); }
+@media (max-width: 768px) { .odoo-form-sheet { padding: 1rem; } .audit-modal { padding: .25rem; } }

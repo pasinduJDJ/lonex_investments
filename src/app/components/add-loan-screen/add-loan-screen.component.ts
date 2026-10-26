@@ -8,6 +8,7 @@ import { CITY_CODE_MAP } from '../../constants/city.constants';
 import { ProfitManageService } from '../../service/profit-manage.service';
 import { AccountManageService } from '../../service/account-manage.service';
 import { GuarantorLookupComponent } from '../../shared/guarantor-lookup/guarantor-lookup.component';
+import { AuditLogService } from '../../service/audit-log.service';
 
 export interface CustomerPreviousLoan extends Loan {
   installmentStats?: {
@@ -88,7 +89,8 @@ export class AddLoanScreenComponent implements OnInit {
     private supabaseService: SupabaseService,
     private router: Router,
     private profitService: ProfitManageService,
-    private accountService: AccountManageService
+    private accountService: AccountManageService,
+    private auditLogService: AuditLogService
   ) { }
 
   ngOnInit(): void {
@@ -553,6 +555,18 @@ export class AddLoanScreenComponent implements OnInit {
       }
 
       const data = insertResult.data;
+
+      void this.auditLogService.logActivity({
+        action: 'Loan Issued',
+        module: 'Loans',
+        recordReference: data.loan_number,
+        description: `Loan ${data.loan_number} issued successfully.`,
+        amount: Number(data.principal_amount),
+        details: {
+          loan_type: data.loan_type,
+          installments: data.installments
+        }
+      });
 
       // Save loan-level guarantors to loan_guarantors table
       if (data && data.id && this.guarantor1 && this.guarantor2) {

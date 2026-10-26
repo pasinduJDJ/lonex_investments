@@ -188,6 +188,7 @@ export class HeaderComponent implements OnInit, OnDestroy {
       this.activeModuleTabs = [
         { label: 'Management Dashboard', url: '/analysis', icon: 'bi-speedometer2' },
         { label: 'Operational Overview', url: '/analysis/operational', icon: 'bi-grid-1x2-fill' },
+        { label: 'Audit Log', url: '/analysis/audit-log', icon: 'bi-clock-history' },
         {
           label: 'Reports',
           url: '/analysis/reports',

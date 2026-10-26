@@ -6,7 +6,8 @@
     "start": "ng serve",
     "build": "ng build",
     "watch": "ng build --watch --configuration development",
-    "test": "ng test"
+    "test": "ng test",
+    "clean": "node -e \"fs.rmSync('.angular', { recursive: true, force: true }); fs.rmSync('dist', { recursive: true, force: true }); console.log('Cleaned .angular and dist successfully.')\""
   },
   "private": true,
   "dependencies": {

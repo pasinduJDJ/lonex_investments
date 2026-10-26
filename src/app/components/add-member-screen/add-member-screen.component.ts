@@ -5,6 +5,7 @@ import { Router, RouterModule } from '@angular/router';
 import { SupabaseService } from '../../service/supabase.service';
 import { CITY_CODE_MAP } from '../../constants/city.constants';
 import { LoanManageService } from '../../service/loan-manage.service';
+import { AuditLogService } from '../../service/audit-log.service';
 
 export const GROUP_CODE_MAP = {
   'Group 1': '001',
@@ -57,6 +58,7 @@ export class AddMemberScreenComponent implements OnInit {
   constructor(
     private supabaseService: SupabaseService,
     private loanManageService: LoanManageService,
+    private auditLogService: AuditLogService,
     private router: Router
   ) {}
 
@@ -179,6 +181,13 @@ export class AddMemberScreenComponent implements OnInit {
 
       // Format the register number with leading zeros
       const formattedRegisterNumber = this.formatRegisterNumber(data.register_number);
+
+      void this.auditLogService.logActivity({
+        action: 'Member Created',
+        module: 'Members',
+        recordReference: formattedRegisterNumber,
+        description: `Member ${formattedRegisterNumber} created successfully.`
+      });
 
       this.successMessage = `Client ${clientData.first_name} ${clientData.last_name} added successfully! Member ID: ${formattedRegisterNumber}`;
       this.resetForm();

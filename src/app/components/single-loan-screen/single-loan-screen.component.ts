@@ -7,6 +7,7 @@ import { Observable, of } from 'rxjs';
 import { map } from 'rxjs/operators';
 import { Router, RouterModule } from '@angular/router';
 import { SupabaseService } from '../../service/supabase.service';
+import { AuditLogService } from '../../service/audit-log.service';
 
 export interface ScheduleRow {
   installmentNumber: number;
@@ -83,7 +84,8 @@ export class SingleLoanScreenComponent implements OnInit {
     private route: ActivatedRoute,
     private loanService: LoanManageService,
     private router: Router,
-    private supabaseService: SupabaseService
+    private supabaseService: SupabaseService,
+    private auditLogService: AuditLogService
   ) {}
 
   ngOnInit() {
@@ -296,6 +298,21 @@ export class SingleLoanScreenComponent implements OnInit {
         this.isSubmittingSettlement = false;
         if (res.success) {
           const loanNum = this.currentLoan!.loan_number;
+          void this.auditLogService.logActivity({
+            action: 'Early Settlement / Rescheduling',
+            module: 'Settlement',
+            recordReference: loanNum,
+            description: `Repayment schedule for loan ${loanNum} rescheduled successfully.`,
+            amount: Number(this.currentRemainingBalance),
+            details: {
+              previous_installment_amount: this.currentInstallmentAmount,
+              new_installment_amount: this.newInstallmentAmount,
+              previous_remaining_installments: this.currentRemainingInstallments,
+              new_remaining_installments: this.newRemainingPeriod,
+              previous_end_date: this.currentExpectedEndDate,
+              new_end_date: this.previewNewEndDate
+            }
+          });
           this.closeEarlySettlementModal();
           this.showSuccessMsg = true;
           this.settlementSuccessMessage = 'Loan repayment schedule updated successfully.';

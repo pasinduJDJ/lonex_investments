@@ -1,0 +1,4 @@
+[functions.activity-log]
+# Requests carry a JWT issued by the separate primary Lonex Supabase project.
+# This function therefore validates that token manually against primary Auth.
+verify_jwt = false

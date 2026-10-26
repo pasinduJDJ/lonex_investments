@@ -6,6 +6,7 @@ import { LoanManageService, LoanWithClient, Payment } from '../../service/loan-m
 import { SupabaseService } from '../../service/supabase.service';
 import { ProfitManageService } from '../../service/profit-manage.service';
 import { PaymentNotificationService } from '../../service/payment-notification.service';
+import { AuditLogService } from '../../service/audit-log.service';
 
 @Component({
   selector: 'app-add-payments',
@@ -38,7 +39,8 @@ export class AddPaymentsComponent implements OnInit {
     private router: Router,
     private profitService: ProfitManageService,
     private route: ActivatedRoute,
-    private notificationService: PaymentNotificationService
+    private notificationService: PaymentNotificationService,
+    private auditLogService: AuditLogService
   ) {
     this.setDefaultPaymentDate();
   }
@@ -182,6 +184,19 @@ export class AddPaymentsComponent implements OnInit {
         this.isLoading = false;
         return;
       }
+
+      void this.auditLogService.logActivity({
+        action: 'Payment Added',
+        module: 'Payments',
+        recordReference: this.foundLoan!.loan_number,
+        description: `Payment recorded for loan ${this.foundLoan!.loan_number}.`,
+        amount: Number(paymentData.paid_amount),
+        details: {
+          payment_id: data.id,
+          payment_date: paymentData.paid_date,
+          loan_closed: shouldCloseLoan
+        }
+      });
 
       // Increase bank capital by payment amount
       this.profitService.increaseBankCapital(paymentData.paid_amount).subscribe({

@@ -4,6 +4,7 @@ import { FormsModule, ReactiveFormsModule, FormBuilder, FormGroup, Validators } 
 import { RouterModule, Router } from '@angular/router';
 import { AccountManageService, AccountType, AccountTransaction } from '../../service/account-manage.service';
 import { FinanceTransactionService, FinanceTransaction } from '../../service/finance-transaction.service';
+import { AuditLogService } from '../../service/audit-log.service';
 
 @Component({
   selector: 'app-finance-accounts',
@@ -65,7 +66,8 @@ export class FinanceAccountsComponent implements OnInit {
     private accountService: AccountManageService,
     private financeTxService: FinanceTransactionService,
     private fb: FormBuilder,
-    private router: Router
+    private router: Router,
+    private auditLogService: AuditLogService
   ) {
     const today = new Date().toISOString().split('T')[0];
 
@@ -457,6 +459,14 @@ export class FinanceAccountsComponent implements OnInit {
           description: val.description,
           reference: val.reference
         });
+        void this.auditLogService.logActivity({
+          action: 'Cash In',
+          module: 'Finance',
+          recordReference: res.transactionId || val.reference || 'Cash In',
+          description: `Cash In posted to ${this.getAccountLabel(val.destinationAccount)}.`,
+          amount: Number(val.amount),
+          details: { destination_account: this.getAccountLabel(val.destinationAccount) }
+        });
         this.successMessage = `Cash In of Rs. ${Number(val.amount).toLocaleString('en-US', { minimumFractionDigits: 2 })} to ${this.getAccountLabel(val.destinationAccount)} posted successfully!`;
       } else if (this.stagedAction.type === 'CASH_OUT') {
         const val = this.cashOutForm.value;
@@ -466,6 +476,14 @@ export class FinanceAccountsComponent implements OnInit {
           transactionDate: val.transactionDate,
           description: val.description,
           reference: val.reference
+        });
+        void this.auditLogService.logActivity({
+          action: 'Cash Out',
+          module: 'Finance',
+          recordReference: res.transactionId || val.reference || 'Cash Out',
+          description: `Cash Out posted from ${this.getAccountLabel(val.sourceAccount)}.`,
+          amount: Number(val.amount),
+          details: { source_account: this.getAccountLabel(val.sourceAccount) }
         });
         this.successMessage = `Cash Out of Rs. ${Number(val.amount).toLocaleString('en-US', { minimumFractionDigits: 2 })} from ${this.getAccountLabel(val.sourceAccount)} posted successfully!`;
       } else if (this.stagedAction.type === 'TRANSFER') {
@@ -477,6 +495,17 @@ export class FinanceAccountsComponent implements OnInit {
           transactionDate: val.transactionDate,
           description: val.description,
           reference: val.reference
+        });
+        void this.auditLogService.logActivity({
+          action: 'Account Transfer',
+          module: 'Finance',
+          recordReference: res.transactionId || val.reference || 'Transfer',
+          description: `Transfer completed from ${this.getAccountLabel(val.fromAccount)} to ${this.getAccountLabel(val.toAccount)}.`,
+          amount: Number(val.amount),
+          details: {
+            source_account: this.getAccountLabel(val.fromAccount),
+            destination_account: this.getAccountLabel(val.toAccount)
+          }
         });
         this.successMessage = `Transfer of Rs. ${Number(val.amount).toLocaleString('en-US', { minimumFractionDigits: 2 })} from ${this.getAccountLabel(val.fromAccount)} to ${this.getAccountLabel(val.toAccount)} completed successfully!`;
       }

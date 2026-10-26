@@ -5,7 +5,7 @@ import { map, catchError } from 'rxjs/operators';
 
 import { AccountManageService } from './account-manage.service';
 
-export type TransactionType = 
+export type TransactionType =
   | 'Loan Disbursement'
   | 'Loan Repayment'
   | 'Capital Deposit'
@@ -45,7 +45,7 @@ export class FinanceTransactionService {
   constructor(
     private supabaseService: SupabaseService,
     private accountService: AccountManageService
-  ) {}
+  ) { }
 
   /**
    * Loads all authoritative financial transaction records and normalizes them into a unified ledger
@@ -55,13 +55,14 @@ export class FinanceTransactionService {
 
     return from(
       Promise.all([
-        // 1. Loans (Disbursements)
+        // 1. Loans (Disbursements and Document Charges)
         supabase
           .from('loans')
           .select(`
             id,
             loan_number,
             principal_amount,
+            document_charge,
             start_date,
             created_at,
             status,
@@ -106,7 +107,18 @@ export class FinanceTransactionService {
 
         const transactions: FinanceTransaction[] = [];
 
-        // A. Normalize Loan Disbursements
+        // Pre-scan explicit account transactions for deduplication
+        const accountTxs = (accountTxList as any[]) || [];
+        const explicitDocChargeLoanRefs = new Set<string>();
+        for (const tx of accountTxs) {
+          if (tx.transaction_type === 'DOCUMENT_CHARGE') {
+            if (tx.reference) {
+              explicitDocChargeLoanRefs.add(tx.reference.trim().toUpperCase());
+            }
+          }
+        }
+
+        // A. Normalize Loan Disbursements and Document Charges
         const loans = loansRes.data || [];
         for (const loan of loans) {
           const clientObj = (loan as any).client;
@@ -114,20 +126,45 @@ export class FinanceTransactionService {
             ? `${clientObj.first_name || ''} ${clientObj.last_name || ''}`.trim()
             : 'Customer';
           const disbDate = loan.start_date || (loan.created_at ? loan.created_at.split('T')[0] : '');
+          const loanRef = (loan.loan_number || '').trim();
+          const loanRefUpper = loanRef.toUpperCase();
 
+          // A1. Loan Disbursement Outflow (Bank Capital)
           transactions.push({
             id: `DISB-${loan.id}`,
             date: disbDate,
-            reference: loan.loan_number || 'N/A',
+            reference: loanRef || 'N/A',
             type: 'Loan Disbursement',
             description: `Loan disbursed to ${clientName}`,
             sourceAccount: 'Bank Capital',
             moneyIn: null,
             moneyOut: Number(loan.principal_amount) || 0,
             status: 'Disbursed',
-            relatedLoanNumber: loan.loan_number,
+            relatedLoanNumber: loanRef || undefined,
             createdAt: loan.created_at
           });
+
+          // A2. Derived Historical Document Charge Inflow (Assets / Cash)
+          const docCharge = Number(loan.document_charge) || 0;
+          const isGenuineLoan = loan.status !== 'cancelled' && loan.status !== 'voided';
+          const hasExplicitTx = (loanRefUpper && explicitDocChargeLoanRefs.has(loanRefUpper)) ||
+            (loan.id && explicitDocChargeLoanRefs.has(loan.id.toUpperCase()));
+
+          if (docCharge > 0 && isGenuineLoan && !hasExplicitTx) {
+            transactions.push({
+              id: `DOC-${loan.id}`,
+              date: disbDate,
+              reference: loanRef || 'N/A',
+              type: 'Document Charge',
+              description: `Document charge for loan ${loanRef} (${clientName})`.trim(),
+              sourceAccount: 'Assets / Cash',
+              moneyIn: docCharge,
+              moneyOut: null,
+              status: 'Collected',
+              relatedLoanNumber: loanRef || undefined,
+              createdAt: loan.created_at || disbDate
+            });
+          }
         }
 
         // B. Normalize Loan Repayments
@@ -191,7 +228,6 @@ export class FinanceTransactionService {
         }
 
         // E. Normalize Account Transactions (Cash In, Cash Out, Transfers)
-        const accountTxs = (accountTxList as any[]) || [];
         for (const tx of accountTxs) {
           if (tx.transaction_type === 'CASH_IN') {
             const destName = tx.destination_account === 'BANK_CAPITAL' ? 'Bank Capital' : 'Assets / Cash';
@@ -243,22 +279,24 @@ export class FinanceTransactionService {
               date: tx.transaction_date,
               reference: tx.reference || 'N/A',
               type: 'Document Charge',
-              description: tx.description,
+              description: tx.description || `Document charge for loan ${tx.reference || ''}`.trim(),
               sourceAccount: 'Assets / Cash',
               moneyIn: Number(tx.amount) || 0,
               moneyOut: null,
               status: 'Collected',
-              relatedLoanNumber: tx.reference,
+              relatedLoanNumber: tx.reference || undefined,
               createdAt: tx.created_at
             });
           }
         }
 
-        // Deterministic sorting: Newest date first, then secondary createdAt
+        // Deterministic sorting: Newest date first, secondary createdAt, tertiary unique id
         transactions.sort((a, b) => {
           const dateDiff = (b.date || '').localeCompare(a.date || '');
           if (dateDiff !== 0) return dateDiff;
-          return (b.createdAt || '').localeCompare(a.createdAt || '');
+          const createdDiff = (b.createdAt || '').localeCompare(a.createdAt || '');
+          if (createdDiff !== 0) return createdDiff;
+          return (a.id || '').localeCompare(b.id || '');
         });
 
         return transactions;

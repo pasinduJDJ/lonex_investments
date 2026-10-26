@@ -329,6 +329,10 @@ export class FinanceReportService {
           if (r.moneyOut) totalOut += r.moneyOut;
         }
 
+        const limitationNote = isBankCapital
+          ? 'Opening and closing balances across arbitrary historical dates are not fabricated. The authoritative current balance is read directly from the bank_capital table. Period net movement reflects all filtered events.'
+          : 'Assets / Cash balance is derived from confirmed document charges on all genuine (non-cancelled) loans, plus any net Cash In / Cash Out / Transfer movements recorded in account transactions. Historical opening balances are not fabricated to maintain 100% financial integrity.';
+
         return {
           rows,
           summary: {
@@ -338,7 +342,7 @@ export class FinanceReportService {
             totalMoneyOut: totalOut,
             netMovement: totalIn - totalOut,
             transactionCount: rows.length,
-            limitationNote: 'Opening and closing balances across arbitrary historical dates are not fabricated to maintain 100% financial integrity. Authoritative current balance and period net movement are displayed.'
+            limitationNote
           }
         };
       })

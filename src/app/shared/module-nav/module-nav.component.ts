@@ -237,6 +237,7 @@ export class ModuleNavComponent implements OnInit, OnDestroy {
       this.navTabs = [
         { label: 'Management Dashboard', url: '/analysis', icon: 'bi-speedometer2' },
         { label: 'Operational Overview', url: '/analysis/operational', icon: 'bi-grid-1x2-fill' },
+        { label: 'Audit Log', url: '/analysis/audit-log', icon: 'bi-clock-history' },
         {
           label: 'Reports',
           url: '/analysis/reports',
@@ -257,6 +258,8 @@ export class ModuleNavComponent implements OnInit, OnDestroy {
       ];
       if (url.startsWith('/analysis/operational')) {
         this.breadcrumbs.push({ label: 'Operational Overview', active: true });
+      } else if (url.startsWith('/analysis/audit-log')) {
+        this.breadcrumbs.push({ label: 'Audit Log', active: true });
       } else if (url.startsWith('/analysis/reports')) {
         this.breadcrumbs.push({ label: 'Reports', url: '/analysis/reports/payment-history', active: false });
         if (url.includes('payment-history')) {

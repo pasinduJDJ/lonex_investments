@@ -17,6 +17,7 @@ import { CustomerReportsComponent } from './components/customer-reports/customer
 import { LoanReportsComponent } from './components/loan-reports/loan-reports.component';
 import { PaymentReportsComponent } from './components/payment-reports/payment-reports.component';
 import { FinanceReportsComponent } from './components/finance-reports/finance-reports.component';
+import { AuditLogComponent } from './components/audit-log/audit-log.component';
 import { AuthGuard } from './service/auth.guard';
 
 export const routes: Routes = [
@@ -38,6 +39,7 @@ export const routes: Routes = [
     { path: 'profit/reports/:type', redirectTo: 'finance/reports/:type', pathMatch: 'full' },
     { path: 'analysis', component: AnalysisComponent, canActivate: [AuthGuard] },
     { path: 'analysis/operational', component: AnalysisComponent, canActivate: [AuthGuard] },
+    { path: 'analysis/audit-log', component: AuditLogComponent, canActivate: [AuthGuard] },
     { path: 'analysis/reports', redirectTo: 'analysis/reports/payment-history', pathMatch: 'full' },
     { path: 'analysis/reports/:type', component: PaymentReportsComponent, canActivate: [AuthGuard] },
     { path: 'profile', component: ProfileManageScreenComponent, canActivate: [AuthGuard] },
