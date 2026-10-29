@@ -239,7 +239,9 @@
                 <i class="bi bi-graph-up text-gold"></i>
                 <h6 class="mb-0 fw-bold">Customer Repayment Collection Trend</h6>
               </div>
-              <span class="badge bg-secondary-subtle text-secondary border small">Actual Payments</span>
+              <span class="badge bg-secondary-subtle text-secondary border small">
+                Actual Payments · Grouped {{ dashboardBundle?.chartGrouping }}
+              </span>
             </div>
             <div class="card-body p-3" style="min-height: 280px; position: relative;">
               <canvas id="collectionTrendCanvas"></canvas>
@@ -278,7 +280,9 @@
                 <i class="bi bi-bar-chart-line-fill text-primary"></i>
                 <h6 class="mb-0 fw-bold">Expected vs. Actual Collections</h6>
               </div>
-              <span class="badge bg-secondary-subtle text-secondary border small">Performance Comparison</span>
+              <span class="badge bg-secondary-subtle text-secondary border small">
+                Performance Comparison · Grouped {{ dashboardBundle?.chartGrouping }}
+              </span>
             </div>
             <div class="card-body p-3" style="min-height: 280px; position: relative;">
               <canvas id="collectionPerformanceCanvas"></canvas>
@@ -317,7 +321,11 @@
               </div>
               
               <!-- Metric Toggle -->
-              <div class="btn-group btn-group-sm" role="group">
+              <div class="d-flex align-items-center gap-2">
+                <span class="badge bg-secondary-subtle text-secondary border small">
+                  Grouped {{ dashboardBundle?.chartGrouping }}
+                </span>
+                <div class="btn-group btn-group-sm" role="group">
                 <button 
                   type="button" 
                   class="btn btn-sm"
@@ -336,6 +344,7 @@
                 >
                   Loan Count
                 </button>
+                </div>
               </div>
             </div>
             <div class="card-body p-3" style="min-height: 260px; position: relative;">

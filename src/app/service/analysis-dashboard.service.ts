@@ -98,6 +98,7 @@ export interface DashboardBundle {
   upcomingCollections: UpcomingPaymentItem[];
   recentPayments: PaymentActivityItem[];
   filterRange: { from: string; to: string };
+  chartGrouping: 'Daily' | 'Weekly' | 'Monthly';
 }
 
 @Injectable({
@@ -216,6 +217,7 @@ export class AnalysisDashboardService {
    */
   computeDashboardBundle(loans: LoanWithClient[], payments: any[], filters: DashboardFilterState): DashboardBundle {
     const dateRange = this.resolveDateRange(filters.period, filters.dateFrom, filters.dateTo);
+    const chartPeriod = this.resolveChartPeriod(filters.period, dateRange);
     const freqFilter = filters.frequency.toLowerCase();
 
     // 1. Filter Loans by Frequency (Current Portfolio State)
@@ -295,7 +297,7 @@ export class AnalysisDashboardService {
         if (dStr >= dateRange.from && dStr <= dateRange.to) {
           expectedCollection += installmentAmt;
 
-          const key = this.getGroupingKey(dStr, filters.period);
+          const key = this.getGroupingKey(dStr, chartPeriod);
           if (!scheduleByPeriodKey.has(key)) {
             scheduleByPeriodKey.set(key, { expected: 0, actual: 0 });
           }
@@ -322,7 +324,7 @@ export class AnalysisDashboardService {
     };
 
     // 5. Build Chart 01: Collection Trend (Daily/Weekly/Monthly)
-    const collectionTrend = this.buildCollectionTrend(periodPayments, dateRange, filters.period);
+    const collectionTrend = this.buildCollectionTrend(periodPayments, dateRange, chartPeriod);
 
     // 6. Build Chart 02: Loan Portfolio Status (On Track, Overdue, Completed)
     const onTrackActiveCount = Math.max(0, activeLoansCount - overdueLoansCount);
@@ -348,14 +350,14 @@ export class AnalysisDashboardService {
       periodPayments,
       scheduleByPeriodKey,
       dateRange,
-      filters.period
+      chartPeriod
     );
 
     // 8. Build Chart 04: Loan Frequency Distribution (Active Loans)
     const frequencyDistribution = this.buildFrequencyDistribution(matchingLoans);
 
     // 9. Build Chart 05: Loan Issuance Trend (within date range)
-    const issuanceTrend = this.buildIssuanceTrend(matchingLoans, dateRange, filters.period);
+    const issuanceTrend = this.buildIssuanceTrend(matchingLoans, dateRange, chartPeriod);
 
     // 10. Management Attention Tables (5 to 10 rows preview)
     const needsAttention = analysisBundle.latePayments.slice(0, 10);
@@ -374,7 +376,8 @@ export class AnalysisDashboardService {
       needsAttention,
       upcomingCollections,
       recentPayments,
-      filterRange: dateRange
+      filterRange: dateRange,
+      chartGrouping: this.getChartGroupingLabel(chartPeriod)
     };
   }
 
@@ -562,6 +565,27 @@ export class AnalysisDashboardService {
   // --------------------------------------------------------------------------
   // Time Grouping & Label Utilities
   // --------------------------------------------------------------------------
+  private resolveChartPeriod(
+    period: DashboardPeriod,
+    dateRange: { from: string; to: string }
+  ): DashboardPeriod {
+    if (period !== 'custom') return period;
+
+    const fromDate = parseCalendarDate(dateRange.from);
+    const toDate = parseCalendarDate(dateRange.to);
+    const dayCount = Math.floor((toDate.getTime() - fromDate.getTime()) / 86400000) + 1;
+
+    if (dayCount <= 31) return 'this_month';
+    if (dayCount <= 120) return 'last_3_months';
+    return 'last_6_months';
+  }
+
+  private getChartGroupingLabel(period: DashboardPeriod): 'Daily' | 'Weekly' | 'Monthly' {
+    if (period === 'last_6_months' || period === 'this_year') return 'Monthly';
+    if (period === 'last_3_months') return 'Weekly';
+    return 'Daily';
+  }
+
   private getGroupingKey(dateStr: string, period: DashboardPeriod): string {
     const parts = dateStr.split('-');
     if (parts.length < 3) return dateStr;
@@ -604,8 +628,8 @@ export class AnalysisDashboardService {
       }
 
       if (period === 'last_6_months' || period === 'this_year') {
-        curr.setMonth(curr.getMonth() + 1);
         curr.setDate(1);
+        curr.setMonth(curr.getMonth() + 1);
       } else if (period === 'last_3_months') {
         curr.setDate(curr.getDate() + 7);
       } else {
