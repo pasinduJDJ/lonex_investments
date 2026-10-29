@@ -1,37 +1,40 @@
 import { Injectable } from '@angular/core';
 import { SupabaseService } from './supabase.service';
-import { environment } from '../../environments/environment';
 
-export type ActivityModule = 'Members' | 'Loans' | 'Payments' | 'Settlement' | 'Finance';
+export type AuditOperation = 'Members' | 'Loans' | 'Payments' | 'Finance';
 
-export type ActivityAction =
+export type AuditAction =
   | 'Member Created'
   | 'Member Updated'
   | 'Loan Issued'
+  | 'Loan Closed'
   | 'Payment Added'
   | 'Early Settlement / Rescheduling'
-  | 'Expense Recorded'
   | 'Capital Deposit'
+  | 'Expense Recorded'
   | 'Cash In'
   | 'Cash Out'
   | 'Account Transfer';
 
-export interface ActivityLogEvent {
+export interface AuditLogEntry {
   id: number;
-  occurred_at: string;
+  created_at: string;
   user_id: string;
   user_email: string;
-  action: ActivityAction;
-  module: ActivityModule;
+  action: AuditAction;
+  operation: AuditOperation;
+  record_id: string;
   record_reference: string;
   description: string;
   amount: number | null;
   details: Record<string, unknown>;
+  idempotency_key: string;
 }
 
-export interface ActivityLogInput {
-  action: ActivityAction;
-  module: ActivityModule;
+export interface AuditLogInput {
+  action: AuditAction;
+  operation: AuditOperation;
+  recordId: string;
   recordReference: string;
   description: string;
   amount?: number | null;
@@ -39,19 +42,17 @@ export interface ActivityLogInput {
   idempotencyKey?: string;
 }
 
-export interface ActivityLogFilters {
-  module?: ActivityModule | 'All';
-  action?: ActivityAction | 'All';
-  user?: string;
+export interface AuditLogFilters {
+  operation?: AuditOperation | 'All';
+  search?: string;
   dateFrom?: string;
   dateTo?: string;
-  search?: string;
   page?: number;
   pageSize?: number;
 }
 
-export interface ActivityLogPage {
-  items: ActivityLogEvent[];
+export interface AuditLogPage {
+  items: AuditLogEntry[];
   total: number;
   page: number;
   pageSize: number;
@@ -59,142 +60,80 @@ export interface ActivityLogPage {
 
 @Injectable({ providedIn: 'root' })
 export class AuditLogService {
-  private readonly endpoint = this.buildEndpoint();
-
   constructor(private supabaseService: SupabaseService) {}
 
-  isConfigured(): boolean {
-    return Boolean(environment.auditProjectUrl?.trim() && environment.auditProjectPublishableKey?.trim());
+  createIdempotencyKey(prefix = 'audit'): string {
+    const suffix = typeof crypto !== 'undefined' && typeof crypto.randomUUID === 'function'
+      ? crypto.randomUUID()
+      : `${Date.now()}-${Math.random().toString(16).slice(2)}`;
+    return `${prefix}:${suffix}`;
   }
 
-  createIdempotencyKey(): string {
-    if (typeof crypto !== 'undefined' && typeof crypto.randomUUID === 'function') {
-      return crypto.randomUUID();
-    }
-    return `activity-${Date.now()}-${Math.random().toString(16).slice(2)}`;
-  }
-
-  /** Best-effort by design: it never rejects or changes the business result. */
-  async logActivity(input: ActivityLogInput): Promise<boolean> {
-    if (!this.isConfigured()) {
-      console.info('Activity Log is not configured; successful action was not logged.');
-      return false;
-    }
-
-    const token = await this.getAccessToken();
-    if (!token) {
-      console.warn('Activity Log skipped because no verified Supabase session is available.');
-      return false;
-    }
-
-    const payload = {
-      action: input.action,
-      module: input.module,
-      record_reference: input.recordReference,
-      description: input.description,
-      amount: input.amount ?? null,
-      details: input.details ?? {},
-      idempotency_key: input.idempotencyKey || this.createIdempotencyKey()
-    };
-
-    for (let attempt = 1; attempt <= 2; attempt++) {
-      try {
-        const response = await fetch(this.endpoint, {
-          method: 'POST',
-          headers: this.buildHeaders(token),
-          body: JSON.stringify(payload)
-        });
-
-        if (response.ok || response.status === 409) return true;
-
-        const message = await this.readError(response);
-        if (response.status >= 400 && response.status < 500) {
-          console.warn(`Activity Log rejected the event: ${message}`);
-          return false;
-        }
-      } catch (error) {
-        if (attempt === 2) {
-          console.warn('Successful action could not be written to Activity Log.', error);
-        }
-      }
-    }
-
-    return false;
-  }
-
-  async getLogs(filters: ActivityLogFilters = {}): Promise<ActivityLogPage> {
-    this.ensureConfigured();
-    const token = await this.requireAccessToken();
-    const response = await fetch(`${this.endpoint}?${this.buildQuery(filters).toString()}`, {
-      method: 'GET',
-      headers: this.buildHeaders(token)
-    });
-    if (!response.ok) throw new Error(await this.readError(response));
-    return response.json() as Promise<ActivityLogPage>;
-  }
-
-  async getAllMatchingLogs(filters: ActivityLogFilters = {}): Promise<ActivityLogEvent[]> {
-    const all: ActivityLogEvent[] = [];
-    let page = 1;
-    while (true) {
-      const result = await this.getLogs({ ...filters, page, pageSize: 500 });
-      all.push(...result.items);
-      if (all.length >= result.total || result.items.length === 0) break;
-      page += 1;
-    }
-    return all;
-  }
-
-  private buildEndpoint(): string {
-    const base = (environment.auditProjectUrl || '').replace(/\/$/, '');
-    return base ? `${base}/functions/v1/activity-log` : '';
-  }
-
-  private buildQuery(filters: ActivityLogFilters): URLSearchParams {
-    const params = new URLSearchParams();
-    if (filters.module && filters.module !== 'All') params.set('module', filters.module);
-    if (filters.action && filters.action !== 'All') params.set('action', filters.action);
-    if (filters.user?.trim()) params.set('user', filters.user.trim());
-    if (filters.dateFrom) params.set('date_from', filters.dateFrom);
-    if (filters.dateTo) params.set('date_to', filters.dateTo);
-    if (filters.search?.trim()) params.set('search', filters.search.trim());
-    params.set('page', String(Math.max(1, filters.page || 1)));
-    params.set('page_size', String(filters.pageSize || 25));
-    return params;
-  }
-
-  private buildHeaders(token: string): HeadersInit {
-    return {
-      'Content-Type': 'application/json',
-      apikey: environment.auditProjectPublishableKey,
-      Authorization: `Bearer ${token}`
-    };
-  }
-
-  private async getAccessToken(): Promise<string | null> {
-    const { data, error } = await this.supabaseService.getClient().auth.getSession();
-    if (error) return null;
-    return data.session?.access_token || null;
-  }
-
-  private async requireAccessToken(): Promise<string> {
-    const token = await this.getAccessToken();
-    if (!token) throw new Error('Your session has expired. Please sign in again.');
-    return token;
-  }
-
-  private ensureConfigured(): void {
-    if (!this.isConfigured()) {
-      throw new Error('Activity Log is not configured. Complete the separate audit project setup first.');
-    }
-  }
-
-  private async readError(response: Response): Promise<string> {
+  /** Best-effort only: audit failures never change the completed business result. */
+  async log(input: AuditLogInput): Promise<boolean> {
     try {
-      const body = await response.json();
-      return body.error || body.message || `Request failed (${response.status})`;
-    } catch {
-      return `Request failed (${response.status})`;
+      const supabase = this.supabaseService.getClient();
+      const { data: { user }, error: userError } = await supabase.auth.getUser();
+      if (userError || !user) {
+        console.warn('Audit event skipped because no verified user session is available.');
+        return false;
+      }
+
+      const { error } = await supabase.from('audit').insert({
+        user_id: user.id,
+        user_email: user.email || user.id,
+        action: input.action,
+        operation: input.operation,
+        record_id: input.recordId,
+        record_reference: input.recordReference,
+        description: input.description,
+        amount: input.amount ?? null,
+        details: input.details ?? {},
+        idempotency_key: input.idempotencyKey || this.createIdempotencyKey()
+      });
+
+      if (!error || error.code === '23505') return true;
+      console.warn('Completed action could not be written to the Audit Log.', error.message);
+      return false;
+    } catch (error) {
+      console.warn('Completed action could not be written to the Audit Log.', error);
+      return false;
     }
+  }
+
+  async getLogs(filters: AuditLogFilters = {}): Promise<AuditLogPage> {
+    const page = Math.max(1, filters.page || 1);
+    const pageSize = [25, 50, 100].includes(filters.pageSize || 25) ? (filters.pageSize || 25) : 25;
+    const start = (page - 1) * pageSize;
+    const end = start + pageSize - 1;
+    const supabase = this.supabaseService.getClient();
+
+    let query = supabase
+      .from('audit')
+      .select('*', { count: 'exact' })
+      .order('created_at', { ascending: false })
+      .order('id', { ascending: false })
+      .range(start, end);
+
+    if (filters.operation && filters.operation !== 'All') {
+      query = query.eq('operation', filters.operation);
+    }
+    if (filters.dateFrom) query = query.gte('created_at', `${filters.dateFrom}T00:00:00.000Z`);
+    if (filters.dateTo) query = query.lte('created_at', `${filters.dateTo}T23:59:59.999Z`);
+
+    const search = this.safeSearch(filters.search || '');
+    if (search) {
+      query = query.or(
+        `action.ilike.%${search}%,operation.ilike.%${search}%,record_reference.ilike.%${search}%,description.ilike.%${search}%,user_email.ilike.%${search}%`
+      );
+    }
+
+    const { data, error, count } = await query;
+    if (error) throw error;
+    return { items: (data || []) as AuditLogEntry[], total: count || 0, page, pageSize };
+  }
+
+  private safeSearch(value: string): string {
+    return value.replace(/[,()%]/g, ' ').trim().slice(0, 100);
   }
 }

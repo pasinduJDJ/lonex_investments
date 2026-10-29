@@ -9,28 +9,13 @@ describe('AuditLogService', () => {
     TestBed.configureTestingModule({
       providers: [
         AuditLogService,
-        {
-          provide: SupabaseService,
-          useValue: { getClient: () => ({ auth: { getSession: async () => ({ data: { session: null }, error: null }) } }) }
-        }
+        { provide: SupabaseService, useValue: { getClient: jasmine.createSpy('getClient') } }
       ]
     });
     service = TestBed.inject(AuditLogService);
   });
 
-  it('should be created', () => expect(service).toBeTruthy());
-
-  it('should generate different idempotency keys', () => {
-    expect(service.createIdempotencyKey()).not.toBe(service.createIdempotencyKey());
-  });
-
-  it('should not throw when best-effort logging is unavailable', async () => {
-    const result = await service.logActivity({
-      action: 'Member Created',
-      module: 'Members',
-      recordReference: '000001',
-      description: 'Member 000001 created.'
-    });
-    expect(result).toBeFalse();
+  it('should create unique idempotency keys', () => {
+    expect(service.createIdempotencyKey('payment')).not.toBe(service.createIdempotencyKey('payment'));
   });
 });

@@ -185,18 +185,29 @@ export class AddPaymentsComponent implements OnInit {
         return;
       }
 
-      void this.auditLogService.logActivity({
+      void this.auditLogService.log({
         action: 'Payment Added',
-        module: 'Payments',
+        operation: 'Payments',
+        recordId: String(data.id),
         recordReference: this.foundLoan!.loan_number,
         description: `Payment recorded for loan ${this.foundLoan!.loan_number}.`,
         amount: Number(paymentData.paid_amount),
-        details: {
-          payment_id: data.id,
-          payment_date: paymentData.paid_date,
-          loan_closed: shouldCloseLoan
-        }
+        details: { payment_date: paymentData.paid_date, loan_closed: shouldCloseLoan },
+        idempotencyKey: `payment-added:${data.id}`
       });
+
+      if (shouldCloseLoan) {
+        void this.auditLogService.log({
+          action: 'Loan Closed',
+          operation: 'Loans',
+          recordId: String(this.foundLoan!.id),
+          recordReference: this.foundLoan!.loan_number,
+          description: `Loan ${this.foundLoan!.loan_number} closed after successful payment.`,
+          amount: Number(paymentData.paid_amount),
+          details: { closing_payment_id: data.id },
+          idempotencyKey: `loan-closed:${data.id}`
+        });
+      }
 
       // Increase bank capital by payment amount
       this.profitService.increaseBankCapital(paymentData.paid_amount).subscribe({

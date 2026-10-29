@@ -94,16 +94,14 @@ export class SingleMemberScreenComponent implements OnInit {
     this.loanService.updateClient(client.client_id, updateData).subscribe({
       next: (updatedClient) => {
         console.log('Client updated successfully:', updatedClient);
-        const changedFields = Object.keys(updateData).filter(key =>
-          (client as any)[key] !== (updatedClient as any)[key]
-        );
         const reference = String(updatedClient.register_number || client.register_number || '').padStart(6, '0');
-        void this.auditLogService.logActivity({
+        void this.auditLogService.log({
           action: 'Member Updated',
-          module: 'Members',
+          operation: 'Members',
+          recordId: String(updatedClient.client_id || client.client_id),
           recordReference: reference,
           description: `Member ${reference} updated successfully.`,
-          details: { changed_fields: changedFields }
+          details: { changed_fields: Object.keys(updateData) }
         });
         this.isEditing = false;
         this.isSaving = false;

@@ -182,11 +182,13 @@ export class AddMemberScreenComponent implements OnInit {
       // Format the register number with leading zeros
       const formattedRegisterNumber = this.formatRegisterNumber(data.register_number);
 
-      void this.auditLogService.logActivity({
+      void this.auditLogService.log({
         action: 'Member Created',
-        module: 'Members',
+        operation: 'Members',
+        recordId: String(data.client_id),
         recordReference: formattedRegisterNumber,
-        description: `Member ${formattedRegisterNumber} created successfully.`
+        description: `Member ${formattedRegisterNumber} created successfully.`,
+        idempotencyKey: `member-created:${data.client_id}`
       });
 
       this.successMessage = `Client ${clientData.first_name} ${clientData.last_name} added successfully! Member ID: ${formattedRegisterNumber}`;

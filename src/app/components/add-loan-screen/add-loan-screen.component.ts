@@ -556,16 +556,15 @@ export class AddLoanScreenComponent implements OnInit {
 
       const data = insertResult.data;
 
-      void this.auditLogService.logActivity({
+      void this.auditLogService.log({
         action: 'Loan Issued',
-        module: 'Loans',
+        operation: 'Loans',
+        recordId: String(data.id),
         recordReference: data.loan_number,
         description: `Loan ${data.loan_number} issued successfully.`,
         amount: Number(data.principal_amount),
-        details: {
-          loan_type: data.loan_type,
-          installments: data.installments
-        }
+        details: { loan_type: data.loan_type, installments: data.installments },
+        idempotencyKey: `loan-issued:${data.id}`
       });
 
       // Save loan-level guarantors to loan_guarantors table

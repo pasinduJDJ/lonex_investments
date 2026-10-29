@@ -1,145 +1,103 @@
-<div class="lx-audit-container container-fluid px-3 px-lg-4 py-3">
-  <section class="odoo-form-sheet shadow-sm">
-    <div class="d-flex flex-wrap justify-content-between align-items-start gap-3 mb-3">
-      <div class="d-flex align-items-center gap-3">
-        <div class="audit-header-icon"><i class="bi bi-clock-history"></i></div>
-        <div>
-          <div class="small text-muted mb-1">Analysis / Audit Log</div>
-          <h1 class="odoo-sheet-title mb-1">Activity Log</h1>
-          <p class="text-muted small mb-0">Future successful user activities recorded after activation.</p>
-        </div>
+<div class="container-fluid py-4 audit-page">
+  <div class="odoo-sheet-card p-4">
+    <div class="d-flex align-items-center gap-3 mb-4">
+      <div class="audit-icon"><i class="bi bi-clock-history"></i></div>
+      <div>
+        <div class="small text-muted">Analysis / Audit Log</div>
+        <h1 class="odoo-sheet-title mb-1">Audit Log</h1>
+        <p class="text-muted mb-0">Successful business operations recorded from activation onward.</p>
       </div>
-      <button class="btn btn-sm btn-success" type="button" [disabled]="isExporting || isLoading" (click)="exportExcel()">
-        <span *ngIf="isExporting" class="spinner-border spinner-border-sm me-1"></span>
-        <i *ngIf="!isExporting" class="bi bi-file-earmark-excel me-1"></i>
-        Export Excel (.xlsx)
+    </div>
+
+    <div class="audit-tabs mb-3">
+      <button *ngFor="let operation of operations" type="button" class="btn btn-sm"
+        [class.active]="selectedOperation === operation" (click)="selectOperation(operation)">
+        {{ operation }}
       </button>
     </div>
 
-    <div class="alert alert-warning" *ngIf="!auditLogService.isConfigured()">
-      <i class="bi bi-exclamation-triangle me-2"></i>
-      Activity Log is prepared but not active. Configure the separate audit Supabase project values to enable it.
-    </div>
-
-    <div class="alert alert-danger" *ngIf="errorMessage">
-      <i class="bi bi-shield-exclamation me-2"></i>{{ errorMessage }}
-    </div>
-
-    <ng-container *ngIf="auditLogService.isConfigured()">
-      <div class="audit-tabs mb-3" role="tablist">
-        <button *ngFor="let module of modules" type="button" class="audit-tab"
-                [class.active]="selectedModule === module" (click)="selectModule(module)">
-          {{ module }}
-        </button>
-      </div>
-
-      <div class="odoo-toolbar rounded border p-3 mb-3">
-        <div class="row g-2 align-items-end">
-          <div class="col-12 col-md-3 col-xl-2">
-            <label class="form-label small fw-semibold">Action</label>
-            <select class="form-select form-select-sm odoo-select" [(ngModel)]="selectedAction" (change)="applyFilters()">
-              <option *ngFor="let action of actions" [ngValue]="action">{{ action }}</option>
-            </select>
-          </div>
-          <div class="col-6 col-md-3 col-xl-2">
-            <label class="form-label small fw-semibold">Date From</label>
-            <input type="date" class="form-control form-control-sm" [(ngModel)]="dateFrom" (change)="applyFilters()" />
-          </div>
-          <div class="col-6 col-md-3 col-xl-2">
-            <label class="form-label small fw-semibold">Date To</label>
-            <input type="date" class="form-control form-control-sm" [(ngModel)]="dateTo" (change)="applyFilters()" />
-          </div>
-          <div class="col-12 col-md-3 col-xl-2">
-            <label class="form-label small fw-semibold">User</label>
-            <input type="search" class="form-control form-control-sm" placeholder="Email" [(ngModel)]="userFilter" (keyup.enter)="applyFilters()" />
-          </div>
-          <div class="col-12 col-xl-3">
-            <label class="form-label small fw-semibold">Search</label>
-            <div class="input-group input-group-sm">
-              <span class="input-group-text"><i class="bi bi-search"></i></span>
-              <input type="search" class="form-control" placeholder="Reference or description" [(ngModel)]="search" (keyup.enter)="applyFilters()" />
-              <button class="btn btn-outline-secondary" type="button" (click)="applyFilters()">Search</button>
-            </div>
-          </div>
-          <div class="col-12 col-xl-1 text-xl-end">
-            <button class="btn btn-sm btn-outline-secondary" type="button" (click)="clearFilters()">Clear</button>
-          </div>
+    <div class="row g-2 align-items-end mb-3">
+      <div class="col-lg-5">
+        <label class="form-label small">Search</label>
+        <div class="input-group">
+          <span class="input-group-text"><i class="bi bi-search"></i></span>
+          <input class="form-control" [(ngModel)]="search" (keyup.enter)="applyFilters()"
+            placeholder="Action, reference, description or user">
         </div>
       </div>
-
-      <div class="odoo-table-wrapper">
-        <table class="table odoo-data-table align-middle mb-0">
-          <thead>
-            <tr>
-              <th>Date &amp; Time</th>
-              <th>User</th>
-              <th>Module</th>
-              <th>Action</th>
-              <th>Reference</th>
-              <th>Description</th>
-              <th class="text-end">Amount</th>
-              <th class="text-end">Details</th>
-            </tr>
-          </thead>
-          <tbody>
-            <tr *ngIf="isLoading">
-              <td colspan="8" class="text-center py-5"><span class="spinner-border spinner-border-sm text-gold me-2"></span>Loading activities…</td>
-            </tr>
-            <tr *ngFor="let item of items" class="odoo-row-hover">
-              <td class="text-nowrap">{{ item.occurred_at | date:'dd MMM yyyy, HH:mm' }}</td>
-              <td><span class="small">{{ item.user_email }}</span></td>
-              <td><span class="badge module-badge" [ngClass]="moduleBadge(item.module)">{{ item.module }}</span></td>
-              <td class="fw-semibold">{{ item.action }}</td>
-              <td><span class="badge badge-reference">{{ item.record_reference }}</span></td>
-              <td class="description-cell">{{ item.description }}</td>
-              <td class="text-end text-nowrap font-numeric">{{ item.amount !== null ? ('Rs. ' + (item.amount | number:'1.2-2')) : '-' }}</td>
-              <td class="text-end"><button type="button" class="btn btn-sm btn-outline-primary" (click)="viewDetails(item)"><i class="bi bi-eye me-1"></i>View</button></td>
-            </tr>
-            <tr *ngIf="!isLoading && items.length === 0">
-              <td colspan="8" class="text-center py-5 text-muted"><i class="bi bi-inbox fs-2 d-block mb-2"></i>No matching activity records.</td>
-            </tr>
-          </tbody>
-        </table>
+      <div class="col-md-3 col-lg-2">
+        <label class="form-label small">From</label>
+        <input type="date" class="form-control" [(ngModel)]="dateFrom">
       </div>
-
-      <div class="d-flex flex-wrap justify-content-between align-items-center gap-2 mt-3" *ngIf="!isLoading && total > 0">
-        <div class="small text-muted">Showing {{ ((page - 1) * pageSize) + 1 }}–{{ Math.min(page * pageSize, total) }} of {{ total }}</div>
-        <div class="d-flex align-items-center gap-2">
-          <select class="form-select form-select-sm page-size-select" [(ngModel)]="pageSize" (change)="changePageSize()">
-            <option *ngFor="let size of pageSizes" [ngValue]="size">{{ size }} rows</option>
-          </select>
-          <button class="btn btn-sm btn-outline-secondary" [disabled]="page <= 1" (click)="changePage(page - 1)">Previous</button>
-          <span class="small text-muted">Page {{ page }} of {{ totalPages }}</span>
-          <button class="btn btn-sm btn-outline-secondary" [disabled]="page >= totalPages" (click)="changePage(page + 1)">Next</button>
-        </div>
+      <div class="col-md-3 col-lg-2">
+        <label class="form-label small">To</label>
+        <input type="date" class="form-control" [(ngModel)]="dateTo">
       </div>
-    </ng-container>
-  </section>
+      <div class="col-auto d-flex gap-2">
+        <button type="button" class="btn btn-warning" (click)="applyFilters()">Apply</button>
+        <button type="button" class="btn btn-outline-secondary" (click)="clearFilters()">Clear</button>
+      </div>
+    </div>
+
+    <div *ngIf="errorMessage" class="alert alert-danger">{{ errorMessage }}</div>
+    <div *ngIf="isLoading" class="text-center py-5">
+      <div class="spinner-border text-warning" role="status"></div>
+    </div>
+
+    <div *ngIf="!isLoading" class="table-responsive audit-table-wrap">
+      <table class="table table-hover align-middle mb-0">
+        <thead>
+          <tr>
+            <th>Date & Time</th><th>User</th><th>Operation</th><th>Action</th>
+            <th>Reference</th><th>Description</th><th class="text-end">Amount</th><th></th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr *ngFor="let entry of items">
+            <td class="text-nowrap">{{ entry.created_at | date:'dd/MM/yyyy HH:mm' }}</td>
+            <td>{{ entry.user_email }}</td>
+            <td><span class="badge operation-badge">{{ entry.operation }}</span></td>
+            <td class="fw-semibold">{{ entry.action }}</td>
+            <td>{{ entry.record_reference }}</td>
+            <td class="description-cell">{{ entry.description }}</td>
+            <td class="text-end text-nowrap">{{ entry.amount == null ? '—' : ('Rs. ' + (entry.amount | number:'1.2-2')) }}</td>
+            <td><button class="btn btn-sm btn-outline-secondary" (click)="selectedEntry = entry">Details</button></td>
+          </tr>
+          <tr *ngIf="items.length === 0">
+            <td colspan="8" class="text-center text-muted py-5">No audit records match the selected filters.</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+
+    <div class="d-flex flex-wrap justify-content-between align-items-center gap-3 mt-3">
+      <div class="small text-muted">{{ total }} record{{ total === 1 ? '' : 's' }}</div>
+      <div class="d-flex align-items-center gap-2">
+        <select class="form-select form-select-sm page-size" [(ngModel)]="pageSize" (change)="changePageSize()">
+          <option *ngFor="let size of pageSizes" [ngValue]="size">{{ size }} per page</option>
+        </select>
+        <button class="btn btn-sm btn-outline-secondary" [disabled]="page <= 1" (click)="changePage(page - 1)">Previous</button>
+        <span class="small">Page {{ page }} of {{ totalPages }}</span>
+        <button class="btn btn-sm btn-outline-secondary" [disabled]="page >= totalPages" (click)="changePage(page + 1)">Next</button>
+      </div>
+    </div>
+  </div>
 </div>
 
-<div class="audit-modal-backdrop" *ngIf="selectedEvent" (click)="closeDetails()"></div>
-<div class="audit-modal" *ngIf="selectedEvent" role="dialog" aria-modal="true" aria-labelledby="activityDetailsTitle">
-  <div class="modal-dialog modal-dialog-centered modal-lg">
-    <div class="modal-content">
-      <div class="modal-header">
-        <div><div class="small text-muted">Event #{{ selectedEvent.id }}</div><h2 id="activityDetailsTitle" class="modal-title fs-5">{{ selectedEvent.action }}</h2></div>
-        <button type="button" class="btn-close" aria-label="Close" (click)="closeDetails()"></button>
-      </div>
-      <div class="modal-body">
-        <div class="row g-3 mb-3">
-          <div class="col-md-6"><div class="detail-label">Date &amp; Time</div><div>{{ selectedEvent.occurred_at | date:'medium' }}</div></div>
-          <div class="col-md-6"><div class="detail-label">Verified User</div><div>{{ selectedEvent.user_email }}</div></div>
-          <div class="col-md-4"><div class="detail-label">Module</div><div>{{ selectedEvent.module }}</div></div>
-          <div class="col-md-4"><div class="detail-label">Reference</div><div>{{ selectedEvent.record_reference }}</div></div>
-          <div class="col-md-4"><div class="detail-label">Amount</div><div>{{ selectedEvent.amount !== null ? ('Rs. ' + (selectedEvent.amount | number:'1.2-2')) : '-' }}</div></div>
-          <div class="col-12"><div class="detail-label">Description</div><div>{{ selectedEvent.description }}</div></div>
-        </div>
-        <div *ngIf="detailsEntries.length > 0">
-          <h3 class="fs-6 border-bottom pb-2">Additional Details</h3>
-          <div class="table-responsive"><table class="table table-sm"><tbody><tr *ngFor="let detail of detailsEntries"><th class="detail-key">{{ detail.key }}</th><td>{{ detail.value }}</td></tr></tbody></table></div>
-        </div>
-      </div>
-      <div class="modal-footer"><button type="button" class="btn btn-sm btn-secondary" (click)="closeDetails()">Close</button></div>
+<div class="audit-modal-backdrop" *ngIf="selectedEntry" (click)="selectedEntry = null">
+  <div class="audit-modal" (click)="$event.stopPropagation()">
+    <div class="d-flex justify-content-between align-items-center mb-3">
+      <h5 class="mb-0">Audit Details</h5>
+      <button type="button" class="btn-close" (click)="selectedEntry = null"></button>
     </div>
+    <dl class="row small mb-0">
+      <dt class="col-4">Action</dt><dd class="col-8">{{ selectedEntry.action }}</dd>
+      <dt class="col-4">Record ID</dt><dd class="col-8 text-break">{{ selectedEntry.record_id }}</dd>
+      <dt class="col-4">Reference</dt><dd class="col-8">{{ selectedEntry.record_reference }}</dd>
+      <dt class="col-4">User ID</dt><dd class="col-8 text-break">{{ selectedEntry.user_id }}</dd>
+      <ng-container *ngFor="let item of detailEntries">
+        <dt class="col-4">{{ item.key }}</dt><dd class="col-8 text-break">{{ item.value }}</dd>
+      </ng-container>
+    </dl>
   </div>
 </div>

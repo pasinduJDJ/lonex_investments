@@ -229,18 +229,15 @@ export class ProfitsManageScreenComponent implements OnInit {
     
     this.addCapitalSuccess = false;
     this.addCapitalError = '';
-    const capitalAmount = Number(this.addCapitalForm.value.amount);
-    const activityKey = this.auditLogService.createIdempotencyKey();
     this.profitService.addMoneyToCapital(this.addCapitalForm.value).subscribe({
       next: () => {
-        void this.auditLogService.logActivity({
+        void this.auditLogService.log({
           action: 'Capital Deposit',
-          module: 'Finance',
+          operation: 'Finance',
+          recordId: this.auditLogService.createIdempotencyKey('capital-record'),
           recordReference: `CAP-${new Date().toISOString().split('T')[0]}`,
           description: 'Capital deposit recorded successfully.',
-          amount: capitalAmount,
-          details: {},
-          idempotencyKey: activityKey
+          amount: Number(this.addCapitalForm.value.amount)
         });
         this.addCapitalSuccess = true;
         this.addCapitalForm.reset({
@@ -278,18 +275,16 @@ export class ProfitsManageScreenComponent implements OnInit {
       remark: this.addExpenseForm.value.remark,
       expense_date: new Date().toISOString().split('T')[0] // Today's date
     };
-    const activityKey = this.auditLogService.createIdempotencyKey();
     
     this.profitService.addExpenseAndUpdateCapital(expenseData).subscribe({
       next: () => {
-        void this.auditLogService.logActivity({
+        void this.auditLogService.log({
           action: 'Expense Recorded',
-          module: 'Finance',
+          operation: 'Finance',
+          recordId: this.auditLogService.createIdempotencyKey('expense-record'),
           recordReference: `EXP-${expenseData.expense_date}`,
           description: 'Expense recorded successfully.',
-          amount: Number(expenseData.amount),
-          details: {},
-          idempotencyKey: activityKey
+          amount: Number(expenseData.amount)
         });
         this.addExpenseSuccess = true;
         this.addExpenseForm.reset({

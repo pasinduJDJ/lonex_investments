@@ -459,13 +459,13 @@ export class FinanceAccountsComponent implements OnInit {
           description: val.description,
           reference: val.reference
         });
-        void this.auditLogService.logActivity({
-          action: 'Cash In',
-          module: 'Finance',
+        const auditRecordId = String(res.transactionId || val.reference || this.auditLogService.createIdempotencyKey('cash-in'));
+        void this.auditLogService.log({
+          action: 'Cash In', operation: 'Finance', recordId: auditRecordId,
           recordReference: res.transactionId || val.reference || 'Cash In',
           description: `Cash In posted to ${this.getAccountLabel(val.destinationAccount)}.`,
-          amount: Number(val.amount),
-          details: { destination_account: this.getAccountLabel(val.destinationAccount) }
+          amount: Number(val.amount), details: { destination_account: this.getAccountLabel(val.destinationAccount) },
+          idempotencyKey: `cash-in:${auditRecordId}`
         });
         this.successMessage = `Cash In of Rs. ${Number(val.amount).toLocaleString('en-US', { minimumFractionDigits: 2 })} to ${this.getAccountLabel(val.destinationAccount)} posted successfully!`;
       } else if (this.stagedAction.type === 'CASH_OUT') {
@@ -477,13 +477,13 @@ export class FinanceAccountsComponent implements OnInit {
           description: val.description,
           reference: val.reference
         });
-        void this.auditLogService.logActivity({
-          action: 'Cash Out',
-          module: 'Finance',
+        const auditRecordId = String(res.transactionId || val.reference || this.auditLogService.createIdempotencyKey('cash-out'));
+        void this.auditLogService.log({
+          action: 'Cash Out', operation: 'Finance', recordId: auditRecordId,
           recordReference: res.transactionId || val.reference || 'Cash Out',
           description: `Cash Out posted from ${this.getAccountLabel(val.sourceAccount)}.`,
-          amount: Number(val.amount),
-          details: { source_account: this.getAccountLabel(val.sourceAccount) }
+          amount: Number(val.amount), details: { source_account: this.getAccountLabel(val.sourceAccount) },
+          idempotencyKey: `cash-out:${auditRecordId}`
         });
         this.successMessage = `Cash Out of Rs. ${Number(val.amount).toLocaleString('en-US', { minimumFractionDigits: 2 })} from ${this.getAccountLabel(val.sourceAccount)} posted successfully!`;
       } else if (this.stagedAction.type === 'TRANSFER') {
@@ -496,16 +496,14 @@ export class FinanceAccountsComponent implements OnInit {
           description: val.description,
           reference: val.reference
         });
-        void this.auditLogService.logActivity({
-          action: 'Account Transfer',
-          module: 'Finance',
+        const auditRecordId = String(res.transactionId || val.reference || this.auditLogService.createIdempotencyKey('transfer'));
+        void this.auditLogService.log({
+          action: 'Account Transfer', operation: 'Finance', recordId: auditRecordId,
           recordReference: res.transactionId || val.reference || 'Transfer',
           description: `Transfer completed from ${this.getAccountLabel(val.fromAccount)} to ${this.getAccountLabel(val.toAccount)}.`,
           amount: Number(val.amount),
-          details: {
-            source_account: this.getAccountLabel(val.fromAccount),
-            destination_account: this.getAccountLabel(val.toAccount)
-          }
+          details: { source_account: this.getAccountLabel(val.fromAccount), destination_account: this.getAccountLabel(val.toAccount) },
+          idempotencyKey: `transfer:${auditRecordId}`
         });
         this.successMessage = `Transfer of Rs. ${Number(val.amount).toLocaleString('en-US', { minimumFractionDigits: 2 })} from ${this.getAccountLabel(val.fromAccount)} to ${this.getAccountLabel(val.toAccount)} completed successfully!`;
       }

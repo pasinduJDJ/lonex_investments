@@ -298,9 +298,10 @@ export class SingleLoanScreenComponent implements OnInit {
         this.isSubmittingSettlement = false;
         if (res.success) {
           const loanNum = this.currentLoan!.loan_number;
-          void this.auditLogService.logActivity({
+          void this.auditLogService.log({
             action: 'Early Settlement / Rescheduling',
-            module: 'Settlement',
+            operation: 'Loans',
+            recordId: String(this.currentLoan!.id),
             recordReference: loanNum,
             description: `Repayment schedule for loan ${loanNum} rescheduled successfully.`,
             amount: Number(this.currentRemainingBalance),
